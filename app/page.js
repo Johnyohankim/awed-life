@@ -140,7 +140,51 @@ function RecentSubmissions() {
     </div>
   )
 }
+function CardPreview() {
+  const [flippedCard, setFlippedCard] = useState(null)
 
+  const handleCardClick = (index) => {
+    setFlippedCard(flippedCard === index ? null : index)
+  }
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {categoryExamples.map((example, index) => (
+        <div
+          key={index}
+          className="relative aspect-[3/4] cursor-pointer"
+          onClick={() => handleCardClick(index)}
+        >
+          {flippedCard === index ? (
+            // Flipped - show video
+            <div className="w-full h-full bg-white rounded-lg shadow-lg p-3 flex flex-col">
+              <div className="flex-1 mb-2">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${example.videoId}?autoplay=1`}
+                  title={example.category}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded"
+                />
+              </div>
+              <p className="text-xs font-semibold text-center">{example.category}</p>
+            </div>
+          ) : (
+            // Face down - show category name
+            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center p-4 hover:shadow-xl transition-shadow">
+              <p className="text-white font-bold text-center text-sm">
+                {example.category}
+              </p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
 export default function Home() {
   const [submissionCount, setSubmissionCount] = useState(0)
   
@@ -237,21 +281,29 @@ export default function Home() {
 </section>
 
       {/* Counter + Teaser Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-5xl font-bold mb-4">{submissionCount}</h2>
-          <p className="text-gray-600 mb-8">awe moments collected</p>
-          <div className="max-w-2xl mx-auto bg-gray-100 p-8 rounded-lg">
-  <p className="text-lg font-semibold mb-4">Coming Soon:</p>
-  <p className="text-gray-600 mb-4">
-    Once we collect <span className="font-bold text-blue-600">1,000 awe moments</span>, awed.life will launch.
-  </p>
-  <p className="text-gray-600">
-    Daily ritual: Choose one card. Watch. Reflect. Collect.
-  </p>
-</div>
-        </div>
-      </section>
+<section className="py-16 bg-white">
+  <div className="container mx-auto px-4 text-center">
+    <h2 className="text-5xl font-bold mb-4">{submissionCount}</h2>
+    <p className="text-gray-600 mb-8">awe moments collected</p>
+    
+    <div className="max-w-2xl mx-auto bg-gray-100 p-8 rounded-lg mb-12">
+      <p className="text-lg font-semibold mb-4">Coming Soon:</p>
+      <p className="text-gray-600 mb-4">
+        Once we collect <span className="font-bold text-blue-600">1,000 awe moments</span>, awed.life will launch.
+      </p>
+      <p className="text-gray-600">
+        Daily ritual: Choose one card. Watch. Reflect. Collect.
+      </p>
+    </div>
+
+    {/* Interactive Preview */}
+    <div className="max-w-5xl mx-auto">
+      <h3 className="text-2xl font-bold mb-4">Preview the Experience</h3>
+      <p className="text-gray-600 mb-8">Click a card to see what awaits you</p>
+      <CardPreview />
+    </div>
+  </div>
+</section>
 
       {/* Submission Form Section */}
       <section className="py-16 bg-gray-50">
