@@ -60,14 +60,14 @@ export default function Home() {
 {/* Manifesto Video Section */}
 <section className="relative w-full h-screen bg-black">
   <video
-    autoPlay
-    muted
-    loop
-    playsInline
-    className="w-full h-full object-cover"
-    src="/menifesto1.mp4"
-  >
-  </video>
+  autoPlay
+  muted
+  loop
+  playsInline
+  className="w-full h-full object-cover"
+  src="https://pub-a9edba097fc04f4ea77b1baac778b4f9.r2.dev/menifesto1.mp4"
+>
+</video>
 </section>
 
       {/* Counter + Teaser Section */}
