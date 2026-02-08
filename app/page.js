@@ -353,6 +353,27 @@ export default function Home() {
 >
 </video>
 </section>
+
+</section>
+
+{/* Book Credit */}
+<section className="py-8 bg-gray-50 border-y border-gray-200">
+  <div className="container mx-auto px-4 text-center">
+    <p className="text-gray-600 text-sm">
+      Inspired by{' '}
+      <a 
+        href="https://www.penguinrandomhouse.com/books/629878/awe-by-dacher-keltner/" 
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-semibold text-blue-600 hover:text-blue-700 underline"
+      >
+        <em>Awe: The New Science of Everyday Wonder and How It Can Transform Your Life</em>
+      </a>
+      {' '}by Dacher Keltner
+    </p>
+  </div>
+</section>
+
 {/* What is Awe - Category Examples */}
 <section className="py-16 bg-gray-50">
   <div className="container mx-auto px-4">
