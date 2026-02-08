@@ -354,7 +354,6 @@ export default function Home() {
 </video>
 </section>
 
-</section>
 
 {/* Book Credit */}
 <section className="py-8 bg-gray-50 border-y border-gray-200">
