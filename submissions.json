@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1770109926338,
+    "videoLink": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+    "category": "nature",
+    "hashtags": "",
+    "email": "john@scglab.com",
+    "submittedAt": "2026-02-03T09:12:06.338Z",
+    "approved": true
+  },
+  {
+    "id": 1770109955850,
+    "videoLink": "https://youtube.com/watch?v=test",
+    "category": "moral-beauty",
+    "hashtags": "",
+    "email": "letmegeton@gmail.com",
+    "submittedAt": "2026-02-03T09:12:35.850Z",
+    "approved": true
+  },
+  {
+    "id": 1770530449212,
+    "videoLink": "https://youtube.com/watch?v=test",
+    "category": "moral-beauty",
+    "hashtags": "#hero",
+    "email": "letmeg@naver.com",
+    "submittedAt": "2026-02-08T06:00:49.212Z",
+    "approved": false
+  }
+]
