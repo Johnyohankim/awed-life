@@ -242,11 +242,14 @@ export default function Home() {
           <h2 className="text-5xl font-bold mb-4">{submissionCount}</h2>
           <p className="text-gray-600 mb-8">awe moments collected</p>
           <div className="max-w-2xl mx-auto bg-gray-100 p-8 rounded-lg">
-            <p className="text-lg mb-4">Coming soon:</p>
-            <p className="text-gray-600">
-              Collect one awe moment daily. Reflect. Build your personal collection.
-            </p>
-          </div>
+  <p className="text-lg font-semibold mb-4">Coming Soon:</p>
+  <p className="text-gray-600 mb-4">
+    Once we collect <span className="font-bold text-blue-600">1,000 awe moments</span>, awed.life will launch.
+  </p>
+  <p className="text-gray-600">
+    Daily ritual: Choose one card. Watch. Reflect. Collect.
+  </p>
+</div>
         </div>
       </section>
 
