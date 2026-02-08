@@ -135,19 +135,26 @@ const handleUpdate = async (id, action) => {
                 </div>
 
                 <div className="mt-4 flex gap-2">
-  {!submission.approved && (
+  {!submission.approved ? (
     <button 
       onClick={() => handleUpdate(submission.id, 'approve')}
       className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
     >
       Approve
     </button>
+  ) : (
+    <button 
+      onClick={() => handleUpdate(submission.id, 'unapprove')}
+      className="px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700"
+    >
+      Unapprove
+    </button>
   )}
   <button 
     onClick={() => handleUpdate(submission.id, 'reject')}
     className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
   >
-    {submission.approved ? 'Delete' : 'Reject'}
+    Delete
   </button>
 </div>
               </div>

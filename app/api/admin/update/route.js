@@ -6,6 +6,8 @@ export async function POST(request) {
     
     if (action === 'approve') {
       await updateSubmissionStatus(id, true)
+    } else if (action === 'unapprove') {
+      await updateSubmissionStatus(id, false)
     } else if (action === 'reject') {
       await deleteSubmission(id)
     }
