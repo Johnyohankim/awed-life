@@ -361,7 +361,7 @@ export default function Home() {
     <p className="text-gray-600 text-sm">
       Inspired by{' '}
       <a 
-        href="https://www.penguinrandomhouse.com/books/629878/awe-by-dacher-keltner/" 
+        href="https://www.amazon.com/Awe-Science-Everyday-Wonder-Transform/dp/1984879685" 
         target="_blank"
         rel="noopener noreferrer"
         className="font-semibold text-blue-600 hover:text-blue-700 underline"
