@@ -2,6 +2,145 @@
 
 import { useState, useEffect } from 'react'
 
+// Category example videos - YOU WILL REPLACE THESE WITH YOUR CHOSEN VIDEOS
+const categoryExamples = [
+  {
+    category: "Moral Beauty",
+    videoId: "kOr3qLQXPI4", // Replace with actual YouTube video ID
+    description: "Acts of courage, kindness, and extraordinary strength"
+  },
+  {
+    category: "Collective Effervescence",
+    videoId: "G5goISKPSH8", // Replace
+    description: "Shared energy in group activities"
+  },
+  {
+    category: "Nature",
+    videoId: "9udylvYXRJI", // Replace
+    description: "The vastness of the natural world"
+  },
+  {
+    category: "Music",
+    videoId: "5m5n_-yVLog", // Replace
+    description: "Melodies that stir deep emotions"
+  },
+  {
+    category: "Visual Design",
+    videoId: "A92_B_mnO-I", // Replace
+    description: "Human creativity in art and architecture"
+  },
+  {
+    category: "Spirituality & Religion",
+    videoId: "l1wHyMR_SCA", // Replace
+    description: "Mystical connection and oneness"
+  },
+  {
+    category: "Life & Death",
+    videoId: "iVdXYo_VVHk", // Replace
+    description: "Witnessing birth or contemplating mortality"
+  },
+  {
+    category: "Epiphany",
+    videoId: "cDtwqL6xsXE", // Replace
+    description: "Sudden insights that shift understanding"
+  }
+]
+
+function CategoryExamples() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {categoryExamples.map((item, index) => (
+        <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${item.videoId}`}
+              title={item.category}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          <div className="p-4">
+            <h3 className="font-semibold text-lg mb-1">{item.category}</h3>
+            <p className="text-sm text-gray-600">{item.description}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function RecentSubmissions() {
+  const [submissions, setSubmissions] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchRecentSubmissions()
+  }, [])
+
+  const fetchRecentSubmissions = async () => {
+    try {
+      const response = await fetch('/api/recent-submissions')
+      const data = await response.json()
+      setSubmissions(data.submissions || [])
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching recent submissions:', error)
+      setLoading(false)
+    }
+  }
+
+  // Extract YouTube video ID from URL
+  const getYouTubeId = (url) => {
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
+    return match ? match[1] : null
+  }
+
+  if (loading) {
+    return <p className="text-center text-gray-500">Loading...</p>
+  }
+
+  if (submissions.length === 0) {
+    return <p className="text-center text-gray-500">No submissions yet. Be the first!</p>
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {submissions.slice(0, 6).map((submission) => {
+        const videoId = getYouTubeId(submission.videoLink)
+        return (
+          <div key={submission.id} className="bg-gray-50 rounded-lg overflow-hidden shadow-sm">
+            <div className="aspect-video">
+              {videoId ? (
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title="Awe moment"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <p className="text-gray-500">Video unavailable</p>
+                </div>
+              )}
+            </div>
+            <div className="p-4">
+              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                {submission.category}
+              </span>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function Home() {
   const [submissionCount, setSubmissionCount] = useState(0)
   
@@ -68,6 +207,33 @@ export default function Home() {
   src="https://pub-a9edba097fc04f4ea77b1baac778b4f9.r2.dev/menifesto1.mp4"
 >
 </video>
+</section>
+{/* What is Awe - Category Examples */}
+<section className="py-16 bg-gray-50">
+  <div className="container mx-auto px-4">
+    <h2 className="text-4xl font-bold text-center mb-4">
+      What is Awe?
+    </h2>
+    <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+      Awe moments fall into 8 categories. Here are examples of each:
+    </p>
+    
+    <CategoryExamples />
+  </div>
+</section>
+
+{/* Recently Approved Moments */}
+<section className="py-16 bg-white">
+  <div className="container mx-auto px-4">
+    <h2 className="text-3xl font-bold text-center mb-4">
+      Recent Awe Moments
+    </h2>
+    <p className="text-center text-gray-600 mb-12">
+      Shared by our community
+    </p>
+    
+    <RecentSubmissions />
+  </div>
 </section>
 
       {/* Counter + Teaser Section */}
