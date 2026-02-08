@@ -3,6 +3,16 @@
 import { useState, useEffect } from 'react'
 
 // Category example videos - YOU WILL REPLACE THESE WITH YOUR CHOSEN VIDEOS
+const categoryColors = {
+  "Moral Beauty": "from-rose-400 to-pink-600",
+  "Collective Effervescence": "from-orange-400 to-red-600",
+  "Nature": "from-green-400 to-emerald-600",
+  "Music": "from-purple-400 to-violet-600",
+  "Visual Design": "from-blue-400 to-cyan-600",
+  "Spirituality & Religion": "from-amber-400 to-yellow-600",
+  "Life & Death": "from-slate-400 to-gray-600",
+  "Epiphany": "from-indigo-400 to-blue-600"
+}
 const categoryExamples = [
   {
     category: "Moral Beauty",
@@ -141,48 +151,139 @@ function RecentSubmissions() {
   )
 }
 function CardPreview() {
-  const [flippedCard, setFlippedCard] = useState(null)
+  const [selectedCard, setSelectedCard] = useState(null)
+  const [journalText, setJournalText] = useState('')
+  const [showKeepButton, setShowKeepButton] = useState(false)
+  const [kept, setKept] = useState(false)
 
   const handleCardClick = (index) => {
-    setFlippedCard(flippedCard === index ? null : index)
+    setSelectedCard(index)
+    setJournalText('')
+    setShowKeepButton(false)
+    setKept(false)
+  }
+
+  const handleCloseModal = () => {
+    setSelectedCard(null)
+  }
+
+  const handleJournalChange = (e) => {
+    const text = e.target.value
+    setJournalText(text)
+    
+    // Show keep button if user has written at least 10 characters
+    setShowKeepButton(text.trim().length >= 10)
+  }
+
+  const handleKeep = () => {
+    setKept(true)
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {categoryExamples.map((example, index) => (
-        <div
-          key={index}
-          className="relative aspect-[3/4] cursor-pointer"
-          onClick={() => handleCardClick(index)}
-        >
-          {flippedCard === index ? (
-            // Flipped - show video
-            <div className="w-full h-full bg-white rounded-lg shadow-lg p-3 flex flex-col">
-              <div className="flex-1 mb-2">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={`https://www.youtube.com/embed/${example.videoId}?autoplay=1`}
-                  title={example.category}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="rounded"
-                />
-              </div>
-              <p className="text-xs font-semibold text-center">{example.category}</p>
-            </div>
-          ) : (
-            // Face down - show category name
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg shadow-lg flex items-center justify-center p-4 hover:shadow-xl transition-shadow">
-              <p className="text-white font-bold text-center text-sm">
+    <>
+      {/* Card Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {categoryExamples.map((example, index) => (
+          <div
+            key={index}
+            className="relative aspect-[3/4] cursor-pointer transform transition-transform hover:scale-105"
+            onClick={() => handleCardClick(index)}
+          >
+            <div className={`w-full h-full bg-gradient-to-br ${categoryColors[example.category]} rounded-lg shadow-lg flex items-center justify-center p-4`}>
+              <p className="text-white font-bold text-center text-sm drop-shadow-lg">
                 {example.category}
               </p>
             </div>
-          )}
+          </div>
+        ))}
+      </div>
+
+      {/* Modal for selected card */}
+      {selectedCard !== null && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={handleCloseModal}
+        >
+          <div 
+            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold">{categoryExamples[selectedCard].category}</h3>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Video */}
+            <div className="p-6">
+              <div className="aspect-video mb-6">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${categoryExamples[selectedCard].videoId}?autoplay=1`}
+                  title={categoryExamples[selectedCard].category}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded-lg"
+                />
+              </div>
+
+              {!kept ? (
+                <>
+                  {/* Journal prompt */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Write what you think of this moment
+                    </label>
+                    <textarea
+                      value={journalText}
+                      onChange={handleJournalChange}
+                      placeholder="How does this moment make you feel? What does it remind you of?"
+                      rows="5"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {journalText.trim().length < 10 
+                        ? `Write at least ${10 - journalText.trim().length} more characters to keep this card`
+                        : "Ready to keep this card!"}
+                    </p>
+                  </div>
+
+                  {/* Keep button */}
+                  {showKeepButton && (
+                    <button
+                      onClick={handleKeep}
+                      className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Keep This Card
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+                  <p className="text-green-800 font-semibold mb-2">✓ Card Saved!</p>
+                  <p className="text-gray-600 text-sm mb-4">
+                    You can collect this <span className="font-semibold">{categoryExamples[selectedCard].category}</span> card into your collection once the actual service launches.
+                  </p>
+                  <button
+                    onClick={handleCloseModal}
+                    className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                  >
+                    Close and explore more cards →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
+      )}
+    </>
   )
 }
 export default function Home() {
