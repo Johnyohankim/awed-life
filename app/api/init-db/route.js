@@ -1,11 +1,28 @@
-import { createSubmissionsTable } from '@/lib/db'
+import { 
+  createSubmissionsTable, 
+  createUsersTable, 
+  createUserCardsTable,
+  createReactionsTable,
+  createDailyCardStateTable
+} from '@/lib/db'
 
 export async function GET() {
   try {
     await createSubmissionsTable()
-    return Response.json({ success: true, message: 'Database initialized!' })
+    await createUsersTable()
+    await createUserCardsTable()
+    await createReactionsTable()
+    await createDailyCardStateTable()
+    
+    return Response.json({ 
+      success: true, 
+      message: 'All database tables initialized!' 
+    })
   } catch (error) {
     console.error('Database init error:', error)
-    return Response.json({ success: false, error: error.message }, { status: 500 })
+    return Response.json({ 
+      success: false, 
+      error: error.message 
+    }, { status: 500 })
   }
 }
