@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn, useSession } from 'next-auth/react'
 import Link from 'next/link'
 
 export default function SignUp() {
@@ -11,6 +12,14 @@ export default function SignUp() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // If user is already logged in, redirect to cards
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/cards')
+    }
+  }, [status, router])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -27,7 +36,18 @@ export default function SignUp() {
       const data = await response.json()
 
       if (data.success) {
-        router.push('/login?registered=true')
+        // Auto sign in after signup
+        const result = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        })
+
+        if (result?.ok) {
+          router.push('/cards')
+        } else {
+          router.push('/login?registered=true')
+        }
       } else {
         setError(data.message || 'Signup failed')
       }
@@ -38,8 +58,19 @@ export default function SignUp() {
     }
   }
 
-  const handleGoogleSignIn = () => {
-    window.location.href = '/api/auth/signin/google'
+  const handleGoogleSignIn = async () => {
+    await signIn('google', { 
+      callbackUrl: '/cards',
+      redirect: true
+    })
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    )
   }
 
   return (

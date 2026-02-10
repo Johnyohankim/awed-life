@@ -39,9 +39,12 @@ function LoginForm() {
     }
   }
 
-  const handleGoogleSignIn = () => {
-    signIn('google', { callbackUrl: '/cards' })
-  }
+  const handleGoogleSignIn = async () => {
+  await signIn('google', { 
+    callbackUrl: '/cards',
+    redirect: true
+  })
+}
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
