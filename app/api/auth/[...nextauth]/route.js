@@ -60,17 +60,6 @@ const authOptions = {
 
   callbacks: {
     async redirect({ url, baseUrl }) {
-  // Always go to /cards after any sign in
-  if (url.startsWith(baseUrl)) {
-    // If trying to go to login or base, send to cards
-    if (url === baseUrl || 
-        url === `${baseUrl}/` || 
-        url.includes('/login') ||
-        url.includes('/signup')) {
-      return `${baseUrl}/cards`
-    }
-    return url
-  }
   return `${baseUrl}/cards`
 },
 
@@ -143,9 +132,10 @@ const authOptions = {
   },
 
   pages: {
-    signIn: '/login',
-    error: '/auth-error',
-  },
+  signIn: '/login',
+  error: '/auth-error',
+  newUser: '/cards',
+},
 
   session: {
     strategy: 'jwt',
