@@ -206,7 +206,7 @@ function AweCard({ card, onClick }) {
           <p className="text-gray-400 text-xs text-center mb-3">
             No moments yet
           </p>
-          
+          <a
             href="/#submit"
             className="text-xs text-blue-500 hover:text-blue-600 underline"
             onClick={(e) => e.stopPropagation()}
