@@ -60,12 +60,19 @@ const authOptions = {
 
   callbacks: {
     async redirect({ url, baseUrl }) {
-      if (url.includes('/login') || url === baseUrl) {
-        return `${baseUrl}/cards`
-      }
-      if (url.startsWith(baseUrl)) return url
+  // Always go to /cards after any sign in
+  if (url.startsWith(baseUrl)) {
+    // If trying to go to login or base, send to cards
+    if (url === baseUrl || 
+        url === `${baseUrl}/` || 
+        url.includes('/login') ||
+        url.includes('/signup')) {
       return `${baseUrl}/cards`
-    },
+    }
+    return url
+  }
+  return `${baseUrl}/cards`
+},
 
     async signIn({ user, account }) {
       if (account.provider === 'google') {
