@@ -59,22 +59,27 @@ const authOptions = {
   ],
 
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.includes('/login') || url === baseUrl) {
+        return `${baseUrl}/cards`
+      }
+      if (url.startsWith(baseUrl)) return url
+      return `${baseUrl}/cards`
+    },
+
     async signIn({ user, account }) {
       if (account.provider === 'google') {
         try {
-          // Check if user exists by google_id
           const result = await sql`
             SELECT * FROM users WHERE google_id = ${account.providerAccountId}
           `
           
           if (result.rows.length === 0) {
-            // Check if email already exists
             const emailCheck = await sql`
               SELECT * FROM users WHERE email = ${user.email}
             `
             
             if (emailCheck.rows.length > 0) {
-              // Update existing user with google_id
               await sql`
                 UPDATE users 
                 SET google_id = ${account.providerAccountId},
@@ -82,14 +87,12 @@ const authOptions = {
                 WHERE email = ${user.email}
               `
             } else {
-              // Create new user
               await sql`
                 INSERT INTO users (email, name, google_id, last_login)
                 VALUES (${user.email}, ${user.name}, ${account.providerAccountId}, NOW())
               `
             }
           } else {
-            // Update last login
             await sql`
               UPDATE users 
               SET last_login = NOW() 
