@@ -1,6 +1,8 @@
 import { sql } from '@vercel/postgres'
 import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
+const session = await getServerSession(authOptions)
 const categories = [
   'moral-beauty',
   'collective-effervescence',
