@@ -2,7 +2,6 @@ import { sql } from '@vercel/postgres'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-const session = await getServerSession(authOptions)
 const categories = [
   'moral-beauty',
   'collective-effervescence',
@@ -36,33 +35,23 @@ const categoryLabels = {
   'epiphany': 'Epiphany'
 }
 
-export async function GET(request) {
+export async function GET() {
   try {
-    // Get user session
-    const session = await getServerSession()
-    
+    const session = await getServerSession(authOptions)
+
     if (!session?.user?.email) {
-      return Response.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user from database
     const userResult = await sql`
       SELECT id FROM users WHERE email = ${session.user.email}
     `
 
     if (userResult.rows.length === 0) {
-      return Response.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
+      return Response.json({ error: 'User not found' }, { status: 404 })
     }
 
     const userId = userResult.rows[0].id
-
-    // Get today's date in user's timezone (simplified - using UTC for now)
     const today = new Date().toISOString().split('T')[0]
 
     // Get user's kept card for today
@@ -73,24 +62,13 @@ export async function GET(request) {
       WHERE uc.user_id = ${userId}
       AND DATE(uc.kept_at) = ${today}
     `
-
     const keptCard = keptResult.rows[0] || null
-
-    // Get user's flipped cards for today
-    const flippedResult = await sql`
-      SELECT submission_id
-      FROM daily_card_state
-      WHERE user_id = ${userId}
-      AND date = ${today}
-    `
-
-    const flippedCards = flippedResult.rows[0]?.flipped_cards || []
 
     // Build cards for each category
     const cards = []
 
     for (const category of categories) {
-      // Check if user already kept a card in this category
+      // Check if user already kept a card in this category today
       const alreadyKept = await sql`
         SELECT uc.id 
         FROM user_cards uc
@@ -100,7 +78,7 @@ export async function GET(request) {
         AND DATE(uc.kept_at) = ${today}
       `
 
-      // Get a video for this category not yet seen by user
+      // Get a random approved card not yet shown to this user
       const videoResult = await sql`
         SELECT s.*
         FROM submissions s
@@ -127,21 +105,13 @@ export async function GET(request) {
         } : null,
         isEmpty: !video,
         isKept: alreadyKept.rows.length > 0,
-        isFlipped: flippedCards.includes(video?.id)
       })
     }
 
-    return Response.json({
-      cards,
-      keptCard,
-      today
-    })
+    return Response.json({ cards, keptCard, today })
 
   } catch (error) {
-    console.error('Error getting today\'s cards:', error)
-    return Response.json(
-      { error: 'Failed to get cards' },
-      { status: 500 }
-    )
+    console.error('Error getting today cards:', error)
+    return Response.json({ error: 'Failed to get cards' }, { status: 500 })
   }
 }
