@@ -7,6 +7,7 @@ export default function AdminPage() {
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [cardCounts, setCardCounts] = useState([])
   const router = useRouter()
 
   // Check authentication on page load
@@ -22,6 +23,7 @@ export default function AdminPage() {
       if (result.authenticated) {
         setIsAuthenticated(true)
         loadSubmissions()
+        loadCardCounts()
       } else {
         router.push('/admin/login')
       }
@@ -41,6 +43,15 @@ export default function AdminPage() {
       setLoading(false)
     }
   }
+  const loadCardCounts = async () => {
+  try {
+    const response = await fetch('/api/admin/card-counts')
+    const data = await response.json()
+    setCardCounts(data.counts || [])
+  } catch (error) {
+    console.error('Error loading card counts:', error)
+  }
+}
 const handleUpdate = async (id, action) => {
   try {
     const response = await fetch('/api/admin/update', {
@@ -75,9 +86,42 @@ const handleUpdate = async (id, action) => {
       <div className="container mx-auto px-4 max-w-4xl">
         
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h1 className="text-3xl font-bold mb-2">Admin Panel</h1>
-          <p className="text-gray-600">Total submissions: {submissions.length}</p>
+  <h1 className="text-3xl font-bold mb-2">Admin Panel</h1>
+  <p className="text-gray-600">Total submissions: {submissions.length}</p>
+</div>
+
+{/* Category warnings */}
+{cardCounts.length > 0 && (
+  <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <h2 className="text-lg font-bold mb-4">Category Stock Levels</h2>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {cardCounts.map((cat) => (
+        <div 
+          key={cat.category}
+          className={`p-4 rounded-lg text-center ${
+            cat.total_approved === 0 
+              ? 'bg-red-100 border-2 border-red-400' 
+              : cat.total_approved <= 7 
+              ? 'bg-yellow-100 border-2 border-yellow-400'
+              : 'bg-green-100 border-2 border-green-400'
+          }`}
+        >
+          <p className="text-sm font-medium capitalize">
+            {cat.category.replace('-', ' ')}
+          </p>
+          <p className="text-2xl font-bold mt-1">{cat.total_approved}</p>
+          <p className="text-xs mt-1">
+            {cat.total_approved === 0 
+              ? '⚠️ Empty!' 
+              : cat.total_approved <= 7 
+              ? '⚠️ Low stock'
+              : '✓ Good'}
+          </p>
         </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {submissions.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
