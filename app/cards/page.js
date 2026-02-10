@@ -4,7 +4,6 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-// Extract YouTube video ID from URL
 function getYouTubeId(url) {
   if (!url) return null
   const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)
@@ -62,7 +61,6 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
         className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-2xl">
           <div>
             <h3 className="text-xl font-bold">{card.label}</h3>
@@ -81,7 +79,6 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
         </div>
 
         <div className="p-6">
-          {/* Video */}
           {videoId ? (
             <div className="aspect-video mb-6 rounded-xl overflow-hidden">
               <iframe
@@ -100,13 +97,13 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
             </div>
           )}
 
-          {/* Kept state */}
           {kept ? (
             <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
               <p className="text-2xl mb-2">✨</p>
               <p className="text-green-800 font-bold text-lg mb-1">Card Kept!</p>
               <p className="text-gray-600 text-sm mb-2">
-                Added to your <span className="font-semibold">{card.label}</span> collection
+                Added to your{' '}
+                <span className="font-semibold">{card.label}</span> collection
               </p>
               {streak && (
                 <p className="text-orange-500 font-medium text-sm">
@@ -122,16 +119,14 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
             </div>
           ) : (
             <>
-              {/* Already kept today message */}
               {alreadyKeptToday && !card.isKept && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-center">
                   <p className="text-blue-800 text-sm">
-                    You've already kept a card today. Come back tomorrow to keep another!
+                    You have already kept a card today. Come back tomorrow to keep another!
                   </p>
                 </div>
               )}
 
-              {/* Journal */}
               {!alreadyKeptToday && (
                 <>
                   <div className="mb-4">
@@ -152,7 +147,6 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
                     )}
                   </div>
 
-                  {/* Public toggle */}
                   {canKeep && (
                     <div className="flex items-center gap-3 mb-4 p-4 bg-gray-50 rounded-xl">
                       <input
@@ -171,7 +165,6 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
                     </div>
                   )}
 
-                  {/* Keep button */}
                   <button
                     onClick={handleKeep}
                     disabled={!canKeep || keeping}
@@ -206,7 +199,6 @@ function AweCard({ card, onClick }) {
       }`}
     >
       {card.isEmpty ? (
-        // Empty card
         <div className="w-full h-full bg-gray-100 rounded-2xl flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300">
           <p className="text-gray-400 font-medium text-center text-sm mb-2">
             {card.label}
@@ -223,7 +215,6 @@ function AweCard({ card, onClick }) {
           </a>
         </div>
       ) : card.isKept ? (
-        // Kept card
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4`}>
           <p className="text-white text-2xl mb-2">✨</p>
           <p className="text-white font-bold text-center text-sm">
@@ -232,7 +223,6 @@ function AweCard({ card, onClick }) {
           <p className="text-white text-xs mt-2 opacity-75">Kept today</p>
         </div>
       ) : (
-        // Available card
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4`}>
           <p className="text-white font-bold text-center text-sm drop-shadow">
             {card.label}
@@ -286,7 +276,7 @@ export default function CardsPage() {
 
   const handleKeep = () => {
     setKeptToday(true)
-    loadCards() // Refresh cards to show kept state
+    loadCards()
   }
 
   if (status === 'loading' || loading) {
@@ -301,7 +291,6 @@ export default function CardsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
           <h1 className="text-2xl font-bold">Awed</h1>
@@ -323,7 +312,6 @@ export default function CardsPage() {
       </nav>
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
-        {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-2">
             Today's Awe Moments
@@ -335,7 +323,6 @@ export default function CardsPage() {
           </p>
         </div>
 
-        {/* Cards Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {cards.map((card) => (
             <AweCard
@@ -346,7 +333,6 @@ export default function CardsPage() {
           ))}
         </div>
 
-        {/* Empty state */}
         {cards.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No cards available today.</p>
@@ -354,7 +340,6 @@ export default function CardsPage() {
         )}
       </div>
 
-      {/* Modal */}
       {selectedCard && (
         <CardModal
           card={selectedCard}
