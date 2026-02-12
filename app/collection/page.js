@@ -98,7 +98,6 @@ function PublicJournalCard({ journal, currentUserId }) {
           if (type === 'awed') setAwedCount(p => p + 1)
           else setNawedCount(p => p + 1)
         } else if (data.action === 'updated') {
-          const prev = reaction
           setReaction(type)
           if (type === 'awed') {
             setAwedCount(p => p + 1)
@@ -159,7 +158,6 @@ function CardDetailModal({ card, onClose, userId }) {
         className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Colored header */}
         <div className={`bg-gradient-to-r ${color} px-6 py-4 rounded-t-2xl flex justify-between items-center`}>
           <div>
             <h3 className="text-xl font-bold text-white">{label}</h3>
@@ -174,7 +172,6 @@ function CardDetailModal({ card, onClose, userId }) {
         </div>
 
         <div className="p-6">
-          {/* Video */}
           {videoId ? (
             <div className="aspect-video mb-6 rounded-xl overflow-hidden">
               <iframe
@@ -193,7 +190,6 @@ function CardDetailModal({ card, onClose, userId }) {
             </div>
           )}
 
-          {/* Your journal */}
           <div className="mb-6">
             <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
               Your Reflection
@@ -203,7 +199,6 @@ function CardDetailModal({ card, onClose, userId }) {
             </div>
           </div>
 
-          {/* Others' journals - collapsible */}
           {card.public_journals && card.public_journals.length > 0 && (
             <div>
               <button
@@ -318,7 +313,6 @@ export default function CollectionPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
           <h1 className="text-2xl font-bold">Awed</h1>
@@ -340,14 +334,11 @@ export default function CollectionPage() {
       </nav>
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
-
-        {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-2">My Collection</h2>
           <p className="text-gray-600">Your personal awe moments</p>
         </div>
 
-        {/* Stats bar */}
         {stats && (
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
             <div className="grid grid-cols-3 gap-4 text-center mb-6">
@@ -385,14 +376,11 @@ export default function CollectionPage() {
           </div>
         )}
 
-        {/* Empty state */}
         {cards.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
             <p className="text-5xl mb-4">🎴</p>
             <h3 className="text-xl font-bold mb-2">No cards yet</h3>
-            <p className="text-gray-600 mb-6">
-              Start collecting awe moments today!
-            </p>
+            <p className="text-gray-600 mb-6">Start collecting awe moments today!</p>
             <button
               onClick={() => router.push('/cards')}
               className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-medium"
@@ -402,7 +390,6 @@ export default function CollectionPage() {
           </div>
         ) : (
           <>
-            {/* Category filter tabs */}
             <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
               <button
                 onClick={() => setActiveFilter('all')}
@@ -429,7 +416,6 @@ export default function CollectionPage() {
               ))}
             </div>
 
-            {/* Cards grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {filteredCards.map((card) => (
                 <CollectionCard
@@ -443,7 +429,6 @@ export default function CollectionPage() {
         )}
       </div>
 
-      {/* Card detail modal */}
       {selectedCard && (
         <CardDetailModal
           card={selectedCard}
