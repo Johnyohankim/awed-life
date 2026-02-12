@@ -3,6 +3,7 @@
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -41,7 +42,105 @@ function getMilestoneProgress(total) {
   return { next, prev, progress: Math.min(progress, 100) }
 }
 
-function CardDetailModal({ card, onClose }) {
+function ReactionButton({ type, count, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
+        active
+          ? 'border-blue-500 bg-blue-50'
+          : 'border-gray-200 bg-white hover:border-gray-300'
+      }`}
+    >
+      <Image
+        src={`/${type}-emoji.png`}
+        alt={type}
+        width={24}
+        height={24}
+      />
+      <span className="font-medium text-sm capitalize">{type}</span>
+      {count > 0 && (
+        <span className={`text-sm ${active ? 'text-blue-600' : 'text-gray-500'}`}>
+          {count}
+        </span>
+      )}
+    </button>
+  )
+}
+
+function PublicJournalCard({ journal, currentUserId }) {
+  const [reaction, setReaction] = useState(journal.userReaction || null)
+  const [awedCount, setAwedCount] = useState(journal.awed_count || 0)
+  const [nawedCount, setNawedCount] = useState(journal.nawed_count || 0)
+  const isOwn = journal.user_id === currentUserId
+
+  const handleReaction = async (type) => {
+    if (isOwn) return
+
+    try {
+      const response = await fetch('/api/reactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userCardId: journal.id,
+          reactionType: type
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        if (data.action === 'removed') {
+          setReaction(null)
+          if (type === 'awed') setAwedCount(p => Math.max(p - 1, 0))
+          else setNawedCount(p => Math.max(p - 1, 0))
+        } else if (data.action === 'added') {
+          setReaction(type)
+          if (type === 'awed') setAwedCount(p => p + 1)
+          else setNawedCount(p => p + 1)
+        } else if (data.action === 'updated') {
+          const prev = reaction
+          setReaction(type)
+          if (type === 'awed') {
+            setAwedCount(p => p + 1)
+            setNawedCount(p => Math.max(p - 1, 0))
+          } else {
+            setNawedCount(p => p + 1)
+            setAwedCount(p => Math.max(p - 1, 0))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Reaction error:', error)
+    }
+  }
+
+  return (
+    <div className="bg-blue-50 rounded-xl p-4">
+      <p className="text-gray-700 text-sm leading-relaxed mb-3">
+        {journal.journal_text}
+      </p>
+      {!isOwn && (
+        <div className="flex gap-2">
+          <ReactionButton
+            type="awed"
+            count={awedCount}
+            active={reaction === 'awed'}
+            onClick={() => handleReaction('awed')}
+          />
+          <ReactionButton
+            type="nawed"
+            count={nawedCount}
+            active={reaction === 'nawed'}
+            onClick={() => handleReaction('nawed')}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function CardDetailModal({ card, onClose, userId }) {
   const videoId = getYouTubeId(card.video_link)
   const color = categoryColors[card.category] || 'from-gray-400 to-gray-600'
   const label = categoryLabels[card.category] || card.category
@@ -50,6 +149,7 @@ function CardDetailModal({ card, onClose }) {
     month: 'long',
     day: 'numeric'
   })
+  const [showOthers, setShowOthers] = useState(false)
 
   return (
     <div
@@ -60,11 +160,11 @@ function CardDetailModal({ card, onClose }) {
         className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        {/* Colored header */}
         <div className={`bg-gradient-to-r ${color} px-6 py-4 rounded-t-2xl flex justify-between items-center`}>
           <div>
             <h3 className="text-xl font-bold text-white">{label}</h3>
-            <p className="text-white text-opacity-80 text-sm">{date}</p>
+            <p className="text-white text-sm opacity-80">{date}</p>
           </div>
           <button
             onClick={onClose}
@@ -104,19 +204,32 @@ function CardDetailModal({ card, onClose }) {
             </div>
           </div>
 
-          {/* Public journals from others */}
-          {card.is_public && card.public_journals && card.public_journals.length > 0 && (
+          {/* Others' journals - collapsible */}
+          {card.public_journals && card.public_journals.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                What Others Felt
-              </h4>
-              <div className="space-y-3">
-                {card.public_journals.map((journal, index) => (
-                  <div key={index} className="bg-blue-50 rounded-xl p-4">
-                    <p className="text-gray-700 text-sm leading-relaxed">{journal.journal_text}</p>
-                  </div>
-                ))}
-              </div>
+              <button
+                onClick={() => setShowOthers(!showOthers)}
+                className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                <span className="text-sm font-semibold text-gray-600">
+                  What others felt ({card.public_journals.length})
+                </span>
+                <span className="text-gray-400">
+                  {showOthers ? '▲' : '▼'}
+                </span>
+              </button>
+
+              {showOthers && (
+                <div className="mt-3 space-y-3">
+                  {card.public_journals.map((journal, index) => (
+                    <PublicJournalCard
+                      key={index}
+                      journal={journal}
+                      currentUserId={userId}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -253,7 +366,6 @@ export default function CollectionPage() {
               </div>
             </div>
 
-            {/* Milestone progress */}
             {milestoneProgress && (
               <div>
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
@@ -337,6 +449,7 @@ export default function CollectionPage() {
         <CardDetailModal
           card={selectedCard}
           onClose={() => setSelectedCard(null)}
+          userId={session?.user?.id}
         />
       )}
     </div>

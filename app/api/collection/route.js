@@ -44,15 +44,7 @@ export async function GET() {
     const cardsWithJournals = await Promise.all(
       cards.map(async (card) => {
         if (card.is_public) {
-          const othersResult = await sql`
-            SELECT uc.journal_text
-            FROM user_cards uc
-            WHERE uc.submission_id = ${card.submission_id}
-            AND uc.user_id != ${userId}
-            AND uc.is_public = true
-            ORDER BY uc.kept_at DESC
-            LIMIT 5
-          `
+          
           return { ...card, public_journals: othersResult.rows }
         }
         return { ...card, public_journals: [] }
@@ -67,7 +59,25 @@ export async function GET() {
       streak: streakCount,
       categories: uniqueCategories.length
     }
-
+        const othersResult = await sql`
+            SELECT 
+                uc.id,
+                uc.journal_text,
+                uc.awed_count,
+                uc.nawed_count,
+                uc.user_id,
+                (
+                SELECT reaction_type FROM reactions
+                WHERE user_id = ${userId}
+                AND user_card_id = uc.id
+                ) as "userReaction"
+            FROM user_cards uc
+            WHERE uc.submission_id = ${card.submission_id}
+            AND uc.user_id != ${userId}
+            AND uc.is_public = true
+            ORDER BY uc.kept_at DESC
+            LIMIT 5
+            `
     return Response.json({
       cards: cardsWithJournals,
       stats
