@@ -3,6 +3,7 @@
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import BottomNav from '../components/BottomNav'
 
 const categoryColors = {
   'moral-beauty': 'from-rose-400 to-pink-600',
@@ -36,12 +37,9 @@ const milestones = [
 
 function AvatarCircle({ name, size = 'lg' }) {
   const initial = name ? name.charAt(0).toUpperCase() : '?'
-  const sizeClasses = size === 'lg'
-    ? 'w-24 h-24 text-3xl'
-    : 'w-12 h-12 text-lg'
-
+  const sizeClasses = size === 'lg' ? 'w-20 h-20 text-3xl' : 'w-12 h-12 text-lg'
   return (
-    <div className={`${sizeClasses} rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg`}>
+    <div className={`${sizeClasses} rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0`}>
       {initial}
     </div>
   )
@@ -49,17 +47,13 @@ function AvatarCircle({ name, size = 'lg' }) {
 
 function MilestoneBadge({ milestone, earned }) {
   return (
-    <div className={`flex flex-col items-center p-4 rounded-2xl border-2 transition-all ${
-      earned
-        ? 'border-yellow-300 bg-yellow-50'
-        : 'border-gray-200 bg-gray-50 opacity-40'
+    <div className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all ${
+      earned ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200 bg-gray-50 opacity-40'
     }`}>
-      <span className="text-3xl mb-2">{milestone.emoji}</span>
-      <span className="text-xs font-bold text-center">{milestone.label}</span>
-      <span className="text-xs text-gray-500 mt-1">{milestone.count} cards</span>
-      {earned && (
-        <span className="text-xs text-yellow-600 font-medium mt-1">✓ Earned</span>
-      )}
+      <span className="text-2xl mb-1">{milestone.emoji}</span>
+      <span className="text-xs font-bold text-center leading-tight">{milestone.label}</span>
+      <span className="text-xs text-gray-500 mt-1">{milestone.count}</span>
+      {earned && <span className="text-xs text-yellow-600 font-medium mt-1">✓</span>}
     </div>
   )
 }
@@ -81,15 +75,11 @@ export default function ProfilePage() {
   const isOwnProfile = !userId
 
   useEffect(() => {
-    if (status === 'unauthenticated' && !userId) {
-      router.push('/login')
-    }
+    if (status === 'unauthenticated' && !userId) router.push('/login')
   }, [status, router, userId])
 
   useEffect(() => {
-    if (status === 'authenticated' || userId) {
-      loadProfile()
-    }
+    if (status === 'authenticated' || userId) loadProfile()
   }, [status, userId])
 
   const loadProfile = async () => {
@@ -97,7 +87,6 @@ export default function ProfilePage() {
       const url = userId ? `/api/profile/${userId}` : '/api/profile'
       const response = await fetch(url)
       const data = await response.json()
-
       if (data.error) {
         setError(data.error)
       } else {
@@ -114,7 +103,6 @@ export default function ProfilePage() {
   const handleSaveName = async () => {
     if (!newName.trim()) return
     setSaving(true)
-
     try {
       const response = await fetch('/api/profile', {
         method: 'PATCH',
@@ -122,7 +110,6 @@ export default function ProfilePage() {
         body: JSON.stringify({ name: newName.trim() })
       })
       const data = await response.json()
-
       if (data.success) {
         setProfile(prev => ({ ...prev, name: newName.trim() }))
         setEditing(false)
@@ -154,12 +141,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => router.push('/')}
-            className="text-blue-600 hover:text-blue-700"
-          >
-            Go home
-          </button>
+          <button onClick={() => router.push('/')} className="text-blue-600">Go home</button>
         </div>
       </div>
     )
@@ -167,133 +149,100 @@ export default function ProfilePage() {
 
   if (!profile) return null
 
-  const earnedMilestones = milestones.filter(m => profile.totalCards >= m.count)
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+      {/* Nav */}
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-3xl">
-          <button
-            onClick={() => router.push(isOwnProfile ? '/cards' : '/')}
-            className="text-2xl font-bold"
-          >
+          <button onClick={() => router.push(isOwnProfile ? '/cards' : '/')} className="text-2xl font-bold">
             Awed
           </button>
+          <div className="hidden md:flex items-center gap-4">
+            {isOwnProfile && (
+              <>
+                <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Cards</button>
+                <button onClick={() => router.push('/collection')} className="text-sm text-gray-600 hover:text-gray-900">Collection</button>
+                <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
+              </>
+            )}
+          </div>
           {isOwnProfile && (
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/cards')}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Today's Cards
-              </button>
-              <button
-                onClick={() => router.push('/collection')}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Collection
-              </button>
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Sign Out
-              </button>
-            </div>
+            <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>
           )}
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <div className="container mx-auto px-4 py-6 max-w-3xl">
 
         {/* Profile header */}
-        <div className="bg-white rounded-2xl shadow-sm p-8 mb-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-6">
-              <AvatarCircle name={profile.name} size="lg" />
-              <div>
-                {editing ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      className="text-2xl font-bold border-b-2 border-blue-500 outline-none px-1"
-                      autoFocus
-                      onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-                    />
-                    <button
-                      onClick={handleSaveName}
-                      disabled={saving}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      {saving ? 'Saving...' : 'Save'}
-                    </button>
-                    <button
-                      onClick={() => { setEditing(false); setNewName(profile.name) }}
-                      className="text-sm text-gray-400 hover:text-gray-600"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold">{profile.name || 'Anonymous'}</h1>
-                    {isOwnProfile && (
-                      <button
-                        onClick={() => setEditing(true)}
-                        className="text-gray-400 hover:text-gray-600 text-sm"
-                      >
-                        ✏️
-                      </button>
-                    )}
-                  </div>
-                )}
-                <p className="text-gray-500 text-sm mt-1">
-                  Member since {new Date(profile.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long'
-                  })}
-                </p>
-              </div>
+        <div className="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <div className="flex items-center gap-4 mb-4">
+            <AvatarCircle name={profile.name} size="lg" />
+            <div className="flex-1 min-w-0">
+              {editing ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="text-xl font-bold border-b-2 border-blue-500 outline-none w-full"
+                    autoFocus
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                  />
+                  <button onClick={handleSaveName} disabled={saving} className="text-sm text-blue-600 font-medium whitespace-nowrap">
+                    {saving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button onClick={() => { setEditing(false); setNewName(profile.name) }} className="text-sm text-gray-400">
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold truncate">{profile.name || 'Anonymous'}</h1>
+                  {isOwnProfile && (
+                    <button onClick={() => setEditing(true)} className="text-gray-400 text-sm flex-shrink-0">✏️</button>
+                  )}
+                </div>
+              )}
+              <p className="text-gray-500 text-xs mt-1">
+                Since {new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+              </p>
             </div>
-
-            {/* Share button */}
-            {isOwnProfile && (
-              <button
-                onClick={handleCopyLink}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                {copied ? '✓ Copied!' : '🔗 Share Profile'}
-              </button>
-            )}
           </div>
+
+          {isOwnProfile && (
+            <button
+              onClick={handleCopyLink}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 active:bg-gray-50 transition-colors"
+            >
+              {copied ? '✓ Link Copied!' : '🔗 Share Profile'}
+            </button>
+          )}
         </div>
 
         {/* Stats */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-bold mb-4">Stats</h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-3xl font-bold">{profile.totalCards}</p>
-              <p className="text-sm text-gray-500 mt-1">Cards Collected</p>
+        <div className="bg-white rounded-2xl shadow-sm p-5 mb-4">
+          <h2 className="text-base font-bold mb-4">Stats</h2>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="text-2xl font-bold">{profile.totalCards}</p>
+              <p className="text-xs text-gray-500 mt-1">Cards</p>
             </div>
-            <div className="bg-orange-50 rounded-xl p-4">
-              <p className="text-3xl font-bold">🔥 {profile.streak}</p>
-              <p className="text-sm text-gray-500 mt-1">Day Streak</p>
+            <div className="bg-orange-50 rounded-xl p-3">
+              <p className="text-2xl font-bold">🔥 {profile.streak}</p>
+              <p className="text-xs text-gray-500 mt-1">Streak</p>
             </div>
-            <div className="bg-purple-50 rounded-xl p-4">
-              <p className="text-3xl font-bold">{profile.categoriesCount}/8</p>
-              <p className="text-sm text-gray-500 mt-1">Categories</p>
+            <div className="bg-purple-50 rounded-xl p-3">
+              <p className="text-2xl font-bold">{profile.categoriesCount}/8</p>
+              <p className="text-xs text-gray-500 mt-1">Categories</p>
             </div>
           </div>
         </div>
 
-        {/* Milestone badges */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-bold mb-4">Milestones</h2>
-          <div className="grid grid-cols-5 gap-3">
+        {/* Milestones - 3 col on mobile, 5 on desktop */}
+        <div className="bg-white rounded-2xl shadow-sm p-5 mb-4">
+          <h2 className="text-base font-bold mb-4">Milestones</h2>
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
             {milestones.map((milestone) => (
               <MilestoneBadge
                 key={milestone.count}
@@ -304,32 +253,29 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Recent collection preview */}
+        {/* Recent collection */}
         {profile.recentCards && profile.recentCards.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm p-6">
+          <div className="bg-white rounded-2xl shadow-sm p-5">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold">
+              <h2 className="text-base font-bold">
                 {isOwnProfile ? 'Recent Collection' : 'Collection'}
               </h2>
               {isOwnProfile && (
-                <button
-                  onClick={() => router.push('/collection')}
-                  className="text-sm text-blue-600 hover:text-blue-700"
-                >
+                <button onClick={() => router.push('/collection')} className="text-sm text-blue-600">
                   View all →
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-2">
               {profile.recentCards.map((card) => (
                 <div
                   key={card.id}
                   className={`aspect-[3/4] rounded-xl bg-gradient-to-br ${
                     categoryColors[card.category] || 'from-gray-400 to-gray-600'
-                  } flex flex-col items-center justify-center p-3`}
+                  } flex flex-col items-center justify-center p-2`}
                 >
-                  <p className="text-white text-lg mb-1">✨</p>
-                  <p className="text-white font-bold text-center text-xs drop-shadow">
+                  <p className="text-white text-base mb-1">✨</p>
+                  <p className="text-white font-bold text-center text-xs drop-shadow leading-tight">
                     {categoryLabels[card.category] || card.category}
                   </p>
                 </div>
@@ -338,22 +284,20 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Empty collection */}
         {(!profile.recentCards || profile.recentCards.length === 0) && (
           <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
             <p className="text-4xl mb-3">🎴</p>
-            <p className="text-gray-500">No cards collected yet</p>
+            <p className="text-gray-500 text-sm">No cards collected yet</p>
             {isOwnProfile && (
-              <button
-                onClick={() => router.push('/cards')}
-                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 text-sm font-medium"
-              >
+              <button onClick={() => router.push('/cards')} className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-medium">
                 Start collecting
               </button>
             )}
           </div>
         )}
       </div>
+
+      <BottomNav />
     </div>
   )
 }

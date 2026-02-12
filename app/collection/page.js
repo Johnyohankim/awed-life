@@ -3,6 +3,7 @@
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import BottomNav from '../components/BottomNav'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -45,18 +46,13 @@ function ReactionButton({ type, count, active, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all ${
+      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all active:scale-95 ${
         active
           ? 'border-blue-500 bg-blue-50'
           : 'border-gray-200 bg-white hover:border-gray-300'
       }`}
     >
-      <img
-        src={`/${type}-emoji.png`}
-        alt={type}
-        width={24}
-        height={24}
-      />
+      <img src={`/${type}-emoji.png`} alt={type} width={24} height={24} />
       <span className="font-medium text-sm capitalize">{type}</span>
       {count > 0 && (
         <span className={`text-sm ${active ? 'text-blue-600' : 'text-gray-500'}`}>
@@ -75,19 +71,13 @@ function PublicJournalCard({ journal, currentUserId }) {
 
   const handleReaction = async (type) => {
     if (isOwn) return
-
     try {
       const response = await fetch('/api/reactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userCardId: journal.id,
-          reactionType: type
-        })
+        body: JSON.stringify({ userCardId: journal.id, reactionType: type })
       })
-
       const data = await response.json()
-
       if (data.success) {
         if (data.action === 'removed') {
           setReaction(null)
@@ -115,23 +105,11 @@ function PublicJournalCard({ journal, currentUserId }) {
 
   return (
     <div className="bg-blue-50 rounded-xl p-4">
-      <p className="text-gray-700 text-sm leading-relaxed mb-3">
-        {journal.journal_text}
-      </p>
+      <p className="text-gray-700 text-sm leading-relaxed mb-3">{journal.journal_text}</p>
       {!isOwn && (
         <div className="flex gap-2">
-          <ReactionButton
-            type="awed"
-            count={awedCount}
-            active={reaction === 'awed'}
-            onClick={() => handleReaction('awed')}
-          />
-          <ReactionButton
-            type="nawed"
-            count={nawedCount}
-            active={reaction === 'nawed'}
-            onClick={() => handleReaction('nawed')}
-          />
+          <ReactionButton type="awed" count={awedCount} active={reaction === 'awed'} onClick={() => handleReaction('awed')} />
+          <ReactionButton type="nawed" count={nawedCount} active={reaction === 'nawed'} onClick={() => handleReaction('nawed')} />
         </div>
       )}
     </div>
@@ -142,47 +120,34 @@ function CardDetailModal({ card, onClose, userId }) {
   const videoId = getYouTubeId(card.video_link)
   const color = categoryColors[card.category] || 'from-gray-400 to-gray-600'
   const label = categoryLabels[card.category] || card.category
-  const date = new Date(card.kept_at).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
+  const date = new Date(card.kept_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   const [showOthers, setShowOthers] = useState(false)
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-80 flex items-end md:items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-t-3xl md:rounded-2xl w-full md:max-w-2xl max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`bg-gradient-to-r ${color} px-6 py-4 rounded-t-2xl flex justify-between items-center`}>
+        <div className="flex justify-center pt-3 pb-1 md:hidden">
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
+
+        <div className={`bg-gradient-to-r ${color} px-6 py-4 flex justify-between items-center`}>
           <div>
             <h3 className="text-xl font-bold text-white">{label}</h3>
             <p className="text-white text-sm opacity-80">{date}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white text-3xl leading-none opacity-75 hover:opacity-100"
-          >
-            ×
-          </button>
+          <button onClick={onClose} className="text-white text-3xl leading-none opacity-75 w-10 h-10 flex items-center justify-center">×</button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {videoId ? (
             <div className="aspect-video mb-6 rounded-xl overflow-hidden">
-              <iframe
-                width="100%"
-                height="100%"
-                src={`https://www.youtube.com/embed/${videoId}`}
-                title={label}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${videoId}`} title={label} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
             </div>
           ) : (
             <div className="aspect-video mb-6 bg-gray-100 rounded-xl flex items-center justify-center">
@@ -191,9 +156,7 @@ function CardDetailModal({ card, onClose, userId }) {
           )}
 
           <div className="mb-6">
-            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Your Reflection
-            </h4>
+            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your Reflection</h4>
             <div className="bg-gray-50 rounded-xl p-4">
               <p className="text-gray-700 leading-relaxed">{card.journal_text}</p>
             </div>
@@ -203,29 +166,24 @@ function CardDetailModal({ card, onClose, userId }) {
             <div>
               <button
                 onClick={() => setShowOthers(!showOthers)}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl active:bg-gray-100 transition-colors"
               >
                 <span className="text-sm font-semibold text-gray-600">
                   What others felt ({card.public_journals.length})
                 </span>
-                <span className="text-gray-400">
-                  {showOthers ? '▲' : '▼'}
-                </span>
+                <span className="text-gray-400">{showOthers ? '▲' : '▼'}</span>
               </button>
-
               {showOthers && (
                 <div className="mt-3 space-y-3">
                   {card.public_journals.map((journal, index) => (
-                    <PublicJournalCard
-                      key={index}
-                      journal={journal}
-                      currentUserId={userId}
-                    />
+                    <PublicJournalCard key={index} journal={journal} currentUserId={userId} />
                   ))}
                 </div>
               )}
             </div>
           )}
+
+          <div className="h-4 md:hidden" />
         </div>
       </div>
     </div>
@@ -235,25 +193,18 @@ function CardDetailModal({ card, onClose, userId }) {
 function CollectionCard({ card, onClick }) {
   const color = categoryColors[card.category] || 'from-gray-400 to-gray-600'
   const label = categoryLabels[card.category] || card.category
-  const date = new Date(card.kept_at).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  })
+  const date = new Date(card.kept_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   return (
     <div
       onClick={() => onClick(card)}
-      className="relative aspect-[3/4] rounded-2xl shadow-md cursor-pointer hover:scale-105 hover:shadow-xl transition-all duration-200"
+      className="relative aspect-[3/4] rounded-2xl shadow-md cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl transition-all duration-200"
     >
       <div className={`w-full h-full bg-gradient-to-br ${color} rounded-2xl flex flex-col items-center justify-center p-4`}>
         <p className="text-white text-2xl mb-2">✨</p>
-        <p className="text-white font-bold text-center text-sm drop-shadow">
-          {label}
-        </p>
+        <p className="text-white font-bold text-center text-sm drop-shadow">{label}</p>
         <p className="text-white text-xs mt-2 opacity-75">{date}</p>
-        {card.is_public && (
-          <p className="text-white text-xs mt-1 opacity-75">🌍 Public</p>
-        )}
+        {card.is_public && <p className="text-white text-xs mt-1 opacity-75">🌍 Public</p>}
       </div>
     </div>
   )
@@ -269,15 +220,11 @@ export default function CollectionPage() {
   const [activeFilter, setActiveFilter] = useState('all')
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
+    if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      loadCollection()
-    }
+    if (status === 'authenticated') loadCollection()
   }, [status])
 
   const loadCollection = async () => {
@@ -293,10 +240,7 @@ export default function CollectionPage() {
     }
   }
 
-  const filteredCards = activeFilter === 'all'
-    ? cards
-    : cards.filter(c => c.category === activeFilter)
-
+  const filteredCards = activeFilter === 'all' ? cards : cards.filter(c => c.category === activeFilter)
   const uniqueCategories = [...new Set(cards.map(c => c.category))]
 
   if (status === 'loading' || loading) {
@@ -312,55 +256,46 @@ export default function CollectionPage() {
   const milestoneProgress = stats ? getMilestoneProgress(stats.total) : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
           <h1 className="text-2xl font-bold">Awed</h1>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/cards')}
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              Today's Cards
-            </button>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              Sign Out
-            </button>
+          <div className="hidden md:flex items-center gap-4">
+            <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Today's Cards</button>
+            <button onClick={() => router.push('/profile')} className="text-sm text-gray-600 hover:text-gray-900">Profile</button>
+            <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-2">My Collection</h2>
-          <p className="text-gray-600">Your personal awe moments</p>
+      <div className="container mx-auto px-4 py-6 max-w-5xl">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">My Collection</h2>
+          <p className="text-gray-600 text-sm">Your personal awe moments</p>
         </div>
 
         {stats && (
-          <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
-            <div className="grid grid-cols-3 gap-4 text-center mb-6">
+          <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
+            <div className="grid grid-cols-3 gap-3 text-center mb-5">
               <div>
-                <p className="text-3xl font-bold">{stats.total}</p>
-                <p className="text-sm text-gray-500 mt-1">Cards Collected</p>
+                <p className="text-2xl md:text-3xl font-bold">{stats.total}</p>
+                <p className="text-xs text-gray-500 mt-1">Cards</p>
               </div>
               <div>
-                <p className="text-3xl font-bold">🔥 {stats.streak}</p>
-                <p className="text-sm text-gray-500 mt-1">Day Streak</p>
+                <p className="text-2xl md:text-3xl font-bold">🔥 {stats.streak}</p>
+                <p className="text-xs text-gray-500 mt-1">Streak</p>
               </div>
               <div>
-                <p className="text-3xl font-bold">{stats.categories}/8</p>
-                <p className="text-sm text-gray-500 mt-1">Categories</p>
+                <p className="text-2xl md:text-3xl font-bold">{stats.categories}/8</p>
+                <p className="text-xs text-gray-500 mt-1">Categories</p>
               </div>
             </div>
-
             {milestoneProgress && (
               <div>
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
                   <span>{stats.total} cards</span>
-                  <span>Next milestone: {milestoneProgress.next} cards</span>
+                  <span>Next: {milestoneProgress.next}</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2">
                   <div
@@ -380,23 +315,18 @@ export default function CollectionPage() {
           <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
             <p className="text-5xl mb-4">🎴</p>
             <h3 className="text-xl font-bold mb-2">No cards yet</h3>
-            <p className="text-gray-600 mb-6">Start collecting awe moments today!</p>
-            <button
-              onClick={() => router.push('/cards')}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-medium"
-            >
+            <p className="text-gray-600 mb-6 text-sm">Start collecting awe moments today!</p>
+            <button onClick={() => router.push('/cards')} className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-medium">
               View Today's Cards
             </button>
           </div>
         ) : (
           <>
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
               <button
                 onClick={() => setActiveFilter('all')}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                  activeFilter === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                  activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'
                 }`}
               >
                 All ({cards.length})
@@ -405,10 +335,8 @@ export default function CollectionPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveFilter(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                    activeFilter === cat
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                    activeFilter === cat ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'
                   }`}
                 >
                   {categoryLabels[cat] || cat}
@@ -416,25 +344,19 @@ export default function CollectionPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {filteredCards.map((card) => (
-                <CollectionCard
-                  key={card.id}
-                  card={card}
-                  onClick={setSelectedCard}
-                />
+                <CollectionCard key={card.id} card={card} onClick={setSelectedCard} />
               ))}
             </div>
           </>
         )}
       </div>
 
+      <BottomNav />
+
       {selectedCard && (
-        <CardDetailModal
-          card={selectedCard}
-          onClose={() => setSelectedCard(null)}
-          userId={session?.user?.id}
-        />
+        <CardDetailModal card={selectedCard} onClose={() => setSelectedCard(null)} userId={session?.user?.id} />
       )}
     </div>
   )

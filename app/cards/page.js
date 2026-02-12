@@ -3,6 +3,7 @@
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import BottomNav from '../components/BottomNav'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -69,10 +70,10 @@ function ReactionBar({ submissionId }) {
     <div className="flex items-center justify-center gap-4 py-4 border-t border-gray-100">
       <button
         onClick={() => handleReaction('awed')}
-        className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 transition-all ${
+        className={`flex items-center gap-2 px-5 py-3 rounded-full border-2 transition-all active:scale-95 ${
           reaction === 'awed'
             ? 'border-yellow-400 bg-yellow-50 scale-105'
-            : 'border-gray-200 bg-white hover:border-yellow-300 hover:bg-yellow-50'
+            : 'border-gray-200 bg-white hover:border-yellow-300'
         }`}
       >
         <img src="/awed-emoji.png" alt="awed" width={28} height={28} />
@@ -84,10 +85,10 @@ function ReactionBar({ submissionId }) {
 
       <button
         onClick={() => handleReaction('nawed')}
-        className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 transition-all ${
+        className={`flex items-center gap-2 px-5 py-3 rounded-full border-2 transition-all active:scale-95 ${
           reaction === 'nawed'
             ? 'border-blue-400 bg-blue-50 scale-105'
-            : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+            : 'border-gray-200 bg-white hover:border-blue-300'
         }`}
       >
         <img src="/nawed-emoji.png" alt="nawed" width={28} height={28} />
@@ -114,7 +115,6 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
   const handleKeep = async () => {
     if (!canKeep || keeping) return
     setKeeping(true)
-
     try {
       const response = await fetch('/api/cards/keep', {
         method: 'POST',
@@ -125,9 +125,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
           isPublic
         })
       })
-
       const data = await response.json()
-
       if (data.success) {
         setKept(true)
         setStreak(data.streak)
@@ -144,15 +142,20 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-80 flex items-end md:items-center justify-center z-50"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-t-3xl md:rounded-2xl w-full md:max-w-2xl max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile drag handle */}
+        <div className="flex justify-center pt-3 pb-1 md:hidden">
+          <div className="w-10 h-1 bg-gray-300 rounded-full" />
+        </div>
+
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-2xl">
+        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-3xl md:rounded-t-2xl">
           <div>
             <h3 className="text-xl font-bold">{card.label}</h3>
             {kept && streak && (
@@ -163,13 +166,13 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-3xl leading-none"
+            className="text-gray-400 hover:text-gray-600 text-3xl leading-none w-10 h-10 flex items-center justify-center"
           >
             ×
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           {/* Video */}
           {videoId ? (
             <div className="aspect-video mb-4 rounded-xl overflow-hidden">
@@ -189,7 +192,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
             </div>
           )}
 
-          {/* Reaction bar - always visible */}
+          {/* Reactions */}
           {card.video?.id && (
             <ReactionBar submissionId={card.video.id} />
           )}
@@ -219,7 +222,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
               {alreadyKeptToday && !card.isKept && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-center">
                   <p className="text-blue-800 text-sm">
-                    You have already kept a card today. Come back tomorrow to keep another!
+                    You've already kept a card today. Come back tomorrow!
                   </p>
                 </div>
               )}
@@ -235,7 +238,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
                       onChange={(e) => setJournalText(e.target.value)}
                       placeholder="Write your reflection here..."
                       rows={4}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base"
                     />
                     {!canKeep && journalText.length > 0 && (
                       <p className="text-xs text-gray-400 mt-1">
@@ -251,12 +254,12 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
                         id="isPublic"
                         checked={isPublic}
                         onChange={(e) => setIsPublic(e.target.checked)}
-                        className="w-4 h-4"
+                        className="w-5 h-5"
                       />
                       <label htmlFor="isPublic" className="text-sm text-gray-700">
                         Share my reflection publicly
                         <span className="block text-xs text-gray-400">
-                          Others can read your journal entry for this moment
+                          Others can read your journal entry
                         </span>
                       </label>
                     </div>
@@ -265,7 +268,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
                   <button
                     onClick={handleKeep}
                     disabled={!canKeep || keeping}
-                    className={`w-full py-3 px-6 rounded-xl font-medium transition-all ${
+                    className={`w-full py-4 px-6 rounded-xl font-medium transition-all text-base active:scale-95 ${
                       canKeep
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -277,6 +280,9 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
               )}
             </div>
           )}
+
+          {/* Bottom padding for mobile */}
+          <div className="h-4 md:hidden" />
         </div>
       </div>
     </div>
@@ -292,7 +298,7 @@ function AweCard({ card, onClick }) {
           ? 'cursor-default opacity-60'
           : card.isKept
           ? 'cursor-pointer opacity-75'
-          : 'cursor-pointer hover:scale-105 hover:shadow-xl'
+          : 'cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl'
       }`}
     >
       {card.isEmpty ? (
@@ -314,16 +320,12 @@ function AweCard({ card, onClick }) {
       ) : card.isKept ? (
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4`}>
           <p className="text-white text-2xl mb-2">✨</p>
-          <p className="text-white font-bold text-center text-sm">
-            {card.label}
-          </p>
+          <p className="text-white font-bold text-center text-sm">{card.label}</p>
           <p className="text-white text-xs mt-2 opacity-75">Kept today</p>
         </div>
       ) : (
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4`}>
-          <p className="text-white font-bold text-center text-sm drop-shadow">
-            {card.label}
-          </p>
+          <p className="text-white font-bold text-center text-sm drop-shadow">{card.label}</p>
           <p className="text-white text-xs mt-2 opacity-75">Tap to reveal</p>
         </div>
       )}
@@ -340,15 +342,11 @@ export default function CardsPage() {
   const [keptToday, setKeptToday] = useState(false)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    }
+    if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      loadCards()
-    }
+    if (status === 'authenticated') loadCards()
   }, [status])
 
   const loadCards = async () => {
@@ -382,38 +380,37 @@ export default function CardsPage() {
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+      {/* Desktop nav */}
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
           <h1 className="text-2xl font-bold">Awed</h1>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/collection')}
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              My Collection
-            </button>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              Sign Out
-            </button>
+          <div className="hidden md:flex items-center gap-4">
+            <button onClick={() => router.push('/collection')} className="text-sm text-gray-600 hover:text-gray-900">Collection</button>
+            <button onClick={() => router.push('/profile')} className="text-sm text-gray-600 hover:text-gray-900">Profile</button>
+            <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
+          {/* Mobile sign out */}
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="md:hidden text-sm text-gray-400"
+          >
+            Sign Out
+          </button>
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-2">Today's Awe Moments</h2>
-          <p className="text-gray-600">
+      <div className="container mx-auto px-4 py-6 max-w-5xl">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">Today's Awe Moments</h2>
+          <p className="text-gray-600 text-sm md:text-base">
             {keptToday
-              ? "You've kept a card today. Come back tomorrow for more! ✨"
+              ? "You've kept a card today. Come back tomorrow! ✨"
               : "Choose a card to reveal your awe moment"}
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {cards.map((card) => (
             <AweCard
               key={card.category}
@@ -430,6 +427,10 @@ export default function CardsPage() {
         )}
       </div>
 
+      {/* Bottom nav for mobile */}
+      <BottomNav />
+
+      {/* Modal */}
       {selectedCard && (
         <CardModal
           card={selectedCard}
