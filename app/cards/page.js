@@ -10,6 +10,96 @@ function getYouTubeId(url) {
   return match ? match[1] : null
 }
 
+function ReactionBar({ submissionId }) {
+  const [reaction, setReaction] = useState(null)
+  const [awedCount, setAwedCount] = useState(0)
+  const [nawedCount, setNawedCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!submissionId) return
+    fetch(`/api/moment-reactions?submissionId=${submissionId}`)
+      .then(r => r.json())
+      .then(data => {
+        setAwedCount(data.awedCount || 0)
+        setNawedCount(data.nawedCount || 0)
+        setReaction(data.userReaction || null)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [submissionId])
+
+  const handleReaction = async (type) => {
+    try {
+      const response = await fetch('/api/moment-reactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submissionId, reactionType: type })
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        if (data.action === 'removed') {
+          setReaction(null)
+          if (type === 'awed') setAwedCount(p => Math.max(p - 1, 0))
+          else setNawedCount(p => Math.max(p - 1, 0))
+        } else if (data.action === 'added') {
+          setReaction(type)
+          if (type === 'awed') setAwedCount(p => p + 1)
+          else setNawedCount(p => p + 1)
+        } else if (data.action === 'updated') {
+          setReaction(type)
+          if (type === 'awed') {
+            setAwedCount(p => p + 1)
+            setNawedCount(p => Math.max(p - 1, 0))
+          } else {
+            setNawedCount(p => p + 1)
+            setAwedCount(p => Math.max(p - 1, 0))
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Reaction error:', error)
+    }
+  }
+
+  if (loading) return null
+
+  return (
+    <div className="flex items-center justify-center gap-4 py-4 border-t border-gray-100">
+      <button
+        onClick={() => handleReaction('awed')}
+        className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 transition-all ${
+          reaction === 'awed'
+            ? 'border-yellow-400 bg-yellow-50 scale-105'
+            : 'border-gray-200 bg-white hover:border-yellow-300 hover:bg-yellow-50'
+        }`}
+      >
+        <img src="/awed-emoji.png" alt="awed" width={28} height={28} />
+        <span className="font-medium text-sm">Awed</span>
+        {awedCount > 0 && (
+          <span className="text-sm text-gray-500">{awedCount}</span>
+        )}
+      </button>
+
+      <button
+        onClick={() => handleReaction('nawed')}
+        className={`flex items-center gap-2 px-5 py-2 rounded-full border-2 transition-all ${
+          reaction === 'nawed'
+            ? 'border-blue-400 bg-blue-50 scale-105'
+            : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+        }`}
+      >
+        <img src="/nawed-emoji.png" alt="nawed" width={28} height={28} />
+        <span className="font-medium text-sm">Nawed</span>
+        {nawedCount > 0 && (
+          <span className="text-sm text-gray-500">{nawedCount}</span>
+        )}
+      </button>
+    </div>
+  )
+}
+
 function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
   const [journalText, setJournalText] = useState('')
   const [isPublic, setIsPublic] = useState(false)
@@ -61,6 +151,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
         className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-2xl">
           <div>
             <h3 className="text-xl font-bold">{card.label}</h3>
@@ -79,8 +170,9 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
         </div>
 
         <div className="p-6">
+          {/* Video */}
           {videoId ? (
-            <div className="aspect-video mb-6 rounded-xl overflow-hidden">
+            <div className="aspect-video mb-4 rounded-xl overflow-hidden">
               <iframe
                 width="100%"
                 height="100%"
@@ -92,18 +184,23 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
               />
             </div>
           ) : (
-            <div className="aspect-video mb-6 bg-gray-100 rounded-xl flex items-center justify-center">
+            <div className="aspect-video mb-4 bg-gray-100 rounded-xl flex items-center justify-center">
               <p className="text-gray-500">Video unavailable</p>
             </div>
           )}
 
+          {/* Reaction bar - always visible */}
+          {card.video?.id && (
+            <ReactionBar submissionId={card.video.id} />
+          )}
+
+          {/* Kept state */}
           {kept ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center mt-4">
               <p className="text-2xl mb-2">✨</p>
               <p className="text-green-800 font-bold text-lg mb-1">Card Kept!</p>
               <p className="text-gray-600 text-sm mb-2">
-                Added to your{' '}
-                <span className="font-semibold">{card.label}</span> collection
+                Added to your <span className="font-semibold">{card.label}</span> collection
               </p>
               {streak && (
                 <p className="text-orange-500 font-medium text-sm">
@@ -118,7 +215,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
               </button>
             </div>
           ) : (
-            <>
+            <div className="mt-4">
               {alreadyKeptToday && !card.isKept && (
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-center">
                   <p className="text-blue-800 text-sm">
@@ -137,7 +234,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
                       value={journalText}
                       onChange={(e) => setJournalText(e.target.value)}
                       placeholder="Write your reflection here..."
-                      rows={5}
+                      rows={4}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
                     />
                     {!canKeep && journalText.length > 0 && (
@@ -178,7 +275,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday }) {
                   </button>
                 </>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -258,7 +355,6 @@ export default function CardsPage() {
     try {
       const response = await fetch('/api/cards/today')
       const data = await response.json()
-
       if (data.cards) {
         setCards(data.cards)
         setKeptToday(!!data.keptCard)
@@ -268,10 +364,6 @@ export default function CardsPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleCardClick = (card) => {
-    setSelectedCard(card)
   }
 
   const handleKeep = () => {
@@ -313,9 +405,7 @@ export default function CardsPage() {
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-2">
-            Today's Awe Moments
-          </h2>
+          <h2 className="text-3xl font-bold mb-2">Today's Awe Moments</h2>
           <p className="text-gray-600">
             {keptToday
               ? "You've kept a card today. Come back tomorrow for more! ✨"
@@ -328,7 +418,7 @@ export default function CardsPage() {
             <AweCard
               key={card.category}
               card={card}
-              onClick={handleCardClick}
+              onClick={setSelectedCard}
             />
           ))}
         </div>

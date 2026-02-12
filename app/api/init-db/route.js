@@ -5,7 +5,8 @@ import {
   createReactionsTable,
   createDailyCardStateTable,
   createDailyCardsTable,
-  createShownCardsTable
+  createShownCardsTable,
+  createMomentReactionsTable
 } from '@/lib/db'
 
 export async function GET() {
@@ -17,6 +18,7 @@ export async function GET() {
     await createDailyCardStateTable()
     await createDailyCardsTable()
     await createShownCardsTable()
+    await createMomentReactionsTable()
     
     return Response.json({ 
       success: true, 
