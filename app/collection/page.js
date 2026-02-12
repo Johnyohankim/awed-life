@@ -3,7 +3,6 @@
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -52,7 +51,7 @@ function ReactionButton({ type, count, active, onClick }) {
           : 'border-gray-200 bg-white hover:border-gray-300'
       }`}
     >
-      <Image
+      <img
         src={`/${type}-emoji.png`}
         alt={type}
         width={24}
