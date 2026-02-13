@@ -24,7 +24,7 @@ export async function GET() {
     // Get all kept cards with submission details
     const cardsResult = await sql`
       SELECT 
-        uc.id,
+        uc.id as id,
         uc.journal_text,
         uc.is_public,
         uc.kept_at,
