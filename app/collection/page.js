@@ -235,8 +235,7 @@ export default function CollectionPage() {
   const [loading, setLoading] = useState(true)
   const [selectedCard, setSelectedCard] = useState(null)
   const handleShare = (card) => {
-    console.log('card:', card)
-    window.open(`/share/${card.id}`, '_blank')
+  window.open(`/share/${card.card_id}`, '_blank')
 }
   const [activeFilter, setActiveFilter] = useState('all')
 
