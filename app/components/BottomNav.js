@@ -18,6 +18,15 @@ export default function BottomNav() {
       )
     },
     {
+      label: 'Submit',
+      path: '/submit',
+      icon: (active) => (
+        <svg viewBox="0 0 24 24" className={`w-6 h-6 ${active ? 'fill-blue-600' : 'fill-gray-400'}`}>
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+        </svg>
+      )
+    },
+    {
       label: 'Collection',
       path: '/collection',
       icon: (active) => (
@@ -39,14 +48,14 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 md:hidden z-40">
-      <div className="flex items-center justify-around px-4 py-2 safe-area-pb">
+      <div className="flex items-center justify-around px-2 py-2 safe-area-pb">
         {tabs.map((tab) => {
           const active = pathname === tab.path
           return (
             <button
               key={tab.path}
               onClick={() => router.push(tab.path)}
-              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-colors ${
+              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
                 active ? 'text-blue-600' : 'text-gray-400'
               }`}
             >

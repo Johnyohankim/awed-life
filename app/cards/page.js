@@ -229,6 +229,12 @@ function AweCard({ card, onClick }) {
         <div className="w-full h-full bg-gray-100 rounded-2xl flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300">
           <p className="text-gray-400 font-medium text-center text-sm mb-1">{card.label}</p>
           <p className="text-gray-400 text-xs text-center">No moments yet</p>
+          <button
+  onClick={(e) => { e.stopPropagation(); router.push('/submit') }}
+  className="mt-2 text-xs text-blue-500 underline"
+>
+  Submit one →
+</button>
         </div>
       ) : card.isKept ? (
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4`}>
