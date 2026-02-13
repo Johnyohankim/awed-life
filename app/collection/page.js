@@ -190,22 +190,39 @@ function CardDetailModal({ card, onClose, userId }) {
   )
 }
 
-function CollectionCard({ card, onClick }) {
+// Replace the CollectionCard function in app/collection/page.js with this:
+
+function CollectionCard({ card, onClick, onShare }) {
   const color = categoryColors[card.category] || 'from-gray-400 to-gray-600'
   const label = categoryLabels[card.category] || card.category
   const date = new Date(card.kept_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   return (
-    <div
-      onClick={() => onClick(card)}
-      className="relative aspect-[3/4] rounded-2xl shadow-md cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl transition-all duration-200"
-    >
-      <div className={`w-full h-full bg-gradient-to-br ${color} rounded-2xl flex flex-col items-center justify-center p-4`}>
-        <p className="text-white text-2xl mb-2">✨</p>
-        <p className="text-white font-bold text-center text-sm drop-shadow">{label}</p>
-        <p className="text-white text-xs mt-2 opacity-75">{date}</p>
-        {card.is_public && <p className="text-white text-xs mt-1 opacity-75">🌍 Public</p>}
+    <div className="relative">
+      <div
+        onClick={() => onClick(card)}
+        className="relative aspect-[3/4] rounded-2xl shadow-md cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl transition-all duration-200"
+      >
+        <div className={`w-full h-full bg-gradient-to-br ${color} rounded-2xl flex flex-col items-center justify-center p-4`}>
+          <p className="text-white text-2xl mb-2">✨</p>
+          <p className="text-white font-bold text-center text-sm drop-shadow">{label}</p>
+          <p className="text-white text-xs mt-2 opacity-75">{date}</p>
+          {card.is_public && <p className="text-white text-xs mt-1 opacity-75">🌍 Public</p>}
+        </div>
       </div>
+
+      {/* Share button - only for public cards */}
+      {card.is_public && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onShare(card) }}
+          className="absolute bottom-2 right-2 bg-white bg-opacity-90 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-opacity-100 active:scale-95 transition-all"
+          title="Share"
+        >
+          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-gray-600">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
@@ -217,6 +234,9 @@ export default function CollectionPage() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedCard, setSelectedCard] = useState(null)
+  const handleShare = (card) => {
+  window.open(`/share/${card.id}`, '_blank')
+}
   const [activeFilter, setActiveFilter] = useState('all')
 
   useEffect(() => {
@@ -346,7 +366,7 @@ export default function CollectionPage() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {filteredCards.map((card) => (
-                <CollectionCard key={card.id} card={card} onClick={setSelectedCard} />
+                <CollectionCard key={card.id} card={card} onClick={setSelectedCard} onShare={handleShare} />
               ))}
             </div>
           </>
