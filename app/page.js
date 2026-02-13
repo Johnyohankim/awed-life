@@ -71,6 +71,16 @@ function Navbar({ session }) {
           Awed
         </span>
         <div className="flex items-center gap-3">
+          
+            href="https://blog.awed.life"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`text-sm font-medium transition-colors hidden md:block ${
+              scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white hover:text-white opacity-80 hover:opacity-100'
+            }`}
+          >
+            Blog
+          </a>
           {session ? (
             <button
               onClick={() => router.push('/cards')}
