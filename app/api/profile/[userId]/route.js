@@ -2,11 +2,11 @@ import { sql } from '@vercel/postgres'
 
 export async function GET(request, { params }) {
   try {
-    const userId = params.userId
+    const { userId } = await params
 
     const userResult = await sql`
       SELECT id, name, streak_count, created_at
-      FROM users WHERE id = ${userId}
+      FROM users WHERE id = ${parseInt(userId, 10)}
     `
 
     if (userResult.rows.length === 0) {
@@ -15,7 +15,6 @@ export async function GET(request, { params }) {
 
     const user = userResult.rows[0]
 
-    // Get collection stats
     const statsResult = await sql`
       SELECT 
         COUNT(*) as total_cards,
@@ -25,7 +24,6 @@ export async function GET(request, { params }) {
       WHERE uc.user_id = ${user.id}
     `
 
-    // Get recent 8 cards
     const recentResult = await sql`
       SELECT 
         uc.id,
