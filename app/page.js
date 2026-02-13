@@ -594,7 +594,11 @@ export default function Home() {
             <a href="https://blog.awed.life"
   target="_blank"
   rel="noopener noreferrer"
-  className={`text-sm font-medium transition-colors hidden md:block ${scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white hover:text-white opacity-80 hover:opacity-100'}`}
+  className={`text-sm font-medium transition-colors hidden md:block ${
+    scrolled 
+      ? 'text-gray-600 hover:text-gray-900' 
+      : 'text-white hover:text-white opacity-80 hover:opacity-100'
+  }`}
 >
   Blog
 </a>
