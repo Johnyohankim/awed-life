@@ -70,13 +70,13 @@ function Navbar({ session }) {
         <span className={`text-2xl font-bold ${scrolled ? 'text-gray-900' : 'text-white'}`}>
           Awed
         </span>
-        <div className="flex items-center gap-3">
-          
+        <div className="flex items-center gap-4">
+          <a
             href="https://blog.awed.life"
             target="_blank"
             rel="noopener noreferrer"
             className={`text-sm font-medium transition-colors hidden md:block ${
-              scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white hover:text-white opacity-80 hover:opacity-100'
+              scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white opacity-90 hover:opacity-100'
             }`}
           >
             Blog
@@ -591,16 +591,7 @@ export default function Home() {
               <button onClick={() => router.push('/signup')} className="hover:text-white transition-colors">Sign Up</button>
             )}
             <button onClick={() => router.push('/login')} className="hover:text-white transition-colors">Sign In</button>
-            <div className="flex justify-center gap-6 text-sm text-gray-400 mb-8">
-  {session ? (
-    <button onClick={() => router.push('/cards')} className="hover:text-white transition-colors">My Cards</button>
-  ) : (
-    <button onClick={() => router.push('/signup')} className="hover:text-white transition-colors">Sign Up</button>
-  )}
-  <button onClick={() => router.push('/login')} className="hover:text-white transition-colors">Sign In</button>
-  <a href="https://blog.awed.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
-  <a href="#submit" className="hover:text-white transition-colors">Submit a Moment</a>
-</div>
+            <a href="https://blog.awed.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
             <a href="#submit" className="hover:text-white transition-colors">Submit a Moment</a>
           </div>
           <p className="text-gray-600 text-xs">
