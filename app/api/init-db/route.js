@@ -2,7 +2,7 @@ import { sql } from '@vercel/postgres'
 
 export async function GET() {
   try {
-    // Existing tables
+    // All existing tables
     await sql`
       CREATE TABLE IF NOT EXISTS submissions (
         id SERIAL PRIMARY KEY,
@@ -15,7 +15,6 @@ export async function GET() {
         submitted_by_user_id INTEGER
       )
     `
-
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -31,7 +30,6 @@ export async function GET() {
         submission_points INTEGER DEFAULT 0
       )
     `
-
     await sql`
       CREATE TABLE IF NOT EXISTS user_cards (
         id SERIAL PRIMARY KEY,
@@ -45,7 +43,6 @@ export async function GET() {
         is_submission BOOLEAN DEFAULT false
       )
     `
-
     await sql`
       CREATE TABLE IF NOT EXISTS reactions (
         id SERIAL PRIMARY KEY,
@@ -56,7 +53,6 @@ export async function GET() {
         UNIQUE(user_id, user_card_id)
       )
     `
-
     await sql`
       CREATE TABLE IF NOT EXISTS daily_card_state (
         id SERIAL PRIMARY KEY,
@@ -67,7 +63,6 @@ export async function GET() {
         UNIQUE(user_id, date)
       )
     `
-
     await sql`
       CREATE TABLE IF NOT EXISTS daily_cards (
         id SERIAL PRIMARY KEY,
@@ -77,7 +72,6 @@ export async function GET() {
         UNIQUE(date, category)
       )
     `
-
     await sql`
       CREATE TABLE IF NOT EXISTS shown_cards (
         id SERIAL PRIMARY KEY,
@@ -87,7 +81,6 @@ export async function GET() {
         UNIQUE(user_id, submission_id)
       )
     `
-
     await sql`
       CREATE TABLE IF NOT EXISTS moment_reactions (
         id SERIAL PRIMARY KEY,
@@ -99,32 +92,28 @@ export async function GET() {
       )
     `
 
-    // Add new columns if they don't exist yet (safe migrations)
+    // Blog posts table
     await sql`
-      ALTER TABLE submissions 
-      ADD COLUMN IF NOT EXISTS submitted_by_user_id INTEGER REFERENCES users(id)
+      CREATE TABLE IF NOT EXISTS blog_posts (
+        id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        slug TEXT UNIQUE NOT NULL,
+        content TEXT NOT NULL,
+        excerpt TEXT,
+        published BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
     `
 
-    await sql`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS submission_points INTEGER DEFAULT 0
-    `
+    // Safe migrations
+    await sql`ALTER TABLE submissions ADD COLUMN IF NOT EXISTS submitted_by_user_id INTEGER REFERENCES users(id)`
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS submission_points INTEGER DEFAULT 0`
+    await sql`ALTER TABLE user_cards ADD COLUMN IF NOT EXISTS is_submission BOOLEAN DEFAULT false`
 
-    await sql`
-      ALTER TABLE user_cards 
-      ADD COLUMN IF NOT EXISTS is_submission BOOLEAN DEFAULT false
-    `
-
-    return Response.json({
-      success: true,
-      message: 'All database tables initialized and migrated!'
-    })
-
+    return Response.json({ success: true, message: 'All tables initialized and migrated!' })
   } catch (error) {
     console.error('Database init error:', error)
-    return Response.json({
-      success: false,
-      error: error.message
-    }, { status: 500 })
+    return Response.json({ success: false, error: error.message }, { status: 500 })
   }
 }
