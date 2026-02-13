@@ -28,11 +28,13 @@ const categoryLabels = {
 }
 
 const milestones = [
-  { count: 10, label: 'First Steps', emoji: '🌱' },
-  { count: 50, label: 'Awe Seeker', emoji: '🌟' },
-  { count: 100, label: 'Wonder Collector', emoji: '✨' },
-  { count: 500, label: 'Awe Devotee', emoji: '🌈' },
-  { count: 1000, label: 'Awe Master', emoji: '🌌' },
+  { count: 5, label: 'First Pause', emoji: '🌱' },
+  { count: 15, label: 'Gentle Noticer', emoji: '🌿' },
+  { count: 30, label: 'Steady Witness', emoji: '🌾' },
+  { count: 75, label: 'Open Observer', emoji: '🌤' },
+  { count: 150, label: 'Deepening Presence', emoji: '🌅' },
+  { count: 300, label: 'Living in Wonder', emoji: '🌌' },
+  { count: 500, label: 'Rooted in Awe', emoji: '🌊' },
 ]
 
 function AvatarCircle({ name, size = 'lg' }) {
