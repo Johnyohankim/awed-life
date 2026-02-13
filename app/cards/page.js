@@ -80,6 +80,71 @@ function ReactionBar({ submissionId }) {
   )
 }
 
+function OnboardingModal({ onClose }) {
+  const [step, setStep] = useState(0)
+
+  const steps = [
+    {
+      emoji: '🎴',
+      title: 'Choose a Card',
+      description: 'Each day, 8 new awe moments await. Tap any card to reveal your moment of wonder.'
+    },
+    {
+      emoji: '✨',
+      title: 'Watch & Feel',
+      description: 'Let the moment wash over you. Notice how it makes you feel. There\'s no rush.'
+    },
+    {
+      emoji: '📝',
+      title: 'Reflect & Keep',
+      description: 'Write just 10 characters about how it made you feel. That\'s it. Your moment is saved forever.'
+    }
+  ]
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-3xl max-w-md w-full p-8" onClick={e => e.stopPropagation()}>
+        <div className="text-center mb-8">
+          <p className="text-6xl mb-4">{steps[step].emoji}</p>
+          <h2 className="text-2xl font-bold mb-2">{steps[step].title}</h2>
+          <p className="text-gray-600 leading-relaxed">{steps[step].description}</p>
+        </div>
+
+        {/* Progress dots */}
+        <div className="flex justify-center gap-2 mb-6">
+          {steps.map((_, i) => (
+            <div key={i} className={`h-2 rounded-full transition-all ${i === step ? 'w-8 bg-blue-600' : 'w-2 bg-gray-200'}`} />
+          ))}
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-3">
+          {step > 0 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="flex-1 py-3 px-6 border-2 border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
+            >
+              Back
+            </button>
+          )}
+          <button
+            onClick={() => step < steps.length - 1 ? setStep(step + 1) : onClose()}
+            className="flex-1 py-3 px-6 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700"
+          >
+            {step < steps.length - 1 ? 'Next' : 'Start Collecting ✨'}
+          </button>
+        </div>
+
+        {step === 0 && (
+          <button onClick={onClose} className="w-full mt-3 text-sm text-gray-400 hover:text-gray-600">
+            Skip tutorial
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function CardModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }) {
   const [journalText, setJournalText] = useState(isSubmissionCard ? 'I submitted this awe moment ✨' : '')
   const [isPublic, setIsPublic] = useState(false)
@@ -218,23 +283,29 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }
 }
 
 function AweCard({ card, onClick }) {
+  const router = useRouter()
+  
   return (
     <div
       onClick={() => !card.isEmpty && onClick(card)}
       className={`relative aspect-[3/4] rounded-2xl shadow-lg transition-all duration-200 ${
-        card.isEmpty ? 'cursor-default opacity-60' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl'
+        card.isEmpty ? 'cursor-default' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl'
       }`}
     >
       {card.isEmpty ? (
-        <div className="w-full h-full bg-gray-100 rounded-2xl flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300">
-          <p className="text-gray-400 font-medium text-center text-sm mb-1">{card.label}</p>
-          <p className="text-gray-400 text-xs text-center">No moments yet</p>
-          <button
-  onClick={(e) => { e.stopPropagation(); router.push('/submit') }}
-  className="mt-2 text-xs text-blue-500 underline"
->
-  Submit one →
-</button>
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4 relative overflow-hidden`}>
+          <div className="absolute inset-0 bg-black bg-opacity-20" />
+          <div className="relative z-10 text-center">
+            <p className="text-white text-3xl mb-3">🌱</p>
+            <p className="text-white font-bold text-sm mb-2">{card.label}</p>
+            <p className="text-white text-xs opacity-90 mb-4 px-2">Help us grow this category</p>
+            <button
+              onClick={(e) => { e.stopPropagation(); router.push('/submit') }}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-xs font-medium px-4 py-2 rounded-lg backdrop-blur-sm border border-white border-opacity-30 transition-all"
+            >
+              Submit a moment →
+            </button>
+          </div>
         </div>
       ) : card.isKept ? (
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4`}>
@@ -300,13 +371,21 @@ export default function CardsPage() {
   const [selectedCard, setSelectedCard] = useState(null)
   const [isSubmissionCard, setIsSubmissionCard] = useState(false)
   const [keptToday, setKeptToday] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
 
   useEffect(() => {
-    if (status === 'authenticated') loadCards()
+    if (status === 'authenticated') {
+      loadCards()
+      // Check if first visit
+      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true)
+      }
+    }
   }, [status])
 
   const loadCards = async () => {
@@ -334,6 +413,11 @@ export default function CardsPage() {
   const handleCardClick = (card, isSubmission = false) => {
     setSelectedCard(card)
     setIsSubmissionCard(isSubmission)
+  }
+
+  const handleCloseOnboarding = () => {
+    setShowOnboarding(false)
+    localStorage.setItem('hasSeenOnboarding', 'true')
   }
 
   if (status === 'loading' || loading) {
@@ -409,6 +493,8 @@ export default function CardsPage() {
           isSubmissionCard={isSubmissionCard}
         />
       )}
+
+      {showOnboarding && <OnboardingModal onClose={handleCloseOnboarding} />}
     </div>
   )
 }
