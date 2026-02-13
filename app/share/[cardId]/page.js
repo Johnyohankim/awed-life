@@ -23,42 +23,11 @@ const categoryLabels = {
   'epiphany': 'Epiphany'
 }
 
-export async function generateMetadata({ params }) {
-  try {
-    const result = await sql`
-      SELECT uc.journal_text, s.category, u.name
-      FROM user_cards uc
-      JOIN submissions s ON uc.submission_id = s.id
-      JOIN users u ON uc.user_id = u.id
-      WHERE uc.id = ${params.cardId}
-    `
-    if (result.rows.length === 0) return { title: 'Awed - Awe Moment' }
-    const card = result.rows[0]
-    const label = categoryLabels[card.category] || card.category
-    const journal = card.journal_text.slice(0, 100) + (card.journal_text.length > 100 ? '...' : '')
-    return {
-      title: `${card.name || 'Someone'} felt awe in ${label} | Awed`,
-      description: journal,
-      openGraph: {
-        title: `${card.name || 'Someone'} felt awe in ${label}`,
-        description: journal,
-        url: `https://awed.life/share/${params.cardId}`,
-        siteName: 'Awed',
-        type: 'article',
-      },
-      twitter: {
-        card: 'summary',
-        title: `${card.name || 'Someone'} felt awe in ${label}`,
-        description: journal,
-      }
-    }
-  } catch (error) {
-    return { title: 'Awed - Awe Moment' }
-  }
-}
-
 async function getCardData(cardId) {
   try {
+    const cardIdInt = parseInt(cardId, 10)
+    if (isNaN(cardIdInt)) return { error: 'invalid_id' }
+
     const result = await sql`
       SELECT 
         uc.id,
@@ -71,29 +40,64 @@ async function getCardData(cardId) {
       FROM user_cards uc
       JOIN submissions s ON uc.submission_id = s.id
       JOIN users u ON uc.user_id = u.id
-      WHERE uc.id = ${cardId}
+      WHERE uc.id = ${cardIdInt}
     `
-    return result.rows[0] || null
+
+    if (result.rows.length === 0) return { error: 'not_found' }
+    return { card: result.rows[0] }
   } catch (error) {
-    return null
+    console.error('Share page DB error:', error)
+    return { error: 'db_error', message: error.message }
+  }
+}
+
+export async function generateMetadata({ params }) {
+  const { card } = await getCardData(params.cardId)
+  if (!card) return { title: 'Awed - Awe Moment' }
+
+  const label = categoryLabels[card.category] || card.category
+  const journal = card.journal_text.slice(0, 100) + (card.journal_text.length > 100 ? '...' : '')
+
+  return {
+    title: `${card.user_name || 'Someone'} felt awe in ${label} | Awed`,
+    description: journal,
+    openGraph: {
+      title: `${card.user_name || 'Someone'} felt awe in ${label}`,
+      description: journal,
+      url: `https://awed.life/share/${params.cardId}`,
+      siteName: 'Awed',
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${card.user_name || 'Someone'} felt awe in ${label}`,
+      description: journal,
+    }
   }
 }
 
 export default async function SharePage({ params }) {
-  const card = await getCardData(params.cardId)
+  const result = await getCardData(params.cardId)
 
-  if (!card) {
+  if (result.error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-5xl mb-4">🔍</p>
           <h1 className="text-2xl font-bold mb-2">Card not found</h1>
-          <p className="text-gray-600 mb-6">This card may have been removed or made private.</p>
-          <a href="/" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium">Visit Awed</a>
+          <p className="text-gray-500 text-sm mb-2">Error: {result.error}</p>
+          {result.message && (
+            <p className="text-gray-400 text-xs mb-4">{result.message}</p>
+          )}
+          <a href="/" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium">
+            Visit Awed
+          </a>
         </div>
       </div>
     )
   }
+
+  const { card } = result
 
   if (!card.is_public) {
     return (
@@ -102,7 +106,9 @@ export default async function SharePage({ params }) {
           <p className="text-5xl mb-4">🔒</p>
           <h1 className="text-2xl font-bold mb-2">Private card</h1>
           <p className="text-gray-600 mb-6">This reflection is private.</p>
-          <a href="/" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium">Visit Awed</a>
+          <a href="/" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium">
+            Visit Awed
+          </a>
         </div>
       </div>
     )
@@ -129,7 +135,7 @@ export default async function SharePage({ params }) {
         {/* Card */}
         <div className={`bg-gradient-to-br ${color} rounded-3xl p-8 mb-6 shadow-xl`}>
           <div className="text-center mb-6">
-            <p className="text-white text-opacity-80 text-sm font-medium uppercase tracking-widest mb-2">
+            <p className="text-white text-sm font-medium uppercase tracking-widest mb-2 opacity-80">
               {label}
             </p>
             <p className="text-white text-4xl">✨</p>
@@ -142,12 +148,12 @@ export default async function SharePage({ params }) {
           </div>
 
           <div className="mt-5 flex justify-between items-center">
-            <p className="text-white text-opacity-70 text-sm">— {card.user_name || 'Anonymous'}</p>
-            <p className="text-white text-opacity-70 text-sm">{date}</p>
+            <p className="text-white text-sm opacity-70">— {card.user_name || 'Anonymous'}</p>
+            <p className="text-white text-sm opacity-70">{date}</p>
           </div>
         </div>
 
-        {/* Share buttons (client component) */}
+        {/* Share buttons */}
         <ShareCard shareUrl={shareUrl} shareText={shareText} />
 
         {/* CTA */}
