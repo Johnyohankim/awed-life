@@ -223,7 +223,7 @@ export default function ProfilePage() {
         {/* Stats */}
         <div className="bg-white rounded-2xl shadow-sm p-5 mb-4">
           <h2 className="text-base font-bold mb-4">Stats</h2>
-          <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
             <div className="bg-gray-50 rounded-xl p-3">
               <p className="text-2xl font-bold">{profile.totalCards}</p>
               <p className="text-xs text-gray-500 mt-1">Cards</p>
@@ -232,14 +232,32 @@ export default function ProfilePage() {
               <p className="text-2xl font-bold">🔥 {profile.streak}</p>
               <p className="text-xs text-gray-500 mt-1">Streak</p>
             </div>
-            <div className="bg-purple-50 rounded-xl p-3">
+            <div className="bg-blue-50 rounded-xl p-3">
               <p className="text-2xl font-bold">{profile.categoriesCount}/8</p>
               <p className="text-xs text-gray-500 mt-1">Categories</p>
             </div>
+            <div className="bg-purple-50 rounded-xl p-3">
+              <p className="text-2xl font-bold">⭐ {profile.submissionPoints || 0}</p>
+              <p className="text-xs text-gray-500 mt-1">Submissions</p>
+              {isOwnProfile && (profile.submissionPoints || 0) > 0 && (
+                <p className="text-xs text-purple-500 mt-1">+{profile.submissionPoints} extra slots</p>
+              )}
+            </div>
           </div>
+
+          {/* Submission CTA for own profile */}
+          {isOwnProfile && (
+            <button
+              onClick={() => router.push('/submit')}
+              className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-purple-50 border border-purple-200 rounded-xl text-sm text-purple-700 font-medium hover:bg-purple-100 transition-colors"
+            >
+              <span>⭐</span>
+              Submit a moment — earn extra card slots
+            </button>
+          )}
         </div>
 
-        {/* Milestones - 3 col on mobile, 5 on desktop */}
+        {/* Milestones */}
         <div className="bg-white rounded-2xl shadow-sm p-5 mb-4">
           <h2 className="text-base font-bold mb-4">Milestones</h2>
           <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
@@ -274,7 +292,9 @@ export default function ProfilePage() {
                     categoryColors[card.category] || 'from-gray-400 to-gray-600'
                   } flex flex-col items-center justify-center p-2`}
                 >
-                  <p className="text-white text-base mb-1">✨</p>
+                  <p className="text-white text-base mb-1">
+                    {card.is_submission ? '⭐' : '✨'}
+                  </p>
                   <p className="text-white font-bold text-center text-xs drop-shadow leading-tight">
                     {categoryLabels[card.category] || card.category}
                   </p>
