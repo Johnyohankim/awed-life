@@ -1,3 +1,4 @@
-export default function SharePage({ params }) {
-  return <div>id is: {params.id}</div>
+export default async function SharePage({ params }) {
+  const { id } = await params
+  return <div>id is: {id}</div>
 }
