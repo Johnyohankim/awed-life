@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 const categoryColors = {
   "Moral Beauty": "from-rose-400 to-pink-600",
@@ -30,9 +32,7 @@ const getYouTubeId = (url) => {
   return match ? match[1] : null
 }
 
-const isInstagramUrl = (url) => {
-  return url && url.includes('instagram.com')
-}
+const isInstagramUrl = (url) => url && url.includes('instagram.com')
 
 function InstagramCard({ url }) {
   return (
@@ -49,6 +49,56 @@ function InstagramCard({ url }) {
       <p className="text-white font-bold">Watch on Instagram</p>
       <p className="text-white text-sm mt-1 opacity-75">Tap to open Reel ↗</p>
     </a>
+  )
+}
+
+function Navbar({ session }) {
+  const router = useRouter()
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return (
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled ? 'bg-white shadow-sm' : 'bg-transparent'
+    }`}>
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center max-w-6xl">
+        <span className={`text-2xl font-bold ${scrolled ? 'text-gray-900' : 'text-white'}`}>
+          Awed
+        </span>
+        <div className="flex items-center gap-3">
+          {session ? (
+            <button
+              onClick={() => router.push('/cards')}
+              className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              Open App →
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => router.push('/login')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white hover:bg-opacity-20'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => router.push('/signup')}
+                className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                Get Started
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </nav>
   )
 }
 
@@ -82,9 +132,7 @@ function RecentSubmissions() {
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchRecentSubmissions()
-  }, [])
+  useEffect(() => { fetchRecentSubmissions() }, [])
 
   const fetchRecentSubmissions = async () => {
     try {
@@ -139,7 +187,8 @@ function RecentSubmissions() {
   )
 }
 
-function CardPreview() {
+function CardPreview({ session }) {
+  const router = useRouter()
   const [selectedCard, setSelectedCard] = useState(null)
   const [journalText, setJournalText] = useState('')
   const [showKeepButton, setShowKeepButton] = useState(false)
@@ -183,7 +232,7 @@ function CardPreview() {
         >
           <div
             className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
               <h3 className="text-xl font-bold">{categoryExamples[selectedCard].category}</h3>
@@ -232,12 +281,19 @@ function CardPreview() {
                 </>
               ) : (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-                  <p className="text-green-800 font-semibold mb-2">✓ Card Saved!</p>
-                  <p className="text-gray-600 text-sm mb-4">
-                    You can collect this <span className="font-semibold">{categoryExamples[selectedCard].category}</span> card once the actual service launches.
+                  <p className="text-2xl mb-2">✨</p>
+                  <p className="text-green-800 font-semibold mb-2">You felt it!</p>
+                  <p className="text-gray-600 text-sm mb-6">
+                    Sign up to collect real awe moments every day and build your personal wonder journal.
                   </p>
-                  <button onClick={handleCloseModal} className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                    Close and explore more cards →
+                  <button
+                    onClick={() => router.push('/signup')}
+                    className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 mb-2"
+                  >
+                    Start Collecting →
+                  </button>
+                  <button onClick={handleCloseModal} className="text-gray-400 text-sm">
+                    Maybe later
                   </button>
                 </div>
               )}
@@ -250,11 +306,11 @@ function CardPreview() {
 }
 
 export default function Home() {
+  const { data: session } = useSession()
+  const router = useRouter()
   const [submissionCount, setSubmissionCount] = useState(0)
 
-  useEffect(() => {
-    fetchCount()
-  }, [])
+  useEffect(() => { fetchCount() }, [])
 
   const fetchCount = async () => {
     try {
@@ -297,16 +353,63 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Manifesto Video */}
+      {/* Sticky nav */}
+      <Navbar session={session} />
+
+      {/* Manifesto Video with hero overlay */}
       <section className="relative w-full h-screen bg-black">
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-70"
           src="https://pub-a9edba097fc04f4ea77b1baac778b4f9.r2.dev/menifesto1.mp4"
         />
+        {/* Hero overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg">
+            Find Your Awe
+          </h1>
+          <p className="text-xl md:text-2xl text-white opacity-90 mb-4 max-w-2xl drop-shadow">
+            A daily ritual of wonder. One card. One moment. One reflection.
+          </p>
+          <p className="text-white opacity-75 mb-10 text-sm md:text-base">
+            {submissionCount} awe moments collected
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            {session ? (
+              <button
+                onClick={() => router.push('/cards')}
+                className="bg-white text-gray-900 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition-all shadow-lg"
+              >
+                Open Your Cards →
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => router.push('/signup')}
+                  className="bg-white text-gray-900 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition-all shadow-lg"
+                >
+                  Get Started — Free
+                </button>
+                <button
+                  onClick={() => router.push('/login')}
+                  className="border-2 border-white text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white hover:bg-opacity-10 transition-all"
+                >
+                  Sign In
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-0 right-0 flex justify-center animate-bounce">
+          <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white opacity-60">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+          </svg>
+        </div>
       </section>
 
       {/* Book Credit */}
@@ -324,6 +427,50 @@ export default function Home() {
             </a>
             {' '}by Dacher Keltner
           </p>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h2 className="text-4xl font-bold text-center mb-4">How It Works</h2>
+          <p className="text-center text-gray-600 mb-12 max-w-xl mx-auto">
+            A simple daily ritual to bring more wonder into your life
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">🎴</div>
+              <h3 className="font-bold text-lg mb-2">1. Choose a Card</h3>
+              <p className="text-gray-600 text-sm">Each day, 8 new awe moments across different categories are waiting for you.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">✨</div>
+              <h3 className="font-bold text-lg mb-2">2. Watch & Reflect</h3>
+              <p className="text-gray-600 text-sm">Watch the moment, then write how it made you feel. Just 10 characters minimum.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">📚</div>
+              <h3 className="font-bold text-lg mb-2">3. Collect & Grow</h3>
+              <p className="text-gray-600 text-sm">Build your personal wonder journal. Track streaks, earn milestones, share moments.</p>
+            </div>
+          </div>
+          <div className="text-center mt-12">
+            {session ? (
+              <button
+                onClick={() => router.push('/cards')}
+                className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-colors"
+              >
+                Open Your Cards →
+              </button>
+            ) : (
+              <button
+                onClick={() => router.push('/signup')}
+                className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-colors"
+              >
+                Start for Free →
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
@@ -347,92 +494,100 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Counter + Preview */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-5xl font-bold mb-4">{submissionCount}</h2>
-          <p className="text-gray-600 mb-8">awe moments collected</p>
-          <div className="max-w-2xl mx-auto bg-gray-100 p-8 rounded-lg mb-12">
-            <p className="text-lg font-semibold mb-4">Coming Soon:</p>
-            <p className="text-gray-600 mb-4">
-              Once we collect <span className="font-bold text-blue-600">1,000 awe moments</span>, awed.life will launch.
-            </p>
-            <p className="text-gray-600">Daily ritual: Choose one card. Watch. Reflect. Collect.</p>
-          </div>
-          <div className="max-w-5xl mx-auto">
-            <h3 className="text-2xl font-bold mb-4">Preview the Experience</h3>
-            <p className="text-gray-600 mb-8">Click a card to see what awaits you</p>
-            <CardPreview />
-          </div>
+      {/* Interactive preview */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4 text-center max-w-5xl">
+          <h2 className="text-3xl font-bold mb-4">Preview the Experience</h2>
+          <p className="text-gray-600 mb-10">Click any card to try it out</p>
+          <CardPreview session={session} />
         </div>
       </section>
 
-      {/* Submission Form */}
-      <section id="submit" className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-xl">
-          <h2 className="text-3xl font-bold text-center mb-8">Share Your Awe Moment</h2>
-          <p className="text-center text-gray-600 mb-8">
-            Help us build a collection of awe-inspiring moments from around the world.
+      {/* Submit CTA */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 max-w-2xl text-center">
+          <h2 className="text-3xl font-bold mb-4">Share an Awe Moment</h2>
+          <p className="text-gray-600 mb-8">
+            Help build the world's largest collection of awe-inspiring moments.
+            {session && <span className="text-purple-600 font-medium"> Earn ⭐ submission points when approved!</span>}
           </p>
-          <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-sm space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Video Link</label>
-              <input
-                type="url"
-                name="videoLink"
-                placeholder="https://youtube.com/watch?v=..."
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">YouTube, Instagram, TikTok, or X link</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-              <select
-                name="category"
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select a category...</option>
-                <option value="moral-beauty">Moral Beauty</option>
-                <option value="collective-effervescence">Collective Effervescence</option>
-                <option value="nature">Nature</option>
-                <option value="music">Music</option>
-                <option value="visual-design">Visual Design</option>
-                <option value="spirituality">Spirituality & Religion</option>
-                <option value="life-death">Life & Death</option>
-                <option value="epiphany">Epiphany</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Custom Hashtags (optional)</label>
-              <input
-                type="text"
-                name="hashtags"
-                placeholder="#inspiring #beautiful"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Your Email</label>
-              <input
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">We'll notify you when we launch</p>
-            </div>
+          {session ? (
             <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              onClick={() => router.push('/submit')}
+              className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-colors"
             >
-              Submit Awe Moment
+              Submit a Moment ✨
             </button>
-          </form>
+          ) : (
+            <div>
+              {/* Public submission form */}
+              <form onSubmit={handleSubmit} className="bg-gray-50 p-8 rounded-2xl shadow-sm space-y-4 text-left mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Video Link</label>
+                  <input type="url" name="videoLink" placeholder="https://youtube.com/watch?v=..." required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  <p className="text-xs text-gray-500 mt-1">YouTube, YouTube Shorts, or Instagram Reels</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <select name="category" required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Select a category...</option>
+                    <option value="moral-beauty">Moral Beauty</option>
+                    <option value="collective-effervescence">Collective Effervescence</option>
+                    <option value="nature">Nature</option>
+                    <option value="music">Music</option>
+                    <option value="visual-design">Visual Design</option>
+                    <option value="spirituality">Spirituality & Religion</option>
+                    <option value="life-death">Life & Death</option>
+                    <option value="epiphany">Epiphany</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Hashtags (optional)</label>
+                  <input type="text" name="hashtags" placeholder="#inspiring #beautiful"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Your Email</label>
+                  <input type="email" name="email" placeholder="you@example.com" required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  <p className="text-xs text-gray-500 mt-1">We'll notify you when approved</p>
+                </div>
+                <button type="submit" className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                  Submit Awe Moment
+                </button>
+              </form>
+              <p className="text-gray-500 text-sm">
+                Or{' '}
+                <button onClick={() => router.push('/signup')} className="text-blue-600 font-medium hover:underline">
+                  create an account
+                </button>
+                {' '}to earn submission points and track your contributions
+              </p>
+            </div>
+          )}
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-2xl font-bold mb-2">Awed</h2>
+          <p className="text-gray-400 text-sm mb-6">A daily moment of wonder</p>
+          <div className="flex justify-center gap-6 text-sm text-gray-400 mb-8">
+            {session ? (
+              <button onClick={() => router.push('/cards')} className="hover:text-white transition-colors">My Cards</button>
+            ) : (
+              <button onClick={() => router.push('/signup')} className="hover:text-white transition-colors">Sign Up</button>
+            )}
+            <button onClick={() => router.push('/login')} className="hover:text-white transition-colors">Sign In</button>
+            <a href="#submit" className="hover:text-white transition-colors">Submit a Moment</a>
+          </div>
+          <p className="text-gray-600 text-xs">
+            Inspired by Dacher Keltner's research on awe
+          </p>
+        </div>
+      </footer>
 
     </div>
   )
