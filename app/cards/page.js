@@ -370,10 +370,6 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
                 Explore more cards →
               </button>
             </div>
-          ) : alreadyKeptToday ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
-              <p className="text-blue-800 text-sm">You've already kept a card today. Come back tomorrow!</p>
-            </div>
           ) : (
             <>
               <h4 className="font-bold text-lg mb-3">How does this make you feel?</h4>
@@ -398,12 +394,12 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
               )}
               <button
                 onClick={handleKeep}
-                disabled={!canKeep || keeping}
+                disabled={!canKeep || keeping || alreadyKeptToday}
                 className={`w-full py-4 px-6 rounded-xl font-medium transition-all text-base active:scale-95 ${
-                  canKeep ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  canKeep && !alreadyKeptToday ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                {keeping ? 'Keeping...' : canKeep ? 'Keep This Card ✨' : 'Write to keep this card'}
+                {keeping ? 'Keeping...' : alreadyKeptToday ? "You've kept a card today" : canKeep ? 'Keep This Card ✨' : 'Write to keep this card'}
               </button>
             </>
           )}
@@ -552,7 +548,8 @@ export default function CardsPage() {
   const [loading, setLoading] = useState(true)
   const [selectedCard, setSelectedCard] = useState(null)
   const [isSubmissionCard, setIsSubmissionCard] = useState(false)
-  const [keptToday, setKeptToday] = useState(false)
+  const [keptToday, setKeptToday] = useState(0)
+  const [allowedKeeps, setAllowedKeeps] = useState(1)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [achievementCount, setAchievementCount] = useState(null)
   const [totalCards, setTotalCards] = useState(0)
@@ -579,7 +576,8 @@ export default function CardsPage() {
         // Apply smart rotation to feature different category each day
         const rotatedCards = getSmartRotatedCards(data.cards)
         setCards(rotatedCards)
-        setKeptToday(!!data.keptCard)
+        setKeptToday(data.keptToday || 0)
+        setAllowedKeeps(data.allowedKeeps || 1)
         setSubmissionSlots(data.submissionSlots || [])
         setSubmissionPoints(data.submissionPoints || 0)
       }
@@ -599,7 +597,7 @@ export default function CardsPage() {
 
   const handleKeep = () => {
     const previousCount = totalCards
-    setKeptToday(true)
+    setKeptToday(prev => prev + 1)
     loadCards().then(() => {
       // Check if we hit a milestone
       const newCount = previousCount + 1
@@ -651,9 +649,20 @@ export default function CardsPage() {
       <div className="container mx-auto px-4 py-6 max-w-5xl">
         <div className="text-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">Today's Awe Moments</h2>
-          <p className="text-gray-600 text-sm md:text-base">
-            {keptToday ? "You've kept a card today. Come back tomorrow! ✨" : "Choose a card to reveal your awe moment"}
+          <p className="text-gray-600 text-sm md:text-base mb-2">
+            {keptToday >= allowedKeeps 
+              ? `You've kept ${keptToday} card${keptToday > 1 ? 's' : ''} today. Come back tomorrow! ✨` 
+              : "Choose a card to reveal your awe moment"
+            }
           </p>
+          {allowedKeeps > 1 && keptToday < allowedKeeps && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full">
+              <span className="text-purple-700 text-sm font-medium">
+                {keptToday} of {allowedKeeps} cards kept today
+              </span>
+              <span className="text-purple-500 text-xs">⭐ {submissionPoints} bonus slots</span>
+            </div>
+          )}
         </div>
 
         {/* Featured card - large */}
@@ -699,7 +708,7 @@ export default function CardsPage() {
           card={selectedCard}
           onClose={() => { setSelectedCard(null); setIsSubmissionCard(false) }}
           onKeep={handleKeep}
-          alreadyKeptToday={keptToday && !selectedCard.isKept}
+          alreadyKeptToday={!isSubmissionCard && keptToday >= allowedKeeps}
           isSubmissionCard={isSubmissionCard}
         />
       )}
