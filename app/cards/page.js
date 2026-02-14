@@ -5,6 +5,66 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 
+const categoryColors = {
+  'moral-beauty': 'from-rose-400 to-pink-600',
+  'collective-effervescence': 'from-orange-400 to-red-600',
+  'nature': 'from-green-400 to-emerald-600',
+  'music': 'from-purple-400 to-violet-600',
+  'visual-design': 'from-blue-400 to-cyan-600',
+  'spirituality': 'from-amber-400 to-yellow-600',
+  'life-death': 'from-slate-400 to-gray-600',
+  'epiphany': 'from-indigo-400 to-blue-600'
+}
+
+const categoryLabels = {
+  'moral-beauty': 'Moral Beauty',
+  'collective-effervescence': 'Collective Effervescence',
+  'nature': 'Nature',
+  'music': 'Music',
+  'visual-design': 'Visual Design',
+  'spirituality': 'Spirituality & Religion',
+  'life-death': 'Life & Death',
+  'epiphany': 'Epiphany'
+}
+
+const categoryQuotes = {
+  'moral-beauty': '"Moral beauty is the awe we feel when witnessing acts of courage, kindness, and virtue." — Dacher Keltner',
+  'collective-effervescence': '"When we gather in groups, we can experience a sense of unity and shared purpose that transcends the individual." — Dacher Keltner',
+  'nature': '"The natural world offers us constant reminders of forces larger than ourselves." — Dacher Keltner',
+  'music': '"Music and rhythm activate ancient circuits in our brains that are attuned to awe." — Dacher Keltner',
+  'visual-design': '"We are wired to find awe in visual patterns, symmetries, and the sublime in art." — Dacher Keltner',
+  'spirituality': '"Spiritual and religious experiences connect us to something vast and beyond ourselves." — Dacher Keltner',
+  'life-death': '"Contemplating the cycles of life and death opens us to the profound and the sacred." — Dacher Keltner',
+  'epiphany': '"Moments of sudden insight reveal new truths and shift how we see the world." — Dacher Keltner'
+}
+
+// Smart rotation: cycle through categories to ensure variety
+function getSmartRotatedCards(cards) {
+  if (!cards || cards.length === 0) return cards
+  
+  // Get today's date as a seed for consistent daily rotation
+  const today = new Date()
+  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000)
+  
+  // Get all unique categories from available cards
+  const categories = [...new Set(cards.map(c => c.category))]
+  
+  // Rotate which category is featured based on day of year
+  const featuredCategoryIndex = dayOfYear % categories.length
+  const featuredCategory = categories[featuredCategoryIndex]
+  
+  // Find the first card matching featured category
+  const featuredCard = cards.find(c => c.category === featuredCategory)
+  
+  // If we found a featured card, move it to the front
+  if (featuredCard) {
+    const otherCards = cards.filter(c => c.category !== featuredCategory)
+    return [featuredCard, ...otherCards]
+  }
+  
+  return cards
+}
+
 function getYouTubeId(url) {
   if (!url) return null
   const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/)
@@ -338,6 +398,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
 
 function FeaturedCard({ card, onClick }) {
   const router = useRouter()
+  const quote = categoryQuotes[card.category] || ''
   
   return (
     <div
@@ -368,12 +429,19 @@ function FeaturedCard({ card, onClick }) {
           <p className="text-white text-sm md:text-base mt-3 opacity-75">Kept today</p>
         </div>
       ) : (
-        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-3xl flex flex-col items-center justify-center p-8 relative overflow-hidden`}>
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-3xl flex flex-col items-center justify-center p-6 md:p-8 relative overflow-hidden`}>
           <div className="absolute top-4 right-4 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-medium border border-white/30">
-            Featured
+            Today's Featured
           </div>
-          <p className="text-white font-bold text-center text-2xl md:text-3xl drop-shadow-lg mb-3">{card.label}</p>
-          <p className="text-white text-sm md:text-base opacity-90">Tap to reveal your awe moment</p>
+          <div className="text-center max-w-3xl">
+            <p className="text-white font-bold text-2xl md:text-3xl drop-shadow-lg mb-4">{card.label}</p>
+            {quote && (
+              <p className="text-white text-sm md:text-base opacity-90 italic leading-relaxed mb-4 drop-shadow">
+                {quote}
+              </p>
+            )}
+            <p className="text-white text-sm md:text-base opacity-80 font-medium">Tap to reveal your awe moment</p>
+          </div>
         </div>
       )}
     </div>
@@ -489,7 +557,9 @@ export default function CardsPage() {
       const response = await fetch('/api/cards/today')
       const data = await response.json()
       if (data.cards) {
-        setCards(data.cards)
+        // Apply smart rotation to feature different category each day
+        const rotatedCards = getSmartRotatedCards(data.cards)
+        setCards(rotatedCards)
         setKeptToday(!!data.keptCard)
         setSubmissionSlots(data.submissionSlots || [])
         setSubmissionPoints(data.submissionPoints || 0)
