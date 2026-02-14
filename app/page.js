@@ -593,6 +593,7 @@ export default function Home() {
             <button onClick={() => router.push('/login')} className="hover:text-white transition-colors">Sign In</button>
             <a href="https://blog.awed.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
             <a href="#submit" className="hover:text-white transition-colors">Submit a Moment</a>
+            <button onClick={() => router.push('/terms')} className="hover:text-white transition-colors">Terms</button>
           </div>
           <p className="text-gray-600 text-xs">
             Inspired by Dacher Keltner's research on awe
