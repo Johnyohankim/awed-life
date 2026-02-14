@@ -11,6 +11,13 @@ function getYouTubeId(url) {
   return match ? match[1] : null
 }
 
+function getYouTubeThumbnail(url) {
+  if (!url) return null
+  const videoId = getYouTubeId(url)
+  if (!videoId) return null
+  return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+}
+
 function isInstagramUrl(url) {
   return url && (url.includes('instagram.com/reel') || url.includes('instagram.com/p/'))
 }
@@ -50,40 +57,31 @@ function getMilestoneProgress(total) {
   return { next, prev, progress: Math.min(progress, 100) }
 }
 
-function ReactionButton({ type, count, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all active:scale-95 ${
-        active
-          ? 'border-blue-500 bg-blue-50'
-          : 'border-gray-200 bg-white hover:border-gray-300'
-      }`}
-    >
-      <img src={`/${type}-emoji.png`} alt={type} width={24} height={24} />
-      <span className="font-medium text-sm capitalize">{type}</span>
-      {count > 0 && (
-        <span className={`text-sm ${active ? 'text-blue-600' : 'text-gray-500'}`}>
-          {count}
-        </span>
-      )}
-    </button>
-  )
-}
+function ReactionBar({ submissionId }) {
+  const [reaction, setReaction] = useState(null)
+  const [awedCount, setAwedCount] = useState(0)
+  const [nawedCount, setNawedCount] = useState(0)
+  const [loading, setLoading] = useState(true)
 
-function PublicJournalCard({ journal, currentUserId }) {
-  const [reaction, setReaction] = useState(journal.userReaction || null)
-  const [awedCount, setAwedCount] = useState(journal.awed_count || 0)
-  const [nawedCount, setNawedCount] = useState(journal.nawed_count || 0)
-  const isOwn = journal.user_id === currentUserId
+  useEffect(() => {
+    if (!submissionId) return
+    fetch(`/api/moment-reactions?submissionId=${submissionId}`)
+      .then(r => r.json())
+      .then(data => {
+        setAwedCount(data.awedCount || 0)
+        setNawedCount(data.nawedCount || 0)
+        setReaction(data.userReaction || null)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [submissionId])
 
   const handleReaction = async (type) => {
-    if (isOwn) return
     try {
-      const response = await fetch('/api/reactions', {
+      const response = await fetch('/api/moment-reactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userCardId: journal.id, reactionType: type })
+        body: JSON.stringify({ submissionId, reactionType: type })
       })
       const data = await response.json()
       if (data.success) {
@@ -97,158 +95,219 @@ function PublicJournalCard({ journal, currentUserId }) {
           else setNawedCount(p => p + 1)
         } else if (data.action === 'updated') {
           setReaction(type)
-          if (type === 'awed') {
-            setAwedCount(p => p + 1)
-            setNawedCount(p => Math.max(p - 1, 0))
-          } else {
-            setNawedCount(p => p + 1)
-            setAwedCount(p => Math.max(p - 1, 0))
-          }
+          if (type === 'awed') { setAwedCount(p => p + 1); setNawedCount(p => Math.max(p - 1, 0)) }
+          else { setNawedCount(p => p + 1); setAwedCount(p => Math.max(p - 1, 0)) }
         }
       }
-    } catch (error) {
-      console.error('Reaction error:', error)
-    }
+    } catch (error) { console.error('Reaction error:', error) }
   }
 
+  if (loading) return null
+
   return (
-    <div className="bg-blue-50 rounded-xl p-4">
-      <p className="text-gray-700 text-sm leading-relaxed mb-3">{journal.journal_text}</p>
-      {!isOwn && (
-        <div className="flex gap-2">
-          <ReactionButton type="awed" count={awedCount} active={reaction === 'awed'} onClick={() => handleReaction('awed')} />
-          <ReactionButton type="nawed" count={nawedCount} active={reaction === 'nawed'} onClick={() => handleReaction('nawed')} />
-        </div>
-      )}
+    <div className="flex items-center justify-center gap-3 mt-4">
+      <button
+        onClick={() => handleReaction('awed')}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-all active:scale-95 ${
+          reaction === 'awed' 
+            ? 'border-yellow-400 bg-yellow-400/30' 
+            : 'border-white/30 bg-white/10 hover:bg-white/20'
+        }`}
+      >
+        <img src="/awed-emoji.png" alt="awed" width={24} height={24} />
+        <span className="font-medium text-sm text-white">Awed</span>
+        {awedCount > 0 && <span className="text-sm text-white/80">{awedCount}</span>}
+      </button>
+      <button
+        onClick={() => handleReaction('nawed')}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-all active:scale-95 ${
+          reaction === 'nawed' 
+            ? 'border-blue-400 bg-blue-400/30' 
+            : 'border-white/30 bg-white/10 hover:bg-white/20'
+        }`}
+      >
+        <img src="/nawed-emoji.png" alt="nawed" width={24} height={24} />
+        <span className="font-medium text-sm text-white">Nawed</span>
+        {nawedCount > 0 && <span className="text-sm text-white/80">{nawedCount}</span>}
+      </button>
     </div>
   )
 }
 
-function CardDetailModal({ card, onClose, userId }) {
+function FullscreenCardModal({ card, onClose }) {
   const videoId = getYouTubeId(card.video_link)
+  const isInstagram = isInstagramUrl(card.video_link)
+  const isTwitter = isTwitterUrl(card.video_link)
+  const label = categoryLabels[card.category] || card.category
+  const date = new Date(card.kept_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+
+  return (
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+      {/* Video container - fullscreen */}
+      <div className="flex-1 relative">
+        {isInstagram ? (
+          <a
+            href={card.video_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex flex-col items-center justify-center hover:opacity-90 transition-opacity"
+          >
+            <svg viewBox="0 0 24 24" className="w-16 h-16 fill-white mb-4">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+            </svg>
+            <p className="text-white font-bold text-xl">Watch on Instagram</p>
+            <p className="text-white text-sm mt-2 opacity-75">Tap to open ↗</p>
+          </a>
+        ) : isTwitter ? (
+          <a
+            href={card.video_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full h-full bg-black flex flex-col items-center justify-center hover:opacity-90 transition-opacity"
+          >
+            <svg viewBox="0 0 24 24" className="w-16 h-16 fill-white mb-4">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.766l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            <p className="text-white font-bold text-xl">Watch on X</p>
+            <p className="text-white text-sm mt-2 opacity-75">Tap to open ↗</p>
+          </a>
+        ) : videoId ? (
+          <iframe
+            className="w-full h-full"
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+            title={label}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+            <p className="text-white">Video unavailable</p>
+          </div>
+        )}
+
+        {/* Overlay controls - top */}
+        <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-white font-bold text-lg drop-shadow">{label}</h3>
+              <p className="text-white/90 text-sm">{date}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        {/* Reactions */}
+        {!isInstagram && !isTwitter && card.submission_id && (
+          <div className="absolute bottom-8 left-0 right-0 px-4">
+            <ReactionBar submissionId={card.submission_id} />
+          </div>
+        )}
+      </div>
+
+      {/* Journal - bottom sheet */}
+      <div className="bg-white rounded-t-3xl max-h-[40vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-center mb-4">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+          <h4 className="font-bold text-lg mb-3">Your Reflection</h4>
+          <div className="bg-gray-50 rounded-xl p-4">
+            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{card.journal_text}</p>
+          </div>
+          {card.is_public && (
+            <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+              <span>Public reflection</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ThumbnailCard({ card, onClick, onShare }) {
+  const thumbnail = getYouTubeThumbnail(card.video_link)
   const isInstagram = isInstagramUrl(card.video_link)
   const isTwitter = isTwitterUrl(card.video_link)
   const color = categoryColors[card.category] || 'from-gray-400 to-gray-600'
   const label = categoryLabels[card.category] || card.category
-  const date = new Date(card.kept_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-  const [showOthers, setShowOthers] = useState(false)
+  const date = new Date(card.kept_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-80 flex items-end md:items-center justify-center z-50"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-t-3xl md:rounded-2xl w-full md:max-w-2xl max-h-[92vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
-
-        <div className={`bg-gradient-to-r ${color} px-6 py-4 flex justify-between items-center`}>
-          <div>
-            <h3 className="text-xl font-bold text-white">{label}</h3>
-            <p className="text-white text-sm opacity-80">{date}</p>
-          </div>
-          <button onClick={onClose} className="text-white text-3xl leading-none opacity-75 w-10 h-10 flex items-center justify-center">×</button>
-        </div>
-
-        <div className="p-4 md:p-6">
-          {isInstagram ? (
-            <a
-              href={card.video_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="aspect-video mb-6 rounded-xl overflow-hidden bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex flex-col items-center justify-center hover:opacity-90 transition-opacity"
-            >
-              <svg viewBox="0 0 24 24" className="w-12 h-12 fill-white mb-2">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
-              </svg>
-              <p className="text-white font-bold text-lg">Watch on Instagram</p>
-              <p className="text-white text-sm mt-1 opacity-75">Tap to open ↗</p>
-            </a>
-          ) : isTwitter ? (
-            <a
-              href={card.video_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="aspect-video mb-6 rounded-xl overflow-hidden bg-black flex flex-col items-center justify-center hover:opacity-90 transition-opacity"
-            >
-              <svg viewBox="0 0 24 24" className="w-12 h-12 fill-white mb-2">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.766l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-              </svg>
-              <p className="text-white font-bold text-lg">Watch on X</p>
-              <p className="text-white text-sm mt-1 opacity-75">Tap to open ↗</p>
-            </a>
-          ) : videoId ? (
-            <div className="aspect-video mb-6 rounded-xl overflow-hidden">
-              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${videoId}`} title={label} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-            </div>
-          ) : (
-            <div className="aspect-video mb-6 bg-gray-100 rounded-xl flex items-center justify-center">
-              <p className="text-gray-500">Video unavailable</p>
-            </div>
-          )}
-
-          <div className="mb-6">
-            <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your Reflection</h4>
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-gray-700 leading-relaxed">{card.journal_text}</p>
-            </div>
-          </div>
-
-          {card.public_journals && card.public_journals.length > 0 && (
-            <div>
-              <button
-                onClick={() => setShowOthers(!showOthers)}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl active:bg-gray-100 transition-colors"
-              >
-                <span className="text-sm font-semibold text-gray-600">
-                  What others felt ({card.public_journals.length})
-                </span>
-                <span className="text-gray-400">{showOthers ? '▲' : '▼'}</span>
-              </button>
-              {showOthers && (
-                <div className="mt-3 space-y-3">
-                  {card.public_journals.map((journal, index) => (
-                    <PublicJournalCard key={index} journal={journal} currentUserId={userId} />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="h-4 md:hidden" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function CollectionCard({ card, onClick, onShare }) {
-  const color = categoryColors[card.category] || 'from-gray-400 to-gray-600'
-  const label = categoryLabels[card.category] || card.category
-  const date = new Date(card.kept_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-
-  return (
-    <div className="relative">
+    <div className="group relative">
       <div
         onClick={() => onClick(card)}
-        className="relative aspect-[3/4] rounded-2xl shadow-md cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl transition-all duration-200"
+        className="relative aspect-video rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-200 active:scale-[0.98]"
       >
-        <div className={`w-full h-full bg-gradient-to-br ${color} rounded-2xl flex flex-col items-center justify-center p-4`}>
-          <p className="text-white text-2xl mb-2">✨</p>
-          <p className="text-white font-bold text-center text-sm drop-shadow">{label}</p>
-          <p className="text-white text-xs mt-2 opacity-75">{date}</p>
-          {card.is_public && <p className="text-white text-xs mt-1 opacity-75">🌍 Public</p>}
+        {thumbnail ? (
+          <>
+            <img src={thumbnail} alt={label} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          </>
+        ) : isInstagram ? (
+          <div className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-12 h-12 fill-white">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+            </svg>
+          </div>
+        ) : isTwitter ? (
+          <div className="w-full h-full bg-black flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="w-12 h-12 fill-white">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.766l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </div>
+        ) : (
+          <div className={`w-full h-full bg-gradient-to-br ${color} flex items-center justify-center`}>
+            <p className="text-white font-bold text-sm">✨</p>
+          </div>
+        )}
+        
+        {/* Play button overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-gray-900 ml-1">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
         </div>
+
+        {/* Category badge */}
+        <div className={`absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-medium text-white bg-gradient-to-r ${color} shadow-sm`}>
+          {label}
+        </div>
+
+        {/* Public badge */}
+        {card.is_public && (
+          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-blue-600">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+            </svg>
+          </div>
+        )}
       </div>
 
+      {/* Info below thumbnail */}
+      <div className="mt-2">
+        <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+          {card.journal_text?.substring(0, 60)}{card.journal_text?.length > 60 ? '...' : ''}
+        </p>
+        <p className="text-xs text-gray-500">{date}</p>
+      </div>
+
+      {/* Share button for public cards */}
       {card.is_public && (
         <button
           onClick={(e) => { e.stopPropagation(); onShare(card) }}
-          className="absolute bottom-2 right-2 bg-white bg-opacity-90 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-opacity-100 active:scale-95 transition-all"
+          className="absolute bottom-14 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-all opacity-0 group-hover:opacity-100"
           title="Share"
         >
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-gray-600">
@@ -312,7 +371,7 @@ export default function CollectionPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
-        <div className="container mx-auto flex justify-between items-center max-w-5xl">
+        <div className="container mx-auto flex justify-between items-center max-w-6xl">
           <h1 className="text-2xl font-bold">Awed</h1>
           <div className="hidden md:flex items-center gap-4">
             <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Today's Cards</button>
@@ -323,7 +382,7 @@ export default function CollectionPage() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-6 max-w-5xl">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
         <div className="text-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">My Collection</h2>
           <p className="text-gray-600 text-sm">Your personal awe moments</p>
@@ -376,11 +435,12 @@ export default function CollectionPage() {
           </div>
         ) : (
           <>
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
+            {/* Filters */}
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4">
               <button
                 onClick={() => setActiveFilter('all')}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                  activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'
+                  activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 shadow-sm'
                 }`}
               >
                 All ({cards.length})
@@ -390,7 +450,7 @@ export default function CollectionPage() {
                   key={cat}
                   onClick={() => setActiveFilter(cat)}
                   className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                    activeFilter === cat ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'
+                    activeFilter === cat ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 shadow-sm'
                   }`}
                 >
                   {categoryLabels[cat] || cat}
@@ -398,9 +458,10 @@ export default function CollectionPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {/* Thumbnail grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredCards.map((card) => (
-                <CollectionCard key={card.card_id} card={card} onClick={setSelectedCard} onShare={handleShare} />
+                <ThumbnailCard key={card.card_id} card={card} onClick={setSelectedCard} onShare={handleShare} />
               ))}
             </div>
           </>
@@ -410,7 +471,7 @@ export default function CollectionPage() {
       <BottomNav />
 
       {selectedCard && (
-        <CardDetailModal card={selectedCard} onClose={() => setSelectedCard(null)} userId={session?.user?.id} />
+        <FullscreenCardModal card={selectedCard} onClose={() => setSelectedCard(null)} />
       )}
     </div>
   )
