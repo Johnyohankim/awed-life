@@ -336,41 +336,84 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
   )
 }
 
-function AweCard({ card, onClick }) {
+function FeaturedCard({ card, onClick }) {
   const router = useRouter()
   
   return (
     <div
       onClick={() => !card.isEmpty && onClick(card)}
-      className={`relative aspect-[3/4] rounded-2xl shadow-lg transition-all duration-200 ${
-        card.isEmpty ? 'cursor-default' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl'
+      className={`relative aspect-[16/9] md:aspect-[21/9] rounded-3xl shadow-xl transition-all duration-200 ${
+        card.isEmpty ? 'cursor-default' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-[0.98] hover:scale-[1.02] hover:shadow-2xl'
       }`}
     >
       {card.isEmpty ? (
-        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4 relative overflow-hidden`}>
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-3xl flex flex-col items-center justify-center p-8 relative overflow-hidden`}>
           <div className="absolute inset-0 bg-black bg-opacity-20" />
           <div className="relative z-10 text-center">
-            <p className="text-white text-3xl mb-3">🌱</p>
-            <p className="text-white font-bold text-sm mb-2">{card.label}</p>
-            <p className="text-white text-xs opacity-90 mb-4 px-2">Help us grow this category</p>
+            <p className="text-white text-5xl md:text-6xl mb-4">🌱</p>
+            <p className="text-white font-bold text-xl md:text-2xl mb-2">{card.label}</p>
+            <p className="text-white text-sm md:text-base opacity-90 mb-6 max-w-md">Help us grow this category by sharing an awe moment</p>
             <button
               onClick={(e) => { e.stopPropagation(); router.push('/submit') }}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-xs font-medium px-4 py-2 rounded-lg backdrop-blur-sm border border-white border-opacity-30 transition-all"
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-sm md:text-base font-medium px-6 py-3 rounded-xl backdrop-blur-sm border border-white border-opacity-30 transition-all"
             >
               Submit a moment →
             </button>
           </div>
         </div>
       ) : card.isKept ? (
-        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4`}>
-          <p className="text-white text-2xl mb-2">✨</p>
-          <p className="text-white font-bold text-center text-sm">{card.label}</p>
-          <p className="text-white text-xs mt-2 opacity-75">Kept today</p>
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-3xl flex flex-col items-center justify-center p-8`}>
+          <p className="text-white text-4xl md:text-5xl mb-3">✨</p>
+          <p className="text-white font-bold text-center text-xl md:text-2xl">{card.label}</p>
+          <p className="text-white text-sm md:text-base mt-3 opacity-75">Kept today</p>
         </div>
       ) : (
-        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-2xl flex flex-col items-center justify-center p-4`}>
-          <p className="text-white font-bold text-center text-sm drop-shadow">{card.label}</p>
-          <p className="text-white text-xs mt-2 opacity-75">Tap to reveal</p>
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-3xl flex flex-col items-center justify-center p-8 relative overflow-hidden`}>
+          <div className="absolute top-4 right-4 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-medium border border-white/30">
+            Featured
+          </div>
+          <p className="text-white font-bold text-center text-2xl md:text-3xl drop-shadow-lg mb-3">{card.label}</p>
+          <p className="text-white text-sm md:text-base opacity-90">Tap to reveal your awe moment</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SmallCard({ card, onClick }) {
+  const router = useRouter()
+  
+  return (
+    <div
+      onClick={() => !card.isEmpty && onClick(card)}
+      className={`relative aspect-[3/4] rounded-xl shadow-md transition-all duration-200 ${
+        card.isEmpty ? 'cursor-default' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-95 hover:scale-105 hover:shadow-lg'
+      }`}
+    >
+      {card.isEmpty ? (
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-xl flex flex-col items-center justify-center p-3 relative overflow-hidden`}>
+          <div className="absolute inset-0 bg-black bg-opacity-20" />
+          <div className="relative z-10 text-center">
+            <p className="text-white text-2xl mb-2">🌱</p>
+            <p className="text-white font-bold text-xs mb-1">{card.label}</p>
+            <button
+              onClick={(e) => { e.stopPropagation(); router.push('/submit') }}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-xs font-medium px-3 py-1.5 rounded-lg backdrop-blur-sm border border-white border-opacity-30 transition-all mt-2"
+            >
+              Submit →
+            </button>
+          </div>
+        </div>
+      ) : card.isKept ? (
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-xl flex flex-col items-center justify-center p-3`}>
+          <p className="text-white text-xl mb-1">✨</p>
+          <p className="text-white font-bold text-center text-xs">{card.label}</p>
+          <p className="text-white text-xs mt-1 opacity-75">Kept</p>
+        </div>
+      ) : (
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-xl flex flex-col items-center justify-center p-3`}>
+          <p className="text-white font-bold text-center text-xs drop-shadow">{card.label}</p>
+          <p className="text-white text-xs mt-1 opacity-75">Tap</p>
         </div>
       )}
     </div>
@@ -404,12 +447,12 @@ function SubmissionCard({ card, onClick }) {
   return (
     <div
       onClick={() => onClick(card)}
-      className="relative aspect-[3/4] rounded-2xl shadow-lg cursor-pointer active:scale-95 hover:scale-105 hover:shadow-xl transition-all duration-200"
+      className="relative aspect-[3/4] rounded-xl shadow-md cursor-pointer active:scale-95 hover:scale-105 hover:shadow-lg transition-all duration-200"
     >
-      <div className={`w-full h-full bg-gradient-to-br ${color} rounded-2xl flex flex-col items-center justify-center p-4`}>
-        <p className="text-white text-xl mb-1">⭐</p>
+      <div className={`w-full h-full bg-gradient-to-br ${color} rounded-xl flex flex-col items-center justify-center p-3`}>
+        <p className="text-white text-lg mb-1">⭐</p>
         <p className="text-white font-bold text-center text-xs drop-shadow leading-tight">{label}</p>
-        <p className="text-white text-xs mt-2 opacity-75">Your submission</p>
+        <p className="text-white text-xs mt-1 opacity-75">Yours</p>
       </div>
     </div>
   )
@@ -483,6 +526,10 @@ export default function CardsPage() {
 
   if (!session) return null
 
+  // Featured card (first one) and remaining 7 cards
+  const featuredCard = cards[0]
+  const remainingCards = cards.slice(1)
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
@@ -505,14 +552,24 @@ export default function CardsPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-10">
-          {cards.map(card => (
-            <AweCard key={card.category} card={card} onClick={c => handleCardClick(c, false)} />
-          ))}
-        </div>
+        {/* Featured card - large */}
+        {featuredCard && (
+          <div className="mb-6">
+            <FeaturedCard card={featuredCard} onClick={c => handleCardClick(c, false)} />
+          </div>
+        )}
+
+        {/* Remaining 7 cards - grid */}
+        {remainingCards.length > 0 && (
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-10">
+            {remainingCards.map(card => (
+              <SmallCard key={card.category} card={card} onClick={c => handleCardClick(c, false)} />
+            ))}
+          </div>
+        )}
 
         {submissionSlots.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-8">
             <div className="flex items-center gap-3 mb-4">
               <h3 className="text-lg font-bold">Your Submissions</h3>
               <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
@@ -522,7 +579,7 @@ export default function CardsPage() {
             <p className="text-gray-500 text-sm mb-4">
               These moments are permanently in your collection — one per approved submission.
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
               {submissionSlots.map(card => (
                 <SubmissionCard key={card.card_id} card={card} onClick={c => handleCardClick(c, true)} />
               ))}
