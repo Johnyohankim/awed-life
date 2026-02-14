@@ -11,7 +11,7 @@ function getYouTubeId(url) {
   return match ? match[1] : null
 }
 
-function ReactionBar({ submissionId }) {
+function ReactionBar({ submissionId, onReact }) {
   const [reaction, setReaction] = useState(null)
   const [awedCount, setAwedCount] = useState(0)
   const [nawedCount, setNawedCount] = useState(0)
@@ -53,28 +53,37 @@ function ReactionBar({ submissionId }) {
           else { setNawedCount(p => p + 1); setAwedCount(p => Math.max(p - 1, 0)) }
         }
       }
+      if (onReact) onReact(type)
     } catch (error) { console.error('Reaction error:', error) }
   }
 
   if (loading) return null
 
   return (
-    <div className="flex items-center justify-center gap-4 py-4 border-t border-gray-100">
+    <div className="flex items-center justify-center gap-3">
       <button
         onClick={() => handleReaction('awed')}
-        className={`flex items-center gap-2 px-5 py-3 rounded-full border-2 transition-all active:scale-95 ${reaction === 'awed' ? 'border-yellow-400 bg-yellow-50 scale-105' : 'border-gray-200 bg-white hover:border-yellow-300'}`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-all active:scale-95 ${
+          reaction === 'awed' 
+            ? 'border-yellow-400 bg-yellow-400/30' 
+            : 'border-white/30 bg-white/10 hover:bg-white/20'
+        }`}
       >
-        <img src="/awed-emoji.png" alt="awed" width={28} height={28} />
-        <span className="font-medium text-sm">Awed</span>
-        {awedCount > 0 && <span className="text-sm text-gray-500">{awedCount}</span>}
+        <img src="/awed-emoji.png" alt="awed" width={24} height={24} />
+        <span className="font-medium text-sm text-white">Awed</span>
+        {awedCount > 0 && <span className="text-sm text-white/80">{awedCount}</span>}
       </button>
       <button
         onClick={() => handleReaction('nawed')}
-        className={`flex items-center gap-2 px-5 py-3 rounded-full border-2 transition-all active:scale-95 ${reaction === 'nawed' ? 'border-blue-400 bg-blue-50 scale-105' : 'border-gray-200 bg-white hover:border-blue-300'}`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-all active:scale-95 ${
+          reaction === 'nawed' 
+            ? 'border-blue-400 bg-blue-400/30' 
+            : 'border-white/30 bg-white/10 hover:bg-white/20'
+        }`}
       >
-        <img src="/nawed-emoji.png" alt="nawed" width={28} height={28} />
-        <span className="font-medium text-sm">Nawed</span>
-        {nawedCount > 0 && <span className="text-sm text-gray-500">{nawedCount}</span>}
+        <img src="/nawed-emoji.png" alt="nawed" width={24} height={24} />
+        <span className="font-medium text-sm text-white">Nawed</span>
+        {nawedCount > 0 && <span className="text-sm text-white/80">{nawedCount}</span>}
       </button>
     </div>
   )
@@ -110,14 +119,12 @@ function OnboardingModal({ onClose }) {
           <p className="text-gray-600 leading-relaxed">{steps[step].description}</p>
         </div>
 
-        {/* Progress dots */}
         <div className="flex justify-center gap-2 mb-6">
           {steps.map((_, i) => (
             <div key={i} className={`h-2 rounded-full transition-all ${i === step ? 'w-8 bg-blue-600' : 'w-2 bg-gray-200'}`} />
           ))}
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-3">
           {step > 0 && (
             <button
@@ -145,17 +152,17 @@ function OnboardingModal({ onClose }) {
   )
 }
 
-function CardModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }) {
+function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }) {
   const [journalText, setJournalText] = useState(isSubmissionCard ? 'I submitted this awe moment ✨' : '')
   const [isPublic, setIsPublic] = useState(false)
   const [keeping, setKeeping] = useState(false)
   const [kept, setKept] = useState(card.isKept || isSubmissionCard)
   const [streak, setStreak] = useState(null)
+  const [showJournal, setShowJournal] = useState(false)
 
   const videoId = getYouTubeId(card.video?.videoLink || card.video_link)
   const canKeep = journalText.trim().length >= 10
 
-  // Category-specific prompts
   const journalPrompts = {
     'moral-beauty': "Growing up, I was told to do the right thing. Sometimes it takes courage to help, voice out, and reach out. I remind myself we belong to something bigger...",
     'collective-effervescence': "There's something magical when people come together. This moment reminds me of times when I felt part of something larger than myself...",
@@ -199,97 +206,120 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-end md:items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-t-3xl md:rounded-2xl w-full md:max-w-2xl max-h-[92vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div className="w-10 h-1 bg-gray-300 rounded-full" />
-        </div>
-
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center rounded-t-3xl md:rounded-t-2xl">
-          <div>
-            <h3 className="text-xl font-bold">{card.label || card.category}</h3>
-            {isSubmissionCard && (
-              <p className="text-sm text-purple-600 font-medium">⭐ Your submission</p>
-            )}
-            {kept && streak && (
-              <p className="text-sm text-orange-500 font-medium">🔥 {streak} day streak!</p>
-            )}
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+      {/* Video container - fullscreen */}
+      <div className="flex-1 relative">
+        {videoId ? (
+          <iframe
+            className="w-full h-full"
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+            title={card.label}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+            <p className="text-white">Video unavailable</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-3xl leading-none w-10 h-10 flex items-center justify-center">×</button>
+        )}
+
+        {/* Overlay controls - top */}
+        <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-white font-bold text-lg drop-shadow">{card.label || card.category}</h3>
+              {isSubmissionCard && (
+                <p className="text-white/90 text-sm">⭐ Your submission</p>
+              )}
+              {kept && streak && (
+                <p className="text-orange-400 text-sm font-medium">🔥 {streak} day streak!</p>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
-        <div className="p-4 md:p-6">
-          {videoId ? (
-            <div className="aspect-video mb-4 rounded-xl overflow-hidden">
-              <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} title={card.label} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-            </div>
-          ) : (
-            <div className="aspect-video mb-4 bg-gray-100 rounded-xl flex items-center justify-center">
-              <p className="text-gray-500">Video unavailable</p>
-            </div>
-          )}
+        {/* Reactions - floating center-bottom */}
+        {!isSubmissionCard && !kept && (card.video?.id || card.submission_id) && (
+          <div className="absolute bottom-24 left-0 right-0 flex justify-center">
+            <ReactionBar 
+              submissionId={card.video?.id || card.submission_id}
+              onReact={() => setShowJournal(true)}
+            />
+          </div>
+        )}
+      </div>
 
-          {(card.video?.id || card.submission_id) && (
-            <ReactionBar submissionId={card.video?.id || card.submission_id} />
-          )}
+      {/* Bottom sheet - journal */}
+      <div
+        className={`bg-white rounded-t-3xl transition-all duration-300 ${
+          showJournal || kept || isSubmissionCard ? 'max-h-[60vh]' : 'max-h-0'
+        } overflow-hidden`}
+      >
+        <div className="p-6">
+          {/* Drag handle */}
+          <div className="flex justify-center mb-4">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
 
-          {/* Submission card - already in collection */}
           {isSubmissionCard ? (
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 text-center mt-4">
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 text-center">
               <p className="text-2xl mb-2">⭐</p>
               <p className="text-purple-800 font-bold text-lg mb-1">Your Submission!</p>
-              <p className="text-gray-600 text-sm">This moment is already in your collection. Thank you for contributing to Awed!</p>
+              <p className="text-gray-600 text-sm">This moment is already in your collection.</p>
             </div>
           ) : kept ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center mt-4">
+            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
               <p className="text-2xl mb-2">✨</p>
               <p className="text-green-800 font-bold text-lg mb-1">Card Kept!</p>
               {streak && <p className="text-orange-500 font-medium text-sm">🔥 {streak} day streak!</p>}
-              <button onClick={onClose} className="mt-4 text-blue-600 hover:text-blue-700 font-medium text-sm">Explore more cards →</button>
+              <button onClick={onClose} className="mt-4 text-blue-600 hover:text-blue-700 font-medium text-sm">
+                Explore more cards →
+              </button>
+            </div>
+          ) : alreadyKeptToday ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 text-center">
+              <p className="text-blue-800 text-sm">You've already kept a card today. Come back tomorrow!</p>
             </div>
           ) : (
-            <div className="mt-4">
-              {alreadyKeptToday && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-center">
-                  <p className="text-blue-800 text-sm">You've already kept a card today. Come back tomorrow!</p>
+            <>
+              <h4 className="font-bold text-lg mb-3">How does this make you feel?</h4>
+              <textarea
+                value={journalText}
+                onChange={e => setJournalText(e.target.value)}
+                placeholder={placeholder}
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base mb-3"
+                autoFocus
+              />
+              {!canKeep && journalText.length > 0 && (
+                <p className="text-xs text-gray-400 mb-3">{10 - journalText.trim().length} more characters needed</p>
+              )}
+              {canKeep && (
+                <div className="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded-xl">
+                  <input type="checkbox" id="isPublic" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} className="w-5 h-5" />
+                  <label htmlFor="isPublic" className="text-sm text-gray-700">
+                    Share my reflection publicly
+                  </label>
                 </div>
               )}
-              {!alreadyKeptToday && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">How does this moment make you feel?</label>
-                    <textarea
-                      value={journalText}
-                      onChange={e => setJournalText(e.target.value)}
-                      placeholder={placeholder}
-                      rows={4}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base"
-                    />
-                    {!canKeep && journalText.length > 0 && (
-                      <p className="text-xs text-gray-400 mt-1">{10 - journalText.trim().length} more characters needed</p>
-                    )}
-                  </div>
-                  {canKeep && (
-                    <div className="flex items-center gap-3 mb-4 p-4 bg-gray-50 rounded-xl">
-                      <input type="checkbox" id="isPublic" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} className="w-5 h-5" />
-                      <label htmlFor="isPublic" className="text-sm text-gray-700">
-                        Share my reflection publicly
-                        <span className="block text-xs text-gray-400">Others can read your journal entry</span>
-                      </label>
-                    </div>
-                  )}
-                  <button
-                    onClick={handleKeep}
-                    disabled={!canKeep || keeping}
-                    className={`w-full py-4 px-6 rounded-xl font-medium transition-all text-base active:scale-95 ${canKeep ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
-                  >
-                    {keeping ? 'Keeping...' : canKeep ? 'Keep This Card ✨' : 'Write to keep this card'}
-                  </button>
-                </>
-              )}
-            </div>
+              <button
+                onClick={handleKeep}
+                disabled={!canKeep || keeping}
+                className={`w-full py-4 px-6 rounded-xl font-medium transition-all text-base active:scale-95 ${
+                  canKeep ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {keeping ? 'Keeping...' : canKeep ? 'Keep This Card ✨' : 'Write to keep this card'}
+              </button>
+            </>
           )}
-          <div className="h-4 md:hidden" />
         </div>
       </div>
     </div>
@@ -394,7 +424,6 @@ export default function CardsPage() {
   useEffect(() => {
     if (status === 'authenticated') {
       loadCards()
-      // Check if first visit
       const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
       if (!hasSeenOnboarding) {
         setShowOnboarding(true)
@@ -459,8 +488,6 @@ export default function CardsPage() {
       </nav>
 
       <div className="container mx-auto px-4 py-6 max-w-5xl">
-
-        {/* Daily curated cards */}
         <div className="text-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">Today's Awe Moments</h2>
           <p className="text-gray-600 text-sm md:text-base">
@@ -474,7 +501,6 @@ export default function CardsPage() {
           ))}
         </div>
 
-        {/* Submission slots */}
         {submissionSlots.length > 0 && (
           <div className="mt-4">
             <div className="flex items-center gap-3 mb-4">
@@ -493,13 +519,12 @@ export default function CardsPage() {
             </div>
           </div>
         )}
-
       </div>
 
       <BottomNav />
 
       {selectedCard && (
-        <CardModal
+        <FullscreenVideoModal
           card={selectedCard}
           onClose={() => { setSelectedCard(null); setIsSubmissionCard(false) }}
           onKeep={handleKeep}
