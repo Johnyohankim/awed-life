@@ -223,6 +223,22 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
   const videoId = getYouTubeId(card.video?.videoLink || card.video_link)
   const canKeep = journalText.trim().length >= 10
 
+  // Handle back button
+  useEffect(() => {
+    // Push a history state when modal opens
+    window.history.pushState({ modal: true }, '')
+
+    const handlePopState = (e) => {
+      onClose()
+    }
+
+    window.addEventListener('popstate', handlePopState)
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [onClose])
+
   const journalPrompts = {
     'moral-beauty': "Growing up, I was told to do the right thing. Sometimes it takes courage to help, voice out, and reach out. I remind myself we belong to something bigger...",
     'collective-effervescence': "There's something magical when people come together. This moment reminds me of times when I felt part of something larger than myself...",

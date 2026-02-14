@@ -141,6 +141,22 @@ function FullscreenCardModal({ card, onClose }) {
   const label = categoryLabels[card.category] || card.category
   const date = new Date(card.kept_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 
+  // Handle back button
+  useEffect(() => {
+    // Push a history state when modal opens
+    window.history.pushState({ modal: true }, '')
+
+    const handlePopState = (e) => {
+      onClose()
+    }
+
+    window.addEventListener('popstate', handlePopState)
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [onClose])
+
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Video container - fullscreen */}
