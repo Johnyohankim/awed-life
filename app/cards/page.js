@@ -155,6 +155,20 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }
   const videoId = getYouTubeId(card.video?.videoLink || card.video_link)
   const canKeep = journalText.trim().length >= 10
 
+  // Category-specific prompts
+  const journalPrompts = {
+    'moral-beauty': "Growing up, I was told to do the right thing. Sometimes it takes courage to help, voice out, and reach out. I remind myself we belong to something bigger...",
+    'collective-effervescence': "There's something magical when people come together. This moment reminds me of times when I felt part of something larger than myself...",
+    'nature': "Nature has a way of putting things in perspective. Watching this, I'm reminded how small we are, yet how connected to everything around us...",
+    'music': "Music moves me in ways words can't capture. This piece made me feel...",
+    'visual-design': "Beauty in design stops me in my tracks. The way light, form, and space come together here reminds me that creativity is everywhere...",
+    'spirituality': "In moments of stillness, I find something beyond the everyday. This speaks to a deeper sense of connection...",
+    'life-death': "Life is fragile and precious. This moment reminds me to appreciate what I have, to be present, to remember what matters...",
+    'epiphany': "Sometimes understanding hits all at once. Watching this, something clicked for me..."
+  }
+
+  const placeholder = journalPrompts[card.category] || "How does this moment make you feel? What does it remind you of?"
+
   const handleKeep = async () => {
     if (!canKeep || keeping) return
     setKeeping(true)
@@ -247,7 +261,7 @@ function CardModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }
                     <textarea
                       value={journalText}
                       onChange={e => setJournalText(e.target.value)}
-                      placeholder="Write your reflection here..."
+                      placeholder={placeholder}
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base"
                     />
