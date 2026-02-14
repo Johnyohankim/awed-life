@@ -245,13 +245,23 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
           </div>
         </div>
 
-        {/* Reactions - floating center-bottom */}
-        {!isSubmissionCard && !kept && (card.video?.id || card.submission_id) && (
-          <div className="absolute bottom-24 left-0 right-0 flex justify-center">
-            <ReactionBar 
-              submissionId={card.video?.id || card.submission_id}
-              onReact={() => setShowJournal(true)}
-            />
+        {/* Reactions + Write button - floating center-bottom */}
+        {!isSubmissionCard && !kept && (
+          <div className="absolute bottom-24 left-0 right-0 px-4">
+            <div className="flex flex-col items-center gap-3">
+              {(card.video?.id || card.submission_id) && (
+                <ReactionBar 
+                  submissionId={card.video?.id || card.submission_id}
+                  onReact={() => setShowJournal(true)}
+                />
+              )}
+              <button
+                onClick={() => setShowJournal(true)}
+                className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-md text-gray-900 font-medium text-sm hover:bg-white transition-all active:scale-95 shadow-lg"
+              >
+                ✍️ Write & Keep
+              </button>
+            </div>
           </div>
         )}
       </div>
