@@ -4,6 +4,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
+import AchievementToast from '../components/AchievementToast'
 
 const categoryColors = {
   'moral-beauty': 'from-rose-400 to-pink-600',
@@ -553,6 +554,8 @@ export default function CardsPage() {
   const [isSubmissionCard, setIsSubmissionCard] = useState(false)
   const [keptToday, setKeptToday] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [achievementCount, setAchievementCount] = useState(null)
+  const [totalCards, setTotalCards] = useState(0)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -580,6 +583,13 @@ export default function CardsPage() {
         setSubmissionSlots(data.submissionSlots || [])
         setSubmissionPoints(data.submissionPoints || 0)
       }
+      
+      // Get total card count for achievement tracking
+      const profileResponse = await fetch('/api/profile')
+      const profileData = await profileResponse.json()
+      if (profileData.totalCards !== undefined) {
+        setTotalCards(profileData.totalCards)
+      }
     } catch (error) {
       console.error('Error loading cards:', error)
     } finally {
@@ -588,8 +598,16 @@ export default function CardsPage() {
   }
 
   const handleKeep = () => {
+    const previousCount = totalCards
     setKeptToday(true)
-    loadCards()
+    loadCards().then(() => {
+      // Check if we hit a milestone
+      const newCount = previousCount + 1
+      const milestones = [5, 15, 30, 75, 150, 300, 500]
+      if (milestones.includes(newCount)) {
+        setAchievementCount(newCount)
+      }
+    })
   }
 
   const handleCardClick = (card, isSubmission = false) => {
@@ -687,6 +705,13 @@ export default function CardsPage() {
       )}
 
       {showOnboarding && <OnboardingModal onClose={handleCloseOnboarding} />}
+
+      {achievementCount && (
+        <AchievementToast 
+          newCardCount={achievementCount} 
+          onDismiss={() => setAchievementCount(null)} 
+        />
+      )}
     </div>
   )
 }
