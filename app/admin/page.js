@@ -47,7 +47,7 @@ function VideoPreview({ url }) {
 }
 
 // Users tab component
-function UsersTab() {
+function UsersTab({ onUsersCountChange }) {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingUser, setEditingUser] = useState(null)
@@ -62,6 +62,7 @@ function UsersTab() {
     const data = await response.json()
     setUsers(data.users || [])
     setLoading(false)
+    if (onUsersCountChange) onUsersCountChange(data.users?.length || 0)
   }
 
   const handleEdit = (user) => {
@@ -106,8 +107,8 @@ function UsersTab() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-xl font-bold">Users</h2>
-          <p className="text-sm text-gray-500 mt-1">{users.length} registered users</p>
+          <h2 className="text-xl font-bold">Users ({users.length})</h2>
+          <p className="text-sm text-gray-500 mt-1">{users.length} registered user{users.length !== 1 ? 's' : ''}</p>
         </div>
       </div>
 
@@ -220,6 +221,7 @@ export default function AdminPage() {
   const [bulkCategory, setBulkCategory] = useState('')
   const [bulkSubmitting, setBulkSubmitting] = useState(false)
   const [bulkResult, setBulkResult] = useState(null)
+  const [usersCount, setUsersCount] = useState(0)
   const router = useRouter()
 
   useEffect(() => { checkAuth() }, [])
@@ -309,10 +311,14 @@ export default function AdminPage() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 flex-wrap">
-          {['submissions', 'bulk', 'users'].map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
-              {tab === 'submissions' ? `Submissions (${submissions.length})` : tab === 'bulk' ? '⚡ Bulk Add' : '👥 Users'}
+          {[
+            { id: 'submissions', label: `Submissions (${submissions.length})` },
+            { id: 'bulk', label: '⚡ Bulk Add' },
+            { id: 'users', label: `👥 Users${usersCount > 0 ? ` (${usersCount})` : ''}` }
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === tab.id ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+              {tab.label}
             </button>
           ))}
         </div>
@@ -348,7 +354,7 @@ export default function AdminPage() {
         )}
 
         {/* Users tab */}
-        {activeTab === 'users' && <UsersTab />}
+        {activeTab === 'users' && <UsersTab onUsersCountChange={setUsersCount} />}
 
         {/* Submissions tab */}
         {activeTab === 'submissions' && (
