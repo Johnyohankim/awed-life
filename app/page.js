@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import LiveStats from './components/LiveStat'
+import LiveStats from './components/LiveStats'
 
 const categoryColors = {
   "Moral Beauty": "from-rose-400 to-pink-600",
