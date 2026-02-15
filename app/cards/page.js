@@ -216,7 +216,6 @@ function OnboardingModal({ onClose }) {
 
 function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }) {
   const [journalText, setJournalText] = useState(isSubmissionCard ? 'I submitted this awe moment ✨' : '')
-  const [isPublic, setIsPublic] = useState(false)
   const [keeping, setKeeping] = useState(false)
   const [kept, setKept] = useState(card.isKept || isSubmissionCard)
   const [streak, setStreak] = useState(null)
@@ -259,7 +258,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
         body: JSON.stringify({
           submissionId: card.video?.id || card.submission_id,
           journalText: journalText.trim(),
-          isPublic,
+          isPublic: false,
           isSubmission: false,
           question
         })
@@ -381,14 +380,6 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
               />
               {!canKeep && journalText.length > 0 && (
                 <p className="text-xs text-gray-400 mb-3">{10 - journalText.trim().length} more characters needed</p>
-              )}
-              {canKeep && (
-                <div className="flex items-center gap-3 mb-3 p-3 bg-gray-50 rounded-xl">
-                  <input type="checkbox" id="isPublic" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} className="w-5 h-5" />
-                  <label htmlFor="isPublic" className="text-sm text-gray-700">
-                    Share my reflection publicly
-                  </label>
-                </div>
               )}
               <button
                 onClick={handleKeep}

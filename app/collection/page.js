@@ -242,21 +242,13 @@ function FullscreenCardModal({ card, onClose }) {
           <div className="bg-gray-50 rounded-xl p-4">
             <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{card.journal_text}</p>
           </div>
-          {card.is_public && (
-            <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-              </svg>
-              <span>Public reflection</span>
-            </div>
-          )}
         </div>
       </div>
     </div>
   )
 }
 
-function ThumbnailCard({ card, onClick, onShare }) {
+function ThumbnailCard({ card, onClick }) {
   const thumbnail = getYouTubeThumbnail(card.video_link)
   const isInstagram = isInstagramUrl(card.video_link)
   const isTwitter = isTwitterUrl(card.video_link)
@@ -306,15 +298,6 @@ function ThumbnailCard({ card, onClick, onShare }) {
         <div className={`absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-medium text-white bg-gradient-to-r ${color} shadow-sm`}>
           {label}
         </div>
-
-        {/* Public badge */}
-        {card.is_public && (
-          <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm">
-            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-blue-600">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-            </svg>
-          </div>
-        )}
       </div>
 
       {/* Info below thumbnail */}
@@ -324,19 +307,6 @@ function ThumbnailCard({ card, onClick, onShare }) {
         </p>
         <p className="text-xs text-gray-500">{date}</p>
       </div>
-
-      {/* Share button for public cards */}
-      {card.is_public && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onShare(card) }}
-          className="absolute bottom-14 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-all opacity-0 group-hover:opacity-100"
-          title="Share"
-        >
-          <svg viewBox="0 0 24 24" className="w-4 h-4 fill-gray-600">
-            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
-          </svg>
-        </button>
-      )}
     </div>
   )
 }
@@ -369,10 +339,6 @@ export default function CollectionPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleShare = (card) => {
-    window.open(`/share/${card.card_id}`, '_blank')
   }
 
   const filteredCards = activeFilter === 'all' ? cards : cards.filter(c => c.category === activeFilter)
@@ -483,7 +449,7 @@ export default function CollectionPage() {
             {/* Thumbnail grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredCards.map((card) => (
-                <ThumbnailCard key={card.card_id} card={card} onClick={setSelectedCard} onShare={handleShare} />
+                <ThumbnailCard key={card.card_id} card={card} onClick={setSelectedCard} />
               ))}
             </div>
           </>
