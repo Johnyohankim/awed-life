@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import LiveStats from './components/LiveStat'
 
 const categoryColors = {
   "Moral Beauty": "from-rose-400 to-pink-600",
@@ -381,6 +382,7 @@ export default function Home() {
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg">
             Find Your Awe
           </h1>
+          <LiveStats />
           <p className="text-xl md:text-2xl text-white opacity-90 mb-4 max-w-2xl drop-shadow">
             A daily ritual of wonder. One card. One moment. One reflection.
           </p>
