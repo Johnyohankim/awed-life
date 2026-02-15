@@ -2,16 +2,75 @@ import { sql } from '@vercel/postgres'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
-const CATEGORIES = [
-  'moral-beauty',
-  'collective-effervescence', 
-  'nature',
-  'music',
-  'visual-design',
-  'spirituality',
-  'life-death',
-  'epiphany'
-]
+const CATEGORY_LABELS = {
+  'moral-beauty': 'Moral Beauty',
+  'collective-effervescence': 'Collective Effervescence',
+  'nature': 'Nature',
+  'music': 'Music',
+  'visual-design': 'Visual Design',
+  'spirituality': 'Spirituality & Religion',
+  'life-death': 'Life & Death',
+  'epiphany': 'Epiphany'
+}
+
+const CATEGORY_COLORS = {
+  'moral-beauty': 'from-rose-400 to-pink-600',
+  'collective-effervescence': 'from-orange-400 to-red-600',
+  'nature': 'from-green-400 to-emerald-600',
+  'music': 'from-purple-400 to-violet-600',
+  'visual-design': 'from-blue-400 to-cyan-600',
+  'spirituality': 'from-amber-400 to-yellow-600',
+  'life-death': 'from-slate-400 to-gray-600',
+  'epiphany': 'from-indigo-400 to-blue-600'
+}
+
+const CATEGORIES = Object.keys(CATEGORY_LABELS)
+
+async function generateDailyCards(today, userId) {
+  for (const category of CATEGORIES) {
+    const existing = await sql`
+      SELECT id FROM daily_cards WHERE date = ${today} AND category = ${category}
+    `
+    if (existing.rows.length > 0) continue
+
+    const result = await sql`
+      SELECT s.id FROM submissions s
+      WHERE s.category = ${category}
+        AND s.approved = true
+        AND s.id NOT IN (
+          SELECT submission_id FROM shown_cards WHERE user_id = ${userId}
+        )
+      ORDER BY RANDOM()
+      LIMIT 1
+    `
+
+    if (result.rows.length === 0) {
+      const fallback = await sql`
+        SELECT id FROM submissions
+        WHERE category = ${category} AND approved = true
+        ORDER BY RANDOM() LIMIT 1
+      `
+      if (fallback.rows.length > 0) {
+        await sql`
+          INSERT INTO daily_cards (date, category, submission_id)
+          VALUES (${today}, ${category}, ${fallback.rows[0].id})
+          ON CONFLICT (date, category) DO NOTHING
+        `
+      }
+    } else {
+      await sql`
+        INSERT INTO daily_cards (date, category, submission_id)
+        VALUES (${today}, ${category}, ${result.rows[0].id})
+        ON CONFLICT (date, category) DO NOTHING
+      `
+      await sql`
+        INSERT INTO shown_cards (user_id, submission_id)
+        VALUES (${userId}, ${result.rows[0].id})
+        ON CONFLICT DO NOTHING
+      `
+    }
+  }
+}
 
 export async function GET() {
   try {
@@ -23,7 +82,92 @@ export async function GET() {
     const userId = session.user.id
     const today = new Date().toISOString().split('T')[0]
 
-    // Get user's submission points
+    // Get today's daily card state
+    const stateResult = await sql`
+      SELECT flipped_cards, kept_card_category
+      FROM daily_card_state
+      WHERE user_id = ${userId} AND date = ${today}
+    `
+    const state = stateResult.rows[0] || { flipped_cards: [], kept_card_category: null }
+    const keptCardCategory = state.kept_card_category
+
+    // Get/generate today's daily cards
+    let dailyCardsResult = await sql`
+      SELECT dc.category, dc.submission_id, s.video_link
+      FROM daily_cards dc
+      JOIN submissions s ON dc.submission_id = s.id
+      WHERE dc.date = ${today}
+    `
+    if (dailyCardsResult.rows.length < 8) {
+      await generateDailyCards(today, userId)
+      dailyCardsResult = await sql`
+        SELECT dc.category, dc.submission_id, s.video_link
+        FROM daily_cards dc
+        JOIN submissions s ON dc.submission_id = s.id
+        WHERE dc.date = ${today}
+      `
+    }
+    const dailyCards = dailyCardsResult.rows
+
+    // Build 8 curated cards
+    const cards = CATEGORIES.map(category => {
+      const dailyCard = dailyCards.find(dc => dc.category === category)
+      const isKept = keptCardCategory === category
+
+      if (!dailyCard) {
+        return {
+          category,
+          label: CATEGORY_LABELS[category],
+          color: CATEGORY_COLORS[category],
+          isEmpty: true,
+          isKept: false,
+          video: null
+        }
+      }
+
+      return {
+        category,
+        label: CATEGORY_LABELS[category],
+        color: CATEGORY_COLORS[category],
+        isEmpty: false,
+        isKept,
+        video: {
+          id: dailyCard.submission_id,
+          videoLink: dailyCard.video_link
+        }
+      }
+    })
+
+    // Get curated kept card for today
+    const keptResult = await sql`
+      SELECT uc.submission_id, s.category
+      FROM user_cards uc
+      JOIN submissions s ON uc.submission_id = s.id
+      WHERE uc.user_id = ${userId}
+        AND DATE(uc.kept_at) = ${today}
+        AND uc.is_submission = false
+      LIMIT 1
+    `
+    const keptCard = keptResult.rows[0] || null
+
+    // Get submission slots - user's approved submissions auto-added to collection
+    const submissionSlotsResult = await sql`
+      SELECT 
+        uc.id as card_id,
+        uc.journal_text,
+        uc.is_submission,
+        s.id as submission_id,
+        s.video_link,
+        s.category,
+        uc.kept_at
+      FROM user_cards uc
+      JOIN submissions s ON uc.submission_id = s.id
+      WHERE uc.user_id = ${userId}
+        AND uc.is_submission = true
+      ORDER BY uc.kept_at DESC
+    `
+
+    // Get user submission points
     const userResult = await sql`
       SELECT submission_points FROM users WHERE id = ${userId}
     `
@@ -40,124 +184,9 @@ export async function GET() {
     `
     const keptToday = parseInt(keptTodayResult.rows[0]?.count || 0)
 
-    // Get today's cards for each category
-    const dailyCardsResult = await sql`
-      SELECT category, submission_id 
-      FROM daily_cards 
-      WHERE date = ${today}
-    `
-
-    // Get user's flipped cards today
-    const stateResult = await sql`
-      SELECT flipped_cards FROM daily_card_state
-      WHERE user_id = ${userId} AND date = ${today}
-    `
-    const flippedCards = stateResult.rows[0]?.flipped_cards || []
-
-    // Get cards user has already seen (to exclude)
-    const shownResult = await sql`
-      SELECT submission_id FROM shown_cards WHERE user_id = ${userId}
-    `
-    const shownIds = shownResult.rows.map(r => r.submission_id)
-
-    // Build cards for each category
-    const cards = []
-    
-    for (const category of CATEGORIES) {
-      const dailyCard = dailyCardsResult.rows.find(r => r.category === category)
-      
-      if (dailyCard?.submission_id) {
-        // Get submission details
-        const submissionResult = await sql`
-          SELECT id, video_link, category, approved
-          FROM submissions
-          WHERE id = ${dailyCard.submission_id} AND approved = true
-        `
-
-        if (submissionResult.rows.length > 0) {
-          const submission = submissionResult.rows[0]
-          
-          // Check if user already kept this
-          const keptResult = await sql`
-            SELECT id FROM user_cards
-            WHERE user_id = ${userId} AND submission_id = ${submission.id}
-          `
-
-          cards.push({
-            category,
-            label: category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-            color: getCategoryColor(category),
-            video: submission,
-            isFlipped: flippedCards.includes(category),
-            isKept: keptResult.rows.length > 0,
-            isEmpty: false
-          })
-        } else {
-          cards.push(createEmptyCard(category))
-        }
-      } else {
-        // No daily card assigned - find a random approved one
-        let randomResult
-        if (shownIds.length > 0) {
-          randomResult = await sql`
-            SELECT id, video_link, category
-            FROM submissions
-            WHERE category = ${category} 
-              AND approved = true
-              AND id NOT IN (
-                SELECT submission_id FROM user_cards WHERE user_id = ${userId}
-              )
-              AND id NOT IN (${sql.join(shownIds.map(id => sql`${id}`), sql`, `)})
-            ORDER BY RANDOM()
-            LIMIT 1
-          `
-        } else {
-          randomResult = await sql`
-            SELECT id, video_link, category
-            FROM submissions
-            WHERE category = ${category} 
-              AND approved = true
-              AND id NOT IN (
-                SELECT submission_id FROM user_cards WHERE user_id = ${userId}
-              )
-            ORDER BY RANDOM()
-            LIMIT 1
-          `
-        }
-
-        if (randomResult.rows.length > 0) {
-          const submission = randomResult.rows[0]
-          cards.push({
-            category,
-            label: category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-            color: getCategoryColor(category),
-            video: submission,
-            isFlipped: flippedCards.includes(category),
-            isKept: false,
-            isEmpty: false
-          })
-        } else {
-          cards.push(createEmptyCard(category))
-        }
-      }
-    }
-
-    // Get user's submission slots (approved submissions)
-    const submissionSlotsResult = await sql`
-      SELECT 
-        s.id as submission_id,
-        s.category,
-        s.video_link,
-        uc.id as card_id
-      FROM submissions s
-      LEFT JOIN user_cards uc ON uc.submission_id = s.id AND uc.user_id = ${userId}
-      WHERE s.submitted_by_user_id = ${userId}
-        AND s.approved = true
-      ORDER BY s.submitted_at DESC
-    `
-
     return Response.json({
       cards,
+      keptCard,
       submissionSlots: submissionSlotsResult.rows,
       submissionPoints,
       keptToday,
@@ -165,33 +194,7 @@ export async function GET() {
     })
 
   } catch (error) {
-    console.error('Error getting today\'s cards:', error)
-    return Response.json({ error: 'Failed to get cards' }, { status: 500 })
-  }
-}
-
-function getCategoryColor(category) {
-  const colors = {
-    'moral-beauty': 'from-rose-400 to-pink-600',
-    'collective-effervescence': 'from-orange-400 to-red-600',
-    'nature': 'from-green-400 to-emerald-600',
-    'music': 'from-purple-400 to-violet-600',
-    'visual-design': 'from-blue-400 to-cyan-600',
-    'spirituality': 'from-amber-400 to-yellow-600',
-    'life-death': 'from-slate-400 to-gray-600',
-    'epiphany': 'from-indigo-400 to-blue-600'
-  }
-  return colors[category] || 'from-gray-400 to-gray-600'
-}
-
-function createEmptyCard(category) {
-  return {
-    category,
-    label: category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-    color: getCategoryColor(category),
-    video: null,
-    isFlipped: false,
-    isKept: false,
-    isEmpty: true
+    console.error('Cards API error:', error)
+    return Response.json({ error: 'Failed to load cards' }, { status: 500 })
   }
 }
