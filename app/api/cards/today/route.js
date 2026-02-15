@@ -97,18 +97,33 @@ export async function GET() {
         }
       } else {
         // No daily card assigned - find a random approved one
-        const randomResult = await sql`
-          SELECT id, video_link, category
-          FROM submissions
-          WHERE category = ${category} 
-            AND approved = true
-            AND id NOT IN (
-              SELECT submission_id FROM user_cards WHERE user_id = ${userId}
-            )
-            ${shownIds.length > 0 ? sql`AND id NOT IN (${sql.join(shownIds, sql`, `)})` : sql``}
-          ORDER BY RANDOM()
-          LIMIT 1
-        `
+        let randomResult
+        if (shownIds.length > 0) {
+          randomResult = await sql`
+            SELECT id, video_link, category
+            FROM submissions
+            WHERE category = ${category} 
+              AND approved = true
+              AND id NOT IN (
+                SELECT submission_id FROM user_cards WHERE user_id = ${userId}
+              )
+              AND id NOT IN (${sql.join(shownIds.map(id => sql`${id}`), sql`, `)})
+            ORDER BY RANDOM()
+            LIMIT 1
+          `
+        } else {
+          randomResult = await sql`
+            SELECT id, video_link, category
+            FROM submissions
+            WHERE category = ${category} 
+              AND approved = true
+              AND id NOT IN (
+                SELECT submission_id FROM user_cards WHERE user_id = ${userId}
+              )
+            ORDER BY RANDOM()
+            LIMIT 1
+          `
+        }
 
         if (randomResult.rows.length > 0) {
           const submission = randomResult.rows[0]
