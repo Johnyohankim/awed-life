@@ -232,6 +232,12 @@ function FullscreenCardModal({ card, onClose }) {
           <div className="flex justify-center mb-4">
             <div className="w-10 h-1 bg-gray-300 rounded-full" />
           </div>
+          {card.journal_question && (
+            <div className="mb-4">
+              <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Question</h4>
+              <p className="text-gray-700 font-medium italic">{card.journal_question}</p>
+            </div>
+          )}
           <h4 className="font-bold text-lg mb-3">Your Reflection</h4>
           <div className="bg-gray-50 rounded-xl p-4">
             <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{card.journal_text}</p>

@@ -10,7 +10,7 @@ export async function POST(request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { submissionId, journalText, isPublic, isSubmission } = await request.json()
+    const { submissionId, journalText, isPublic, isSubmission, question } = await request.json()
 
     if (!journalText || journalText.trim().length < 10) {
       return Response.json({ error: 'Journal entry too short' }, { status: 400 })
@@ -71,8 +71,8 @@ export async function POST(request) {
 
     // Save card to collection
     await sql`
-      INSERT INTO user_cards (user_id, submission_id, journal_text, is_public, is_submission)
-      VALUES (${userId}, ${submissionId}, ${journalText.trim()}, ${isPublic || false}, ${isSubmission || false})
+      INSERT INTO user_cards (user_id, submission_id, journal_text, journal_question, is_public, is_submission)
+      VALUES (${userId}, ${submissionId}, ${journalText.trim()}, ${question || null}, ${isPublic || false}, ${isSubmission || false})
     `
 
     // Mark card as shown

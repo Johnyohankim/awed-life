@@ -24,12 +24,11 @@ export async function GET() {
     // Get all kept cards with submission details
     const cardsResult = await sql`
       SELECT 
-        uc.id as card_id,
+        uc.id,
         uc.journal_text,
+        uc.journal_question,
         uc.is_public,
         uc.kept_at,
-        uc.awed_count,
-        uc.nawed_count,
         s.id as submission_id,
         s.video_link,
         s.category,
@@ -42,23 +41,12 @@ export async function GET() {
 
     const cards = cardsResult.rows
 
-    // For each card, get other users public journals on same submission
+    // For public cards, get other users' journals on same submission
     const cardsWithJournals = await Promise.all(
       cards.map(async (card) => {
-        try {
+        if (card.is_public) {
           const othersResult = await sql`
-            SELECT 
-              uc.id,
-              uc.journal_text,
-              uc.awed_count,
-              uc.nawed_count,
-              uc.user_id,
-              (
-                SELECT reaction_type FROM reactions
-                WHERE user_id = ${userId}
-                AND user_card_id = uc.id
-                LIMIT 1
-              ) as "userReaction"
+            SELECT uc.journal_text
             FROM user_cards uc
             WHERE uc.submission_id = ${card.submission_id}
             AND uc.user_id != ${userId}
@@ -67,10 +55,8 @@ export async function GET() {
             LIMIT 5
           `
           return { ...card, public_journals: othersResult.rows }
-        } catch (err) {
-          console.error('Error fetching public journals:', err)
-          return { ...card, public_journals: [] }
         }
+        return { ...card, public_journals: [] }
       })
     )
 
@@ -90,6 +76,6 @@ export async function GET() {
 
   } catch (error) {
     console.error('Error getting collection:', error)
-    return Response.json({ error: error.message || 'Failed to get collection' }, { status: 500 })
+    return Response.json({ error: 'Failed to get collection' }, { status: 500 })
   }
 }

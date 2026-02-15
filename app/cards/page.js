@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import AchievementToast from '../components/AchievementToast'
+import { getDailyQuestion } from '../lib/journalQuestions'
 
 const categoryColors = {
   'moral-beauty': 'from-rose-400 to-pink-600',
@@ -220,9 +221,17 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
   const [kept, setKept] = useState(card.isKept || isSubmissionCard)
   const [streak, setStreak] = useState(null)
   const [showJournal, setShowJournal] = useState(false)
+  const [question, setQuestion] = useState('')
 
   const videoId = getYouTubeId(card.video?.videoLink || card.video_link)
   const canKeep = journalText.trim().length >= 10
+
+  // Get question for this card
+  useEffect(() => {
+    if (card.category) {
+      setQuestion(getDailyQuestion(card.category))
+    }
+  }, [card.category])
 
   // Handle back button
   useEffect(() => {
@@ -240,19 +249,6 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
     }
   }, [onClose])
 
-  const journalPrompts = {
-    'moral-beauty': "Growing up, I was told to do the right thing. Sometimes it takes courage to help, voice out, and reach out. I remind myself we belong to something bigger...",
-    'collective-effervescence': "There's something magical when people come together. This moment reminds me of times when I felt part of something larger than myself...",
-    'nature': "Nature has a way of putting things in perspective. Watching this, I'm reminded how small we are, yet how connected to everything around us...",
-    'music': "Music moves me in ways words can't capture. This piece made me feel...",
-    'visual-design': "Beauty in design stops me in my tracks. The way light, form, and space come together here reminds me that creativity is everywhere...",
-    'spirituality': "In moments of stillness, I find something beyond the everyday. This speaks to a deeper sense of connection...",
-    'life-death': "Life is fragile and precious. This moment reminds me to appreciate what I have, to be present, to remember what matters...",
-    'epiphany': "Sometimes understanding hits all at once. Watching this, something clicked for me..."
-  }
-
-  const placeholder = journalPrompts[card.category] || "How does this moment make you feel? What does it remind you of?"
-
   const handleKeep = async () => {
     if (!canKeep || keeping) return
     setKeeping(true)
@@ -264,7 +260,8 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
           submissionId: card.video?.id || card.submission_id,
           journalText: journalText.trim(),
           isPublic,
-          isSubmission: false
+          isSubmission: false,
+          question
         })
       })
       const data = await response.json()
@@ -372,11 +369,12 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
             </div>
           ) : (
             <>
-              <h4 className="font-bold text-lg mb-3">How does this make you feel?</h4>
+              <h4 className="font-bold text-lg mb-1">{question}</h4>
+              <p className="text-gray-500 text-sm mb-3">Reflect on how this moment made you feel</p>
               <textarea
                 value={journalText}
                 onChange={e => setJournalText(e.target.value)}
-                placeholder={placeholder}
+                placeholder="Write your thoughts here..."
                 rows={4}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base mb-3"
                 autoFocus
