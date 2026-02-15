@@ -387,7 +387,7 @@ export default function Home() {
             A daily ritual of wonder. One card. One moment. One reflection.
           </p>
           <p className="text-white opacity-75 mb-10 text-sm md:text-base">
-            {submissionCount} awe moments collected
+            featuring {submissionCount} awe moments
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             {session ? (
