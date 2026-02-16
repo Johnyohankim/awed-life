@@ -8,8 +8,29 @@ import { CATEGORY_COLORS, CATEGORY_LABELS, MILESTONES } from '../lib/constants'
 
 function getYouTubeId(url) {
   if (!url) return null
-  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/)
-  return match ? match[1] : null
+
+  try {
+    // Handle various YouTube URL formats
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,  // Standard & short URLs
+      /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,                     // Embed URLs
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,                    // Shorts
+      /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,                         // /v/ format
+      /m\.youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/                 // Mobile URLs
+    ]
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern)
+      if (match && match[1]) {
+        return match[1]
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error('Error extracting YouTube ID:', error)
+    return null
+  }
 }
 
 function getYouTubeThumbnail(url) {
