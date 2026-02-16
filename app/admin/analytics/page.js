@@ -124,8 +124,8 @@ export default function AnalyticsPage() {
     )
   }
 
-  const awedCount = data.reactionStats?.find(r => r.event_name === 'reaction_awed')?.count || 0
-  const nawedCount = data.reactionStats?.find(r => r.event_name === 'reaction_nawed')?.count || 0
+  const awedCount = parseInt(data.reactionStats?.find(r => r.event_name === 'reaction_awed')?.count || 0)
+  const nawedCount = parseInt(data.reactionStats?.find(r => r.event_name === 'reaction_nawed')?.count || 0)
   const totalReactions = awedCount + nawedCount
   const awedPercentage = totalReactions > 0 ? Math.round((awedCount / totalReactions) * 100) : 0
 
