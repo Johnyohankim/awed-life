@@ -379,7 +379,7 @@ export default function CollectionPage() {
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-6xl">
-          <h1 className="text-2xl font-bold">Awed</h1>
+          <button onClick={() => router.push('/cards')} className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</button>
           <div className="hidden md:flex items-center gap-4">
             <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Today's Cards</button>
             <button onClick={() => router.push('/profile')} className="text-sm text-gray-600 hover:text-gray-900">Profile</button>
