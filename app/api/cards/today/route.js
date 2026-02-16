@@ -49,7 +49,68 @@ async function getCategoryPreferences(userId) {
   }
 }
 
+/**
+ * Get content-based preferences: hashtags from videos user loved
+ * Returns weighted hashtag map for similarity scoring
+ */
+async function getUserContentPreferences(userId) {
+  try {
+    const lovedVideos = await sql`
+      SELECT s.hashtags, ae.event_name
+      FROM analytics_events ae
+      JOIN submissions s ON (ae.metadata->>'submissionId')::int = s.id
+      WHERE ae.user_id = ${userId}
+        AND ae.event_name IN ('reaction_love', 'reaction_like')
+        AND s.hashtags IS NOT NULL
+        AND s.hashtags != ''
+    `
+
+    // Build weighted hashtag map (love=3, like=2)
+    const hashtagWeights = {}
+    lovedVideos.rows.forEach(row => {
+      const weight = row.event_name === 'reaction_love' ? 3 : 2
+      const hashtags = row.hashtags.split(',').map(tag => tag.trim().toLowerCase())
+
+      hashtags.forEach(tag => {
+        if (tag) {
+          hashtagWeights[tag] = (hashtagWeights[tag] || 0) + weight
+        }
+      })
+    })
+
+    return hashtagWeights
+  } catch (error) {
+    console.error('Error getting content preferences:', error)
+    return {}
+  }
+}
+
+/**
+ * Calculate similarity score between video and user's content preferences
+ * Based on hashtag overlap
+ */
+function calculateContentSimilarity(videoHashtags, userHashtagWeights) {
+  if (!videoHashtags || Object.keys(userHashtagWeights).length === 0) {
+    return 0
+  }
+
+  const tags = videoHashtags.split(',').map(tag => tag.trim().toLowerCase())
+  let similarityScore = 0
+
+  tags.forEach(tag => {
+    if (userHashtagWeights[tag]) {
+      similarityScore += userHashtagWeights[tag]
+    }
+  })
+
+  return similarityScore
+}
+
 async function generateDailyCards(today, userId) {
+  // Get user's content preferences once for all categories
+  const userHashtagWeights = await getUserContentPreferences(userId)
+  const hasContentPreferences = Object.keys(userHashtagWeights).length > 0
+
   for (const category of CATEGORIES) {
     try {
       const existing = await sql`
@@ -57,11 +118,13 @@ async function generateDailyCards(today, userId) {
       `
       if (existing.rows.length > 0) continue
 
-      // Try with duration prioritization first
-      let result
+      // Get candidate videos with content-based scoring
+      let candidates
       try {
-        result = await sql`
-          SELECT s.id FROM submissions s
+        // Fetch top candidates with hashtags for similarity scoring
+        candidates = await sql`
+          SELECT s.id, s.hashtags, s.duration_seconds
+          FROM submissions s
           WHERE s.category = ${category}
             AND s.approved = true
             AND s.id NOT IN (
@@ -74,29 +137,54 @@ async function generateDailyCards(today, userId) {
               ELSE 2
             END,
             RANDOM()
-          LIMIT 1
+          LIMIT 20
         `
       } catch (durationError) {
-        // Fallback without duration if column doesn't exist
-        console.log('Duration column error, using simple random:', durationError.message)
-        result = await sql`
-          SELECT s.id FROM submissions s
+        // Fallback without duration column
+        candidates = await sql`
+          SELECT s.id, s.hashtags
+          FROM submissions s
           WHERE s.category = ${category}
             AND s.approved = true
             AND s.id NOT IN (
               SELECT submission_id FROM shown_cards WHERE user_id = ${userId}
             )
           ORDER BY RANDOM()
-          LIMIT 1
+          LIMIT 20
         `
       }
 
+      let selectedVideo = null
+
+      if (candidates.rows.length > 0) {
+        if (hasContentPreferences) {
+          // Score candidates by content similarity
+          const scoredCandidates = candidates.rows.map(video => ({
+            id: video.id,
+            similarityScore: calculateContentSimilarity(video.hashtags, userHashtagWeights)
+          }))
+
+          // Sort by similarity score (highest first)
+          scoredCandidates.sort((a, b) => b.similarityScore - a.similarityScore)
+
+          // Pick from top 3 randomly (to maintain some variety)
+          const topCandidates = scoredCandidates.slice(0, 3)
+          selectedVideo = topCandidates[Math.floor(Math.random() * topCandidates.length)]
+        } else {
+          // No content preferences yet, pick random from candidates
+          selectedVideo = candidates.rows[Math.floor(Math.random() * candidates.rows.length)]
+        }
+      }
+
+      let result = selectedVideo ? { rows: [{ id: selectedVideo.id }] } : { rows: [] }
+
       if (result.rows.length === 0) {
-        // Try fallback with all videos in category
-        let fallback
+        // Try fallback with all videos in category (content-based)
+        let fallbackCandidates
         try {
-          fallback = await sql`
-            SELECT id FROM submissions
+          fallbackCandidates = await sql`
+            SELECT id, hashtags, duration_seconds
+            FROM submissions
             WHERE category = ${category} AND approved = true
             ORDER BY
               CASE
@@ -105,21 +193,37 @@ async function generateDailyCards(today, userId) {
                 ELSE 2
               END,
               RANDOM()
-            LIMIT 1
+            LIMIT 20
           `
         } catch (durationError) {
-          // Fallback without duration
-          fallback = await sql`
-            SELECT id FROM submissions
+          fallbackCandidates = await sql`
+            SELECT id, hashtags
+            FROM submissions
             WHERE category = ${category} AND approved = true
             ORDER BY RANDOM()
-            LIMIT 1
+            LIMIT 20
           `
         }
-        if (fallback.rows.length > 0) {
+
+        if (fallbackCandidates.rows.length > 0) {
+          let fallbackVideo
+
+          if (hasContentPreferences) {
+            // Score by similarity
+            const scored = fallbackCandidates.rows.map(v => ({
+              id: v.id,
+              score: calculateContentSimilarity(v.hashtags, userHashtagWeights)
+            }))
+            scored.sort((a, b) => b.score - a.score)
+            const top = scored.slice(0, 3)
+            fallbackVideo = top[Math.floor(Math.random() * top.length)]
+          } else {
+            fallbackVideo = fallbackCandidates.rows[Math.floor(Math.random() * fallbackCandidates.rows.length)]
+          }
+
           await sql`
             INSERT INTO daily_cards (date, category, submission_id)
-            VALUES (${today}, ${category}, ${fallback.rows[0].id})
+            VALUES (${today}, ${category}, ${fallbackVideo.id})
             ON CONFLICT (date, category) DO NOTHING
           `
         }

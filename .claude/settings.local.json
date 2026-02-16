@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm install)",
+      "Bash(git init:*)",
+      "Bash(npm run curate:*)",
+      "Bash(npm run curate:all:*)"
+    ]
+  }
+}
