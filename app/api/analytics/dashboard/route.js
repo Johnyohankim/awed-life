@@ -5,6 +5,21 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('days') || '7')
 
+    // First check if table exists
+    const tableCheck = await sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name = 'analytics_events'
+      )
+    `
+
+    if (!tableCheck.rows[0]?.exists) {
+      return Response.json({
+        error: 'Analytics table not initialized. Please run /api/analytics/init first.'
+      }, { status: 404 })
+    }
+
     // Total events
     const totalEvents = await sql`
       SELECT COUNT(*) as count

@@ -38,21 +38,31 @@ export default function AnalyticsPage() {
   const handleInitialize = async () => {
     setInitializing(true)
     try {
+      console.log('Initializing analytics table...')
       const response = await fetch('/api/analytics/init')
+      console.log('Response status:', response.status)
+
       const result = await response.json()
+      console.log('Result:', result)
 
       if (result.success) {
+        console.log('Table created successfully')
+        alert('✅ Analytics table initialized successfully!')
         // Wait a moment then reload
         setTimeout(() => {
           loadAnalytics()
           setInitializing(false)
         }, 500)
       } else {
-        alert(`Error: ${result.error || 'Failed to initialize'}`)
+        const errorMsg = `Initialization failed: ${result.error || 'Unknown error'}`
+        console.error(errorMsg)
+        alert(errorMsg)
         setInitializing(false)
       }
     } catch (error) {
-      alert(`Error: ${error.message}`)
+      const errorMsg = `Error during initialization: ${error.message}`
+      console.error(errorMsg, error)
+      alert(errorMsg)
       setInitializing(false)
     }
   }
