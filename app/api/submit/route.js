@@ -84,7 +84,7 @@ async function getYouTubeDuration(videoLink) {
 
 export async function POST(request) {
   try {
-    const { videoLink, category, hashtags, email, journal } = await request.json()
+    const { videoLink, category, hashtags, journal } = await request.json()
 
     if (!videoLink || !category) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
@@ -123,8 +123,8 @@ export async function POST(request) {
     }
 
     await sql`
-      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id, duration_seconds)
-      VALUES (${videoLink}, ${category}, ${hashtags || ''}, ${email || ''}, false, ${submittedByUserId}, ${durationSeconds})
+      INSERT INTO submissions (video_link, category, hashtags, approved, submitted_by_user_id, duration_seconds)
+      VALUES (${videoLink}, ${category}, ${hashtags || ''}, false, ${submittedByUserId}, ${durationSeconds})
     `
 
     // TODO: Store journal text when submissions table is updated with journal_text column
