@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { CATEGORIES } from '@/app/lib/constants'
 
 export async function POST(request) {
   try {
@@ -8,6 +9,10 @@ export async function POST(request) {
 
     if (!videoLink || !category) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    if (!CATEGORIES.includes(category)) {
+      return Response.json({ error: 'Invalid category' }, { status: 400 })
     }
 
     // Check if user is logged in

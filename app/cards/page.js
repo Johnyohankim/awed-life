@@ -6,39 +6,11 @@ import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import AchievementToast from '../components/AchievementToast'
 import { getDailyQuestion } from '../lib/journalQuestions'
+import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_QUOTES, MILESTONES } from '../lib/constants'
 
-const categoryColors = {
-  'moral-beauty': 'from-rose-400 to-pink-600',
-  'collective-effervescence': 'from-orange-400 to-red-600',
-  'nature': 'from-green-400 to-emerald-600',
-  'music': 'from-purple-400 to-violet-600',
-  'visual-design': 'from-blue-400 to-cyan-600',
-  'spirituality': 'from-amber-400 to-yellow-600',
-  'life-death': 'from-slate-400 to-gray-600',
-  'epiphany': 'from-indigo-400 to-blue-600'
-}
-
-const categoryLabels = {
-  'moral-beauty': 'Moral Beauty',
-  'collective-effervescence': 'Collective Effervescence',
-  'nature': 'Nature',
-  'music': 'Music',
-  'visual-design': 'Visual Design',
-  'spirituality': 'Spirituality & Religion',
-  'life-death': 'Life & Death',
-  'epiphany': 'Epiphany'
-}
-
-const categoryQuotes = {
-  'moral-beauty': '"Moral beauty is the awe we feel when witnessing acts of courage, kindness, and virtue." — Dacher Keltner',
-  'collective-effervescence': '"When we gather in groups, we can experience a sense of unity and shared purpose that transcends the individual." — Dacher Keltner',
-  'nature': '"The natural world offers us constant reminders of forces larger than ourselves." — Dacher Keltner',
-  'music': '"Music and rhythm activate ancient circuits in our brains that are attuned to awe." — Dacher Keltner',
-  'visual-design': '"We are wired to find awe in visual patterns, symmetries, and the sublime in art." — Dacher Keltner',
-  'spirituality': '"Spiritual and religious experiences connect us to something vast and beyond ourselves." — Dacher Keltner',
-  'life-death': '"Contemplating the cycles of life and death opens us to the profound and the sacred." — Dacher Keltner',
-  'epiphany': '"Moments of sudden insight reveal new truths and shift how we see the world." — Dacher Keltner'
-}
+const categoryColors = CATEGORY_COLORS
+const categoryLabels = CATEGORY_LABELS
+const categoryQuotes = CATEGORY_QUOTES
 
 // Smart rotation: cycle through categories to ensure variety
 function getSmartRotatedCards(cards) {
@@ -81,7 +53,12 @@ function ReactionBar({ submissionId, onReact }) {
 
   useEffect(() => {
     if (!submissionId) return
-    fetch(`/api/moment-reactions?submissionId=${submissionId}`)
+
+    const abortController = new AbortController()
+
+    fetch(`/api/moment-reactions?submissionId=${submissionId}`, {
+      signal: abortController.signal
+    })
       .then(r => r.json())
       .then(data => {
         setAwedCount(data.awedCount || 0)
@@ -89,7 +66,13 @@ function ReactionBar({ submissionId, onReact }) {
         setReaction(data.userReaction || null)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(error => {
+        if (error.name !== 'AbortError') {
+          setLoading(false)
+        }
+      })
+
+    return () => abortController.abort()
   }, [submissionId])
 
   const handleReaction = async (type) => {
@@ -584,17 +567,28 @@ export default function CardsPage() {
     }
   }
 
-  const handleKeep = () => {
-    const previousCount = totalCards
+  const handleKeep = async () => {
     setKeptToday(prev => prev + 1)
-    loadCards().then(() => {
-      // Check if we hit a milestone
-      const newCount = previousCount + 1
-      const milestones = [5, 15, 30, 75, 150, 300, 500]
-      if (milestones.includes(newCount)) {
-        setAchievementCount(newCount)
+
+    // Reload cards and get new total
+    await loadCards()
+
+    // Get fresh total from profile API to check milestone
+    try {
+      const profileResponse = await fetch('/api/profile')
+      const profileData = await profileResponse.json()
+      if (profileData.totalCards !== undefined) {
+        const newTotal = profileData.totalCards
+        setTotalCards(newTotal)
+
+        // Check if we hit a milestone
+        if (MILESTONES.includes(newTotal)) {
+          setAchievementCount(newTotal)
+        }
       }
-    })
+    } catch (error) {
+      console.error('Error checking achievement:', error)
+    }
   }
 
   const handleCardClick = (card, isSubmission = false) => {

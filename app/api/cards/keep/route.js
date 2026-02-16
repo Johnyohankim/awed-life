@@ -83,6 +83,8 @@ export async function POST(request) {
     `
 
     // Update streak
+    // Note: Users can keep multiple cards per day (up to allowedKeeps), but only 1 per category
+    // Streak increments only on the first card of the day
     const yesterday = new Date()
     yesterday.setDate(yesterday.getDate() - 1)
     const yesterdayStr = yesterday.toISOString().split('T')[0]
@@ -99,10 +101,13 @@ export async function POST(request) {
       if (lastCardDate) {
         const lastDate = new Date(lastCardDate).toISOString().split('T')[0]
         if (lastDate === yesterdayStr) {
+          // Continued streak from yesterday
           newStreak = currentStreak + 1
         } else if (lastDate === today) {
+          // Already kept a card today (2nd+ card), maintain current streak
           newStreak = currentStreak
         }
+        // else: gap in streak, reset to 1
       }
     }
 

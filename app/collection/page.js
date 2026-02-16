@@ -4,6 +4,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
+import { CATEGORY_COLORS, CATEGORY_LABELS, MILESTONES } from '../lib/constants'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -26,29 +27,9 @@ function isTwitterUrl(url) {
   return url && (url.includes('twitter.com') || url.includes('x.com'))
 }
 
-const categoryColors = {
-  'moral-beauty': 'from-rose-400 to-pink-600',
-  'collective-effervescence': 'from-orange-400 to-red-600',
-  'nature': 'from-green-400 to-emerald-600',
-  'music': 'from-purple-400 to-violet-600',
-  'visual-design': 'from-blue-400 to-cyan-600',
-  'spirituality': 'from-amber-400 to-yellow-600',
-  'life-death': 'from-slate-400 to-gray-600',
-  'epiphany': 'from-indigo-400 to-blue-600'
-}
-
-const categoryLabels = {
-  'moral-beauty': 'Moral Beauty',
-  'collective-effervescence': 'Collective Effervescence',
-  'nature': 'Nature',
-  'music': 'Music',
-  'visual-design': 'Visual Design',
-  'spirituality': 'Spirituality & Religion',
-  'life-death': 'Life & Death',
-  'epiphany': 'Epiphany'
-}
-
-const milestones = [5, 15, 30, 75, 150, 300, 500]
+const categoryColors = CATEGORY_COLORS
+const categoryLabels = CATEGORY_LABELS
+const milestones = MILESTONES
 
 function getMilestoneProgress(total) {
   const next = milestones.find(m => m > total) || milestones[milestones.length - 1]
@@ -65,7 +46,12 @@ function ReactionBar({ submissionId }) {
 
   useEffect(() => {
     if (!submissionId) return
-    fetch(`/api/moment-reactions?submissionId=${submissionId}`)
+
+    const abortController = new AbortController()
+
+    fetch(`/api/moment-reactions?submissionId=${submissionId}`, {
+      signal: abortController.signal
+    })
       .then(r => r.json())
       .then(data => {
         setAwedCount(data.awedCount || 0)
@@ -73,7 +59,13 @@ function ReactionBar({ submissionId }) {
         setReaction(data.userReaction || null)
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(error => {
+        if (error.name !== 'AbortError') {
+          setLoading(false)
+        }
+      })
+
+    return () => abortController.abort()
   }, [submissionId])
 
   const handleReaction = async (type) => {

@@ -41,24 +41,41 @@ export async function GET() {
 
     const cards = cardsResult.rows
 
-    // For public cards, get other users' journals on same submission
-    const cardsWithJournals = await Promise.all(
-      cards.map(async (card) => {
-        if (card.is_public) {
-          const othersResult = await sql`
-            SELECT uc.journal_text
-            FROM user_cards uc
-            WHERE uc.submission_id = ${card.submission_id}
-            AND uc.user_id != ${userId}
-            AND uc.is_public = true
-            ORDER BY uc.kept_at DESC
-            LIMIT 5
-          `
-          return { ...card, public_journals: othersResult.rows }
+    // Get all public journals for user's public cards in a single query
+    const publicSubmissionIds = cards
+      .filter(card => card.is_public)
+      .map(card => card.submission_id)
+
+    let publicJournalsMap = {}
+
+    if (publicSubmissionIds.length > 0) {
+      const publicJournalsResult = await sql`
+        SELECT
+          uc.submission_id,
+          uc.journal_text
+        FROM user_cards uc
+        WHERE uc.submission_id = ANY(${publicSubmissionIds})
+          AND uc.user_id != ${userId}
+          AND uc.is_public = true
+        ORDER BY uc.submission_id, uc.kept_at DESC
+      `
+
+      // Group journals by submission_id, limit to 5 per submission
+      publicJournalsResult.rows.forEach(row => {
+        if (!publicJournalsMap[row.submission_id]) {
+          publicJournalsMap[row.submission_id] = []
         }
-        return { ...card, public_journals: [] }
+        if (publicJournalsMap[row.submission_id].length < 5) {
+          publicJournalsMap[row.submission_id].push({ journal_text: row.journal_text })
+        }
       })
-    )
+    }
+
+    // Attach public journals to cards
+    const cardsWithJournals = cards.map(card => ({
+      ...card,
+      public_journals: publicJournalsMap[card.submission_id] || []
+    }))
 
     // Calculate stats
     const uniqueCategories = [...new Set(cards.map(c => c.category))]
