@@ -224,6 +224,7 @@ export default function AdminPage() {
   const [usersCount, setUsersCount] = useState(0)
   const [cleaningVideos, setCleaningVideos] = useState(false)
   const [cleanResult, setCleanResult] = useState(null)
+  const [cleaningCards, setCleaningCards] = useState(false)
   const router = useRouter()
 
   useEffect(() => { checkAuth() }, [])
@@ -295,6 +296,21 @@ export default function AdminPage() {
     finally { setCleaningVideos(false) }
   }
 
+  const handleCleanDailyCards = async () => {
+    if (!confirm('This will delete today\'s daily cards and force regeneration. Continue?')) return
+    setCleaningCards(true)
+    try {
+      const r = await fetch('/api/admin/clean-daily-cards', { method: 'POST' })
+      const result = await r.json()
+      if (result.success) {
+        alert(`✓ Cleaned ${result.orphanedDeleted} orphaned cards and ${result.todayDeleted} today's cards. Refresh the app to see new cards.`)
+      } else {
+        alert('Error: ' + result.error)
+      }
+    } catch { alert('Error cleaning daily cards') }
+    finally { setCleaningCards(false) }
+  }
+
   if (!isAuthenticated || loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center"><p className="text-gray-600">Loading...</p></div>
   )
@@ -345,6 +361,12 @@ export default function AdminPage() {
             disabled={cleaningVideos}
             className="px-5 py-2 rounded-lg font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {cleaningVideos ? '🔄 Scanning...' : '🧹 Clean Blocked Videos'}
+          </button>
+          <button
+            onClick={handleCleanDailyCards}
+            disabled={cleaningCards}
+            className="px-5 py-2 rounded-lg font-medium text-sm bg-orange-600 text-white hover:bg-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            {cleaningCards ? '🔄 Cleaning...' : '🔄 Reset Daily Cards'}
           </button>
         </div>
 
