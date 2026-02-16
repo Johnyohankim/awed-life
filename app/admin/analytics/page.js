@@ -8,6 +8,7 @@ export default function AnalyticsPage() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [days, setDays] = useState(7)
+  const [initializing, setInitializing] = useState(false)
 
   useEffect(() => {
     loadAnalytics()
@@ -34,6 +35,28 @@ export default function AnalyticsPage() {
     }
   }
 
+  const handleInitialize = async () => {
+    setInitializing(true)
+    try {
+      const response = await fetch('/api/analytics/init')
+      const result = await response.json()
+
+      if (result.success) {
+        // Wait a moment then reload
+        setTimeout(() => {
+          loadAnalytics()
+          setInitializing(false)
+        }, 500)
+      } else {
+        alert(`Error: ${result.error || 'Failed to initialize'}`)
+        setInitializing(false)
+      }
+    } catch (error) {
+      alert(`Error: ${error.message}`)
+      setInitializing(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -48,14 +71,14 @@ export default function AnalyticsPage() {
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
           <p className="text-4xl mb-4">📊</p>
           <h2 className="text-xl font-bold mb-2">Analytics Not Ready</h2>
-          <p className="text-gray-600 mb-6">Initialize the analytics table to start tracking events:</p>
-          <a
-            href="/api/analytics/init"
-            target="_blank"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium mb-4">
-            Initialize Analytics Table
-          </a>
-          <p className="text-xs text-gray-400">Open the link above, then refresh this page</p>
+          <p className="text-gray-600 mb-6">Initialize the analytics table to start tracking events</p>
+          <button
+            onClick={handleInitialize}
+            disabled={initializing}
+            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium mb-4 disabled:opacity-50 disabled:cursor-not-allowed">
+            {initializing ? 'Initializing...' : 'Initialize Analytics Table'}
+          </button>
+          <p className="text-xs text-gray-400 mb-4">Click the button above to set up analytics</p>
           <button
             onClick={() => router.push('/admin')}
             className="block w-full mt-4 text-sm text-gray-500 hover:text-gray-700">
