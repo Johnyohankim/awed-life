@@ -72,6 +72,7 @@ export default function SubmitPage() {
   const [videoLink, setVideoLink] = useState('')
   const [category, setCategory] = useState('')
   const [hashtags, setHashtags] = useState('')
+  const [journal, setJournal] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -96,7 +97,7 @@ export default function SubmitPage() {
       const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoLink, category, hashtags })
+        body: JSON.stringify({ videoLink, category, hashtags, journal })
       })
       const result = await response.json()
 
@@ -138,29 +139,29 @@ export default function SubmitPage() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-6 max-w-2xl">
+      <div className="container mx-auto px-3 py-3 max-w-2xl">
 
         {submitted ? (
           /* Success state */
-          <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
-            <p className="text-5xl mb-4">🙏</p>
-            <h2 className="text-2xl font-bold mb-3">Thank you!</h2>
-            <p className="text-gray-600 mb-2">
+          <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+            <p className="text-4xl mb-3">🙏</p>
+            <h2 className="text-xl font-bold mb-2">Thank you!</h2>
+            <p className="text-gray-600 text-sm mb-2">
               Your awe moment has been submitted for review.
             </p>
-            <p className="text-gray-500 text-sm mb-8">
-              Once approved, it will be automatically added to your collection and you'll earn <span className="font-semibold text-purple-600">+1 submission point</span>. ⭐
+            <p className="text-gray-500 text-xs mb-6">
+              Once approved, it will be auto-added to your collection and you'll earn <span className="font-semibold text-purple-600">+1 point</span>. ⭐
             </p>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               <button
-                onClick={() => { setSubmitted(false); setVideoLink(''); setCategory(''); setHashtags('') }}
-                className="w-full py-3 px-6 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700"
+                onClick={() => { setSubmitted(false); setVideoLink(''); setCategory(''); setHashtags(''); setJournal('') }}
+                className="w-full py-3 px-6 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 text-sm"
               >
                 Submit another moment
               </button>
               <button
                 onClick={() => router.push('/cards')}
-                className="w-full py-3 px-6 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
+                className="w-full py-3 px-6 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 text-sm"
               >
                 Back to Cards
               </button>
@@ -168,100 +169,97 @@ export default function SubmitPage() {
           </div>
         ) : (
           <>
-            {/* Incentive banner */}
-            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 mb-6 flex items-center gap-3">
-              <span className="text-2xl">⭐</span>
-              <div>
-                <p className="font-semibold text-purple-800 text-sm">Earn submission points!</p>
-                <p className="text-purple-600 text-xs mt-0.5">
-                  Each approved submission is auto-added to your collection and earns you +1 point.
-                </p>
-              </div>
+            {/* Compact incentive banner */}
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3 flex items-center gap-2">
+              <span className="text-xl">⭐</span>
+              <p className="text-purple-700 text-xs">
+                <span className="font-semibold">Earn +1 point</span> for each approved submission
+              </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-3">
 
-              {/* Video URL + preview */}
-              <div className="bg-white rounded-2xl shadow-sm p-5">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Video Link <span className="text-red-500">*</span>
+              {/* Combined card: Link + Preview */}
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Paste Link <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="url"
                   value={videoLink}
                   onChange={e => setVideoLink(e.target.value)}
-                  placeholder="https://youtube.com/watch?v=... or https://youtube.com/shorts/..."
+                  placeholder="YouTube or Instagram link"
                   required
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base mb-4"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm mb-3"
                 />
                 <VideoPreview url={previewUrl} />
-                <p className="text-xs text-gray-400 mt-2">
-                  Supports YouTube, YouTube Shorts, and Instagram Reels
+              </div>
+
+              {/* Journal textarea */}
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Your Reflection <span className="text-gray-400 font-normal text-xs">(optional)</span>
+                </label>
+                <textarea
+                  value={journal}
+                  onChange={e => setJournal(e.target.value)}
+                  placeholder="What made this moment special? How did it make you feel?"
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Share your thoughts about this awe moment
                 </p>
               </div>
 
-              {/* Category selection */}
-              <div className="bg-white rounded-2xl shadow-sm p-5">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+              {/* Compact category dropdown */}
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Category <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-1 gap-2">
+                <select
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="">Select a category...</option>
                   {CATEGORIES.map(cat => (
-                    <button
-                      key={cat.value}
-                      type="button"
-                      onClick={() => setCategory(cat.value)}
-                      className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
-                        category === cat.value
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-100 hover:border-gray-200'
-                      }`}
-                    >
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cat.color} flex-shrink-0`} />
-                      <div>
-                        <p className="font-medium text-sm">{cat.label}</p>
-                        <p className="text-xs text-gray-500">{cat.description}</p>
-                      </div>
-                      {category === cat.value && (
-                        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-blue-500 ml-auto flex-shrink-0">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
-                      )}
-                    </button>
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
-                </div>
+                </select>
               </div>
 
               {/* Hashtags */}
-              <div className="bg-white rounded-2xl shadow-sm p-5">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hashtags <span className="text-gray-400 font-normal">(optional)</span>
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Hashtags <span className="text-gray-400 font-normal text-xs">(optional)</span>
                 </label>
                 <input
                   type="text"
                   value={hashtags}
                   onChange={e => setHashtags(e.target.value)}
                   placeholder="#inspiring #beautiful #nature"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 />
               </div>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                  <p className="text-red-700 text-sm">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-700 text-xs">{error}</p>
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={submitting || !videoLink || !category}
-                className={`w-full py-4 px-6 rounded-xl font-medium text-base transition-all ${
+                className={`w-full py-3 px-6 rounded-xl font-medium text-sm transition-all ${
                   submitting || !videoLink || !category
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
                 }`}
               >
-                {submitting ? 'Submitting...' : 'Submit Awe Moment ✨'}
+                {submitting ? 'Submitting...' : 'Submit ✨'}
               </button>
 
             </form>
