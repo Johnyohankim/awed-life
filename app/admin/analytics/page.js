@@ -18,9 +18,17 @@ export default function AnalyticsPage() {
       setLoading(true)
       const response = await fetch(`/api/analytics/dashboard?days=${days}`)
       const json = await response.json()
-      setData(json)
+
+      // Check if there's an error (like table doesn't exist)
+      if (json.error) {
+        console.error('Analytics error:', json.error)
+        setData(null)
+      } else {
+        setData(json)
+      }
     } catch (error) {
       console.error('Error loading analytics:', error)
+      setData(null)
     } finally {
       setLoading(false)
     }
@@ -34,15 +42,50 @@ export default function AnalyticsPage() {
     )
   }
 
-  if (!data) {
+  if (!data || data.totalEvents === undefined) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Error loading analytics</p>
-          <p className="text-sm text-gray-500 mb-4">Make sure you've initialized the analytics table:</p>
-          <a href="/api/analytics/init" target="_blank" className="text-blue-600 hover:underline">
-            Click here to initialize
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
+          <p className="text-4xl mb-4">📊</p>
+          <h2 className="text-xl font-bold mb-2">Analytics Not Ready</h2>
+          <p className="text-gray-600 mb-6">Initialize the analytics table to start tracking events:</p>
+          <a
+            href="/api/analytics/init"
+            target="_blank"
+            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium mb-4">
+            Initialize Analytics Table
           </a>
+          <p className="text-xs text-gray-400">Open the link above, then refresh this page</p>
+          <button
+            onClick={() => router.push('/admin')}
+            className="block w-full mt-4 text-sm text-gray-500 hover:text-gray-700">
+            ← Back to Admin
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Show message if table exists but no data yet
+  if (data.totalEvents === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
+          <p className="text-4xl mb-4">🎯</p>
+          <h2 className="text-xl font-bold mb-2">No Events Yet</h2>
+          <p className="text-gray-600 mb-4">Start using the app to see analytics!</p>
+          <p className="text-sm text-gray-500 mb-6">Events are tracked automatically when users:</p>
+          <ul className="text-sm text-gray-600 text-left space-y-2 mb-6">
+            <li>✓ View cards</li>
+            <li>✓ Keep cards</li>
+            <li>✓ React (awed/nawed)</li>
+            <li>✓ Achieve milestones</li>
+          </ul>
+          <button
+            onClick={() => router.push('/admin')}
+            className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium">
+            ← Back to Admin
+          </button>
         </div>
       </div>
     )

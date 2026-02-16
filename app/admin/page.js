@@ -321,6 +321,11 @@ export default function AdminPage() {
               {tab.label}
             </button>
           ))}
+          <button
+            onClick={() => router.push('/admin/analytics')}
+            className="px-5 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transition-all">
+            📊 Analytics
+          </button>
         </div>
 
         {/* Bulk tab */}
