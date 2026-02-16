@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import { CATEGORY_COLORS, CATEGORY_LABELS, MILESTONES } from '../lib/constants'
+import { trackEvent, EVENTS } from '../lib/analytics'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -338,7 +339,12 @@ export default function CollectionPage() {
   }, [status, router])
 
   useEffect(() => {
-    if (status === 'authenticated') loadCollection()
+    if (status === 'authenticated') {
+      loadCollection()
+
+      // Track collection page view
+      trackEvent(EVENTS.COLLECTION_VIEWED)
+    }
   }, [status])
 
   const loadCollection = async () => {

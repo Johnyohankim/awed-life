@@ -7,6 +7,7 @@ import BottomNav from '../components/BottomNav'
 import AchievementToast from '../components/AchievementToast'
 import { getDailyQuestion } from '../lib/journalQuestions'
 import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_QUOTES, MILESTONES } from '../lib/constants'
+import { trackEvent, EVENTS } from '../lib/analytics'
 
 const categoryColors = CATEGORY_COLORS
 const categoryLabels = CATEGORY_LABELS
@@ -113,10 +114,22 @@ function ReactionBar({ submissionId, onReact }) {
           setReaction(type)
           if (type === 'awed') setAwedCount(p => p + 1)
           else setNawedCount(p => p + 1)
+
+          // Track reaction
+          trackEvent(type === 'awed' ? EVENTS.REACTION_AWED : EVENTS.REACTION_NAWED, {
+            submissionId,
+            action: 'added'
+          })
         } else if (data.action === 'updated') {
           setReaction(type)
           if (type === 'awed') { setAwedCount(p => p + 1); setNawedCount(p => Math.max(p - 1, 0)) }
           else { setNawedCount(p => p + 1); setAwedCount(p => Math.max(p - 1, 0)) }
+
+          // Track reaction change
+          trackEvent(type === 'awed' ? EVENTS.REACTION_AWED : EVENTS.REACTION_NAWED, {
+            submissionId,
+            action: 'updated'
+          })
         }
       }
       if (onReact) onReact(type)
@@ -272,6 +285,14 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
         setKept(true)
         setStreak(data.streak)
         onKeep()
+
+        // Track card kept
+        trackEvent(EVENTS.CARD_KEPT, {
+          category: card.category,
+          streak: data.streak,
+          journalLength: journalText.trim().length,
+          hasQuestion: !!question
+        })
       } else {
         alert(data.error || 'Error keeping card')
       }
@@ -558,6 +579,9 @@ export default function CardsPage() {
       if (!hasSeenOnboarding) {
         setShowOnboarding(true)
       }
+
+      // Track page view
+      trackEvent(EVENTS.PAGE_VIEWED, { page: 'cards' })
     }
   }, [status])
 
@@ -605,6 +629,10 @@ export default function CardsPage() {
         // Check if we hit a milestone
         if (MILESTONES.includes(newTotal)) {
           setAchievementCount(newTotal)
+          trackEvent(EVENTS.MILESTONE_ACHIEVED, {
+            milestone: newTotal,
+            totalCards: newTotal
+          })
         }
       }
     } catch (error) {
@@ -615,6 +643,12 @@ export default function CardsPage() {
   const handleCardClick = (card, isSubmission = false) => {
     setSelectedCard(card)
     setIsSubmissionCard(isSubmission)
+
+    // Track card view
+    trackEvent(EVENTS.CARD_VIEWED, {
+      category: card.category,
+      isSubmission
+    })
   }
 
   const handleCloseOnboarding = () => {
