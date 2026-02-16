@@ -3,6 +3,52 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { CATEGORIES, CATEGORY_LABELS, CATEGORY_COLORS } from '@/app/lib/constants'
 
+/**
+ * Calculate user's preference weights for each category
+ * Based on their reaction history: love=3 points, like=2 points, neutral=1 point
+ */
+async function getCategoryPreferences(userId) {
+  try {
+    const reactions = await sql`
+      SELECT
+        s.category,
+        ae.event_name,
+        COUNT(*) as count
+      FROM analytics_events ae
+      JOIN submissions s ON (ae.metadata->>'submissionId')::int = s.id
+      WHERE ae.user_id = ${userId}
+        AND ae.event_name IN ('reaction_love', 'reaction_like', 'reaction_neutral')
+      GROUP BY s.category, ae.event_name
+    `
+
+    // Calculate weights (love=3, like=2, neutral=1)
+    const weights = {}
+    CATEGORIES.forEach(cat => weights[cat] = 1) // baseline weight
+
+    reactions.rows.forEach(row => {
+      const points = row.event_name === 'reaction_love' ? 3
+                   : row.event_name === 'reaction_like' ? 2
+                   : 1
+      weights[row.category] = (weights[row.category] || 1) + (points * parseInt(row.count))
+    })
+
+    // Normalize to preference scores (0-100)
+    const maxWeight = Math.max(...Object.values(weights))
+    const preferences = {}
+    CATEGORIES.forEach(cat => {
+      preferences[cat] = Math.round((weights[cat] / maxWeight) * 100)
+    })
+
+    return preferences
+  } catch (error) {
+    console.error('Error calculating preferences:', error)
+    // Return baseline preferences if error
+    const baseline = {}
+    CATEGORIES.forEach(cat => baseline[cat] = 50)
+    return baseline
+  }
+}
+
 async function generateDailyCards(today, userId) {
   for (const category of CATEGORIES) {
     try {
@@ -106,6 +152,9 @@ export async function GET() {
     const userId = session.user.id
     const today = new Date().toISOString().split('T')[0]
 
+    // Get user's category preferences (for recommendation engine)
+    const categoryPreferences = await getCategoryPreferences(userId)
+
     // Get today's daily card state
     const stateResult = await sql`
       SELECT flipped_cards, kept_card_category
@@ -133,10 +182,11 @@ export async function GET() {
     }
     const dailyCards = dailyCardsResult.rows
 
-    // Build 8 curated cards
+    // Build 8 curated cards with preference scores
     const cards = CATEGORIES.map(category => {
       const dailyCard = dailyCards.find(dc => dc.category === category)
       const isKept = keptCardCategory === category
+      const preferenceScore = categoryPreferences[category] || 50
 
       if (!dailyCard) {
         return {
@@ -145,7 +195,8 @@ export async function GET() {
           color: CATEGORY_COLORS[category],
           isEmpty: true,
           isKept: false,
-          video: null
+          video: null,
+          preferenceScore
         }
       }
 
@@ -158,9 +209,13 @@ export async function GET() {
         video: {
           id: dailyCard.submission_id,
           videoLink: dailyCard.video_link
-        }
+        },
+        preferenceScore
       }
     })
+
+    // Sort cards by preference score (highest first) for personalized ordering
+    cards.sort((a, b) => b.preferenceScore - a.preferenceScore)
 
     // Get curated kept card for today
     const keptResult = await sql`
@@ -208,13 +263,30 @@ export async function GET() {
     `
     const keptToday = parseInt(keptTodayResult.rows[0]?.count || 0)
 
+    // Get top 3 favorite categories for insights
+    const sortedPreferences = Object.entries(categoryPreferences)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 3)
+      .map(([cat, score]) => ({
+        category: cat,
+        label: CATEGORY_LABELS[cat],
+        score
+      }))
+
     return Response.json({
       cards,
       keptCard,
       submissionSlots: submissionSlotsResult.rows,
       submissionPoints,
       keptToday,
-      allowedKeeps
+      allowedKeeps,
+      recommendations: {
+        enabled: true,
+        topCategories: sortedPreferences,
+        message: sortedPreferences.length > 0
+          ? `Cards ordered by your preferences`
+          : `Discovering your preferences...`
+      }
     })
 
   } catch (error) {
