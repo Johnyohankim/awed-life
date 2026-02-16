@@ -4,6 +4,8 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
+import EngagementCalendar from '../components/EngagementCalendar'
+import RewardClaimModal from '../components/RewardClaimModal'
 import { CATEGORY_COLORS, CATEGORY_LABELS, MILESTONES } from '../lib/constants'
 import { trackEvent, EVENTS } from '../lib/analytics'
 
@@ -494,6 +496,8 @@ export default function JourneyPage() {
   const [newName, setNewName] = useState('')
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showRewardModal, setShowRewardModal] = useState(false)
+  const [currentMilestone, setCurrentMilestone] = useState(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -508,18 +512,27 @@ export default function JourneyPage() {
 
   const loadData = async () => {
     try {
-      const [collectionRes, profileRes] = await Promise.all([
+      const [collectionRes, profileRes, rewardsRes] = await Promise.all([
         fetch('/api/collection'),
-        fetch('/api/profile')
+        fetch('/api/profile'),
+        fetch('/api/rewards')
       ])
 
       const collectionData = await collectionRes.json()
       const profileData = await profileRes.json()
+      const rewardsData = await rewardsRes.json()
 
       setCards(collectionData.cards || [])
       setStats(collectionData.stats || null)
       setProfile(profileData)
       setNewName(profileData.name || '')
+
+      // Check if user has reached a new milestone
+      if (rewardsData.newMilestones && rewardsData.newMilestones.length > 0) {
+        // Show modal for first unclaimed milestone
+        setCurrentMilestone(rewardsData.newMilestones[0])
+        setShowRewardModal(true)
+      }
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -553,6 +566,32 @@ export default function JourneyPage() {
     navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleClaimReward = async (shippingInfo) => {
+    try {
+      const response = await fetch('/api/rewards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          milestone: currentMilestone,
+          shippingInfo
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('🎉 Reward claimed! We\'ll ship it to you soon!')
+        setShowRewardModal(false)
+        setCurrentMilestone(null)
+      } else {
+        alert(data.error || 'Failed to claim reward')
+      }
+    } catch (error) {
+      console.error('Error claiming reward:', error)
+      alert('Failed to claim reward. Please try again.')
+    }
   }
 
   const handleDeleteCard = (cardId) => {
@@ -701,6 +740,11 @@ export default function JourneyPage() {
           </div>
         )}
 
+        {/* Engagement Calendar */}
+        {cards.length > 0 && (
+          <EngagementCalendar cards={cards} />
+        )}
+
         {/* Collection section */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold">My Collection</h2>
@@ -769,6 +813,14 @@ export default function JourneyPage() {
           onClose={() => setSelectedCard(null)}
           onDelete={handleDeleteCard}
           onUpdate={handleUpdateCard}
+        />
+      )}
+
+      {showRewardModal && currentMilestone && (
+        <RewardClaimModal
+          milestone={currentMilestone}
+          onClose={() => setShowRewardModal(false)}
+          onSubmit={handleClaimReward}
         />
       )}
     </div>
