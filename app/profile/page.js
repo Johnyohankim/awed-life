@@ -78,7 +78,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (status === 'unauthenticated' && !userId) router.push('/login')
-  }, [status, router, userId])
+    // Redirect own profile to /journey
+    if (status === 'authenticated' && isOwnProfile) router.push('/journey')
+  }, [status, router, userId, isOwnProfile])
 
   useEffect(() => {
     if (status === 'authenticated' || userId) loadProfile()
@@ -163,7 +165,7 @@ export default function ProfilePage() {
             {isOwnProfile && (
               <>
                 <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Cards</button>
-                <button onClick={() => router.push('/collection')} className="text-sm text-gray-600 hover:text-gray-900">Collection</button>
+                <button onClick={() => router.push('/journey')} className="text-sm text-gray-600 hover:text-gray-900">My Journey</button>
                 <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
               </>
             )}
@@ -281,7 +283,7 @@ export default function ProfilePage() {
                 {isOwnProfile ? 'Recent Collection' : 'Collection'}
               </h2>
               {isOwnProfile && (
-                <button onClick={() => router.push('/collection')} className="text-sm text-blue-600">
+                <button onClick={() => router.push('/journey')} className="text-sm text-blue-600">
                   View all →
                 </button>
               )}

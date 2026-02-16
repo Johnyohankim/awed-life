@@ -701,8 +701,7 @@ export default function CardsPage() {
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
           <button onClick={() => router.push('/cards')} className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</button>
           <div className="hidden md:flex items-center gap-4">
-            <button onClick={() => router.push('/collection')} className="text-sm text-gray-600 hover:text-gray-900">Collection</button>
-            <button onClick={() => router.push('/profile')} className="text-sm text-gray-600 hover:text-gray-900">Profile</button>
+            <button onClick={() => router.push('/journey')} className="text-sm text-gray-600 hover:text-gray-900">My Journey</button>
             <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
           <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>

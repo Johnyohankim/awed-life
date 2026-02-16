@@ -6,7 +6,11 @@
       "Bash(npm install)",
       "Bash(git init:*)",
       "Bash(npm run curate:*)",
-      "Bash(npm run curate:all:*)"
+      "Bash(npm run curate:all:*)",
+      "Bash(ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev)",
+      "Bash(taskkill:*)"
     ]
   }
 }
