@@ -19,7 +19,7 @@ async function generateDailyCards(today, userId) {
         )
       ORDER BY
         CASE
-          WHEN s.duration_seconds BETWEEN 60 AND 600 THEN 0
+          WHEN s.duration_seconds BETWEEN 15 AND 300 THEN 0
           ELSE 1
         END,
         RANDOM()
@@ -32,7 +32,7 @@ async function generateDailyCards(today, userId) {
         WHERE category = ${category} AND approved = true
         ORDER BY
           CASE
-            WHEN duration_seconds BETWEEN 60 AND 600 THEN 0
+            WHEN duration_seconds BETWEEN 15 AND 300 THEN 0
             ELSE 1
           END,
           RANDOM()
