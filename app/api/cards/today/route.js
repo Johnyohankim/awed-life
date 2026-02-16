@@ -17,7 +17,12 @@ async function generateDailyCards(today, userId) {
         AND s.id NOT IN (
           SELECT submission_id FROM shown_cards WHERE user_id = ${userId}
         )
-      ORDER BY RANDOM()
+      ORDER BY
+        CASE
+          WHEN s.duration_seconds BETWEEN 60 AND 600 THEN 0
+          ELSE 1
+        END,
+        RANDOM()
       LIMIT 1
     `
 
@@ -25,7 +30,13 @@ async function generateDailyCards(today, userId) {
       const fallback = await sql`
         SELECT id FROM submissions
         WHERE category = ${category} AND approved = true
-        ORDER BY RANDOM() LIMIT 1
+        ORDER BY
+          CASE
+            WHEN duration_seconds BETWEEN 60 AND 600 THEN 0
+            ELSE 1
+          END,
+          RANDOM()
+        LIMIT 1
       `
       if (fallback.rows.length > 0) {
         await sql`

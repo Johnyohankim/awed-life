@@ -40,6 +40,48 @@ async function checkYouTubeEmbeddable(videoLink) {
   }
 }
 
+// Parse ISO 8601 duration (e.g., "PT5M30S") to seconds
+function parseYouTubeDuration(duration) {
+  if (!duration) return null
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+  if (!match) return null
+
+  const hours = parseInt(match[1] || 0)
+  const minutes = parseInt(match[2] || 0)
+  const seconds = parseInt(match[3] || 0)
+
+  return hours * 3600 + minutes * 60 + seconds
+}
+
+async function getYouTubeDuration(videoLink) {
+  const videoId = getYouTubeId(videoLink)
+  if (!videoId) return null
+
+  const apiKey = process.env.YOUTUBE_API_KEY
+  if (!apiKey) {
+    console.warn('YouTube API key not configured')
+    return null
+  }
+
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=contentDetails`
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.items && data.items.length > 0) {
+        const duration = data.items[0].contentDetails?.duration
+        return parseYouTubeDuration(duration)
+      }
+    }
+    return null
+  } catch (error) {
+    console.error('Error fetching YouTube duration:', error)
+    return null
+  }
+}
+
 export async function POST(request) {
   try {
     const { videoLink, category, hashtags, email } = await request.json()
@@ -54,6 +96,8 @@ export async function POST(request) {
 
     // Check if it's a YouTube video and if it's embeddable
     const videoId = getYouTubeId(videoLink)
+    let durationSeconds = null
+
     if (videoId) {
       const embedCheck = await checkYouTubeEmbeddable(videoLink)
       if (!embedCheck.embeddable) {
@@ -61,6 +105,9 @@ export async function POST(request) {
           error: embedCheck.reason || 'This video cannot be embedded'
         }, { status: 400 })
       }
+
+      // Fetch video duration
+      durationSeconds = await getYouTubeDuration(videoLink)
     }
 
     // Check if user is logged in
@@ -76,8 +123,8 @@ export async function POST(request) {
     }
 
     await sql`
-      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id)
-      VALUES (${videoLink}, ${category}, ${hashtags || ''}, ${email || ''}, false, ${submittedByUserId})
+      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id, duration_seconds)
+      VALUES (${videoLink}, ${category}, ${hashtags || ''}, ${email || ''}, false, ${submittedByUserId}, ${durationSeconds})
     `
 
     return Response.json({ success: true })
