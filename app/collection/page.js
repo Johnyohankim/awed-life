@@ -148,12 +148,80 @@ function ReactionBar({ submissionId }) {
   )
 }
 
-function FullscreenCardModal({ card, onClose }) {
+function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
   const videoId = getYouTubeId(card.video_link)
   const isInstagram = isInstagramUrl(card.video_link)
   const isTwitter = isTwitterUrl(card.video_link)
   const label = categoryLabels[card.category] || card.category
   const date = new Date(card.kept_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  const [deleting, setDeleting] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedJournal, setEditedJournal] = useState(card.journal_text)
+  const [saving, setSaving] = useState(false)
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this card? This cannot be undone.')) {
+      return
+    }
+
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/collection?id=${card.id}`, {
+        method: 'DELETE'
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        onDelete(card.id)
+        onClose()
+      } else {
+        alert('Failed to delete card. Please try again.')
+      }
+    } catch (error) {
+      console.error('Delete error:', error)
+      alert('Failed to delete card. Please try again.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleSaveJournal = async () => {
+    // Validation
+    if (!card.is_submission && editedJournal.trim().length < 10) {
+      alert('Journal entry must be at least 10 characters')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const response = await fetch('/api/collection', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cardId: card.id,
+          journalText: editedJournal
+        })
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        onUpdate(card.id, { journal_text: editedJournal })
+        setIsEditing(false)
+      } else {
+        alert(data.error || 'Failed to save journal')
+      }
+    } catch (error) {
+      console.error('Save error:', error)
+      alert('Failed to save journal. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditedJournal(card.journal_text)
+    setIsEditing(false)
+  }
 
   // Handle back button
   useEffect(() => {
@@ -223,12 +291,24 @@ function FullscreenCardModal({ card, onClose }) {
               <h3 className="text-white font-bold text-lg drop-shadow">{label}</h3>
               <p className="text-white/90 text-sm">{date}</p>
             </div>
-            <button
-              onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all"
-            >
-              ×
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="w-10 h-10 rounded-full bg-red-500/20 backdrop-blur-md border border-red-400/30 flex items-center justify-center text-white hover:bg-red-500/30 transition-all disabled:opacity-50"
+                title="Delete card"
+              >
+                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+              </button>
+              <button
+                onClick={onClose}
+                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all"
+              >
+                ×
+              </button>
+            </div>
           </div>
         </div>
 
@@ -252,10 +332,50 @@ function FullscreenCardModal({ card, onClose }) {
               <p className="text-gray-700 font-medium italic">{card.journal_question}</p>
             </div>
           )}
-          <h4 className="font-bold text-lg mb-3">Your Reflection</h4>
-          <div className="bg-gray-50 rounded-xl p-4">
-            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{card.journal_text}</p>
+          <div className="flex justify-between items-center mb-3">
+            <h4 className="font-bold text-lg">Your Reflection</h4>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Edit
+              </button>
+            )}
           </div>
+          {isEditing ? (
+            <div>
+              <textarea
+                value={editedJournal}
+                onChange={(e) => setEditedJournal(e.target.value)}
+                className="w-full bg-gray-50 rounded-xl p-4 text-gray-700 leading-relaxed border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
+                placeholder={card.is_submission ? "Add your reflection..." : "Write your reflection (min 10 characters)"}
+              />
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={handleSaveJournal}
+                  disabled={saving}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+                <button
+                  onClick={handleCancelEdit}
+                  disabled={saving}
+                  className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+              {!card.is_submission && (
+                <p className="text-xs text-gray-500 mt-2">Minimum 10 characters required</p>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{card.journal_text}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -333,6 +453,7 @@ export default function CollectionPage() {
   const [loading, setLoading] = useState(true)
   const [selectedCard, setSelectedCard] = useState(null)
   const [activeFilter, setActiveFilter] = useState('all')
+  const [sortMode, setSortMode] = useState('newest')
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -360,7 +481,47 @@ export default function CollectionPage() {
     }
   }
 
-  const filteredCards = activeFilter === 'all' ? cards : cards.filter(c => c.category === activeFilter)
+  const handleDeleteCard = (cardId) => {
+    // Optimistically remove from state
+    setCards(prevCards => prevCards.filter(c => c.id !== cardId))
+
+    // Update stats
+    setStats(prevStats => prevStats ? {
+      ...prevStats,
+      total: prevStats.total - 1
+    } : null)
+  }
+
+  const handleUpdateCard = (cardId, updates) => {
+    // Optimistically update in state
+    setCards(prevCards =>
+      prevCards.map(c =>
+        c.id === cardId ? { ...c, ...updates } : c
+      )
+    )
+  }
+
+  const getSortedCards = (cardsToSort) => {
+    const sorted = [...cardsToSort]
+
+    switch (sortMode) {
+      case 'oldest':
+        return sorted.sort((a, b) => new Date(a.kept_at) - new Date(b.kept_at))
+      case 'category':
+        return sorted.sort((a, b) => {
+          const labelA = categoryLabels[a.category] || a.category
+          const labelB = categoryLabels[b.category] || b.category
+          return labelA.localeCompare(labelB)
+        })
+      case 'newest':
+      default:
+        return sorted.sort((a, b) => new Date(b.kept_at) - new Date(a.kept_at))
+    }
+  }
+
+  const filteredCards = getSortedCards(
+    activeFilter === 'all' ? cards : cards.filter(c => c.category === activeFilter)
+  )
   const uniqueCategories = [...new Set(cards.map(c => c.category))]
 
   if (status === 'loading' || loading) {
@@ -442,6 +603,19 @@ export default function CollectionPage() {
           </div>
         ) : (
           <>
+            {/* Sort dropdown */}
+            <div className="mb-4 flex justify-end">
+              <select
+                value={sortMode}
+                onChange={(e) => setSortMode(e.target.value)}
+                className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="category">Category (A-Z)</option>
+              </select>
+            </div>
+
             {/* Filters */}
             <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4">
               <button
@@ -478,7 +652,12 @@ export default function CollectionPage() {
       <BottomNav />
 
       {selectedCard && (
-        <FullscreenCardModal card={selectedCard} onClose={() => setSelectedCard(null)} />
+        <FullscreenCardModal
+          card={selectedCard}
+          onClose={() => setSelectedCard(null)}
+          onDelete={handleDeleteCard}
+          onUpdate={handleUpdateCard}
+        />
       )}
     </div>
   )

@@ -96,3 +96,107 @@ export async function GET() {
     return Response.json({ error: 'Failed to get collection' }, { status: 500 })
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const cardId = searchParams.get('id')
+
+    if (!cardId) {
+      return Response.json({ error: 'Card ID required' }, { status: 400 })
+    }
+
+    // Get user ID
+    const userResult = await sql`
+      SELECT id FROM users WHERE email = ${session.user.email}
+    `
+    const userId = userResult.rows[0]?.id
+
+    // Verify ownership before deleting
+    const ownershipCheck = await sql`
+      SELECT id FROM user_cards
+      WHERE id = ${cardId} AND user_id = ${userId}
+    `
+
+    if (ownershipCheck.rows.length === 0) {
+      return Response.json({ error: 'Card not found or unauthorized' }, { status: 404 })
+    }
+
+    // Delete card (CASCADE will handle reactions automatically)
+    await sql`DELETE FROM user_cards WHERE id = ${cardId}`
+
+    return Response.json({ success: true })
+
+  } catch (error) {
+    console.error('Error deleting card:', error)
+    return Response.json({ error: 'Failed to delete card' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { cardId, journalText, isPublic } = await request.json()
+
+    if (!cardId) {
+      return Response.json({ error: 'Card ID required' }, { status: 400 })
+    }
+
+    // Get user ID
+    const userResult = await sql`
+      SELECT id FROM users WHERE email = ${session.user.email}
+    `
+    const userId = userResult.rows[0]?.id
+
+    // Verify ownership and get card details
+    const ownershipCheck = await sql`
+      SELECT is_submission FROM user_cards
+      WHERE id = ${cardId} AND user_id = ${userId}
+    `
+
+    if (ownershipCheck.rows.length === 0) {
+      return Response.json({ error: 'Card not found or unauthorized' }, { status: 404 })
+    }
+
+    const isSubmission = ownershipCheck.rows[0].is_submission
+
+    // Validate journal text
+    // For submission cards, allow any length (no minimum)
+    // For regular cards, enforce 10 character minimum
+    if (!isSubmission && (!journalText || journalText.trim().length < 10)) {
+      return Response.json({
+        error: 'Journal entry must be at least 10 characters'
+      }, { status: 400 })
+    }
+
+    // For submission cards, still require some text
+    if (isSubmission && !journalText?.trim()) {
+      return Response.json({
+        error: 'Journal entry required'
+      }, { status: 400 })
+    }
+
+    // Update card
+    await sql`
+      UPDATE user_cards
+      SET journal_text = ${journalText.trim()},
+          is_public = ${isPublic !== undefined ? isPublic : sql`is_public`}
+      WHERE id = ${cardId} AND user_id = ${userId}
+    `
+
+    return Response.json({ success: true })
+
+  } catch (error) {
+    console.error('Error updating card:', error)
+    return Response.json({ error: 'Failed to update card' }, { status: 500 })
+  }
+}
