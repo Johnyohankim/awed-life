@@ -1,6 +1,5 @@
 import { sql } from '@vercel/postgres'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { cookies } from 'next/headers'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -35,10 +34,11 @@ async function checkYouTubeEmbeddable(videoLink) {
 
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions)
+    // Check admin authentication using cookie
+    const cookieStore = await cookies()
+    const authCookie = cookieStore.get('admin-auth')
 
-    // Admin check - only allow admin users
-    if (!session?.user?.email || session.user.email !== 'letmeloveu2@gmail.com') {
+    if (authCookie?.value !== 'true') {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
