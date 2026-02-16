@@ -51,12 +51,15 @@ export default function RewardClaimModal({ milestone, onClose, onSubmit }) {
             <h2 className="text-2xl font-bold mb-2">{info.title}</h2>
             <p className="text-gray-600 text-sm mb-4">{info.description}</p>
 
-            {/* Placeholder for goods images */}
-            <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl p-8 mb-4">
-              <div className="text-6xl mb-2">📦</div>
-              <p className="font-semibold text-purple-900">{info.reward}</p>
-              <p className="text-xs text-purple-700 mt-2">Preview images coming soon!</p>
+            {/* Product images */}
+            <div className="rounded-xl overflow-hidden mb-4">
+              <img
+                src="/rewards/awed-goods.png"
+                alt="Awed.life rewards"
+                className="w-full h-auto"
+              />
             </div>
+            <p className="font-semibold text-purple-900 mb-2">{info.reward}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
