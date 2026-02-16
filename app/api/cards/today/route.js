@@ -246,7 +246,7 @@ async function generateDailyCards(today, userId) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
@@ -254,7 +254,10 @@ export async function GET() {
     }
 
     const userId = session.user.id
-    const today = new Date().toISOString().split('T')[0]
+
+    // Use local date from client (browser timezone) or fallback to server time
+    const { searchParams } = new URL(request.url)
+    const today = searchParams.get('localDate') || new Date().toISOString().split('T')[0]
 
     // Get user's category preferences (for recommendation engine)
     const categoryPreferences = await getCategoryPreferences(userId)

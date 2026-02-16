@@ -10,7 +10,7 @@ export async function POST(request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { submissionId, journalText, isPublic, isSubmission, question } = await request.json()
+    const { submissionId, journalText, isPublic, isSubmission, question, localDate } = await request.json()
 
     if (!journalText || journalText.trim().length < 10) {
       return Response.json({ error: 'Journal entry too short' }, { status: 400 })
@@ -23,7 +23,8 @@ export async function POST(request) {
     const userId = userResult.rows[0].id
     const submissionPoints = userResult.rows[0]?.submission_points || 0
     const allowedKeeps = Math.min(1 + submissionPoints, 8)
-    const today = new Date().toISOString().split('T')[0]
+    // Use local date from client (browser timezone) or fallback to server time
+    const today = localDate || new Date().toISOString().split('T')[0]
 
     // Get submission category
     const submissionResult = await sql`

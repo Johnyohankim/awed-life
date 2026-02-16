@@ -269,6 +269,8 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
     if (!canKeep || keeping) return
     setKeeping(true)
     try {
+      // Get local date in YYYY-MM-DD format (browser timezone)
+      const localDate = new Date().toLocaleDateString('en-CA') // en-CA gives YYYY-MM-DD format
       const response = await fetch('/api/cards/keep', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -277,7 +279,8 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
           journalText: journalText.trim(),
           isPublic: false,
           isSubmission: false,
-          question
+          question,
+          localDate
         })
       })
       const data = await response.json()
@@ -606,7 +609,9 @@ export default function CardsPage() {
 
   const loadCards = async () => {
     try {
-      const response = await fetch('/api/cards/today')
+      // Get local date in YYYY-MM-DD format (browser timezone)
+      const localDate = new Date().toLocaleDateString('en-CA') // en-CA gives YYYY-MM-DD format
+      const response = await fetch(`/api/cards/today?localDate=${localDate}`)
       const data = await response.json()
       if (data.cards) {
         // Apply smart rotation to feature different category each day
