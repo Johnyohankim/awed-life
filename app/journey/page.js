@@ -745,6 +745,69 @@ export default function JourneyPage() {
           <EngagementCalendar cards={cards} />
         )}
 
+        {/* Rewards Teaser */}
+        {cards.length > 0 && stats && (
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-sm p-4 mb-3 border border-purple-100">
+            <div className="flex items-start gap-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-sm font-bold text-purple-900">Earn Physical Rewards 🎁</h3>
+                  <span className="px-2 py-0.5 rounded text-xs font-bold text-orange-900 bg-orange-200 border border-orange-300">
+                    Coming Soon
+                  </span>
+                </div>
+                <p className="text-xs text-purple-700 mb-3">
+                  Build your daily awe habit and we'll send you exclusive awed.life goods! Products ship when manufactured.
+                </p>
+
+                {/* Progress indicators */}
+                <div className="space-y-2">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-purple-900 font-medium">7-day streak</span>
+                      <span className="text-purple-700">{stats.streak}/7 days</span>
+                    </div>
+                    <div className="h-2 bg-white/60 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all"
+                        style={{ width: `${Math.min((stats.streak / 7) * 100, 100)}%` }}
+                      />
+                    </div>
+                    {stats.streak >= 7 && (
+                      <p className="text-xs text-green-700 font-semibold mt-1">✓ Unlocked! Claim your reward below.</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-purple-900 font-medium">20 total days</span>
+                      <span className="text-purple-700">{stats.total}/20 days</span>
+                    </div>
+                    <div className="h-2 bg-white/60 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all"
+                        style={{ width: `${Math.min((stats.total / 20) * 100, 100)}%` }}
+                      />
+                    </div>
+                    {stats.total >= 20 && (
+                      <p className="text-xs text-green-700 font-semibold mt-1">✓ Unlocked! Claim your reward below.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview image */}
+              <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
+                <img
+                  src="/rewards/awed-goods.png"
+                  alt="Rewards preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Collection section */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold">My Collection</h2>

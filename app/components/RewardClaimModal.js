@@ -187,7 +187,7 @@ export default function RewardClaimModal({ milestone, onClose, onSubmit }) {
           </form>
 
           <p className="text-xs text-gray-500 text-center mt-3">
-            We'll ship your reward within 2-3 weeks. No spam, promise!
+            Products are being manufactured! We'll ship your reward when ready. No spam, promise! 🎁
           </p>
         </div>
       </div>
