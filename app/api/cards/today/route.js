@@ -5,59 +5,93 @@ import { CATEGORIES, CATEGORY_LABELS, CATEGORY_COLORS } from '@/app/lib/constant
 
 async function generateDailyCards(today, userId) {
   for (const category of CATEGORIES) {
-    const existing = await sql`
-      SELECT id FROM daily_cards WHERE date = ${today} AND category = ${category}
-    `
-    if (existing.rows.length > 0) continue
-
-    const result = await sql`
-      SELECT s.id FROM submissions s
-      WHERE s.category = ${category}
-        AND s.approved = true
-        AND s.id NOT IN (
-          SELECT submission_id FROM shown_cards WHERE user_id = ${userId}
-        )
-      ORDER BY
-        CASE
-          WHEN s.duration_seconds IS NOT NULL AND s.duration_seconds BETWEEN 15 AND 300 THEN 0
-          WHEN s.duration_seconds IS NULL THEN 1
-          ELSE 2
-        END,
-        RANDOM()
-      LIMIT 1
-    `
-
-    if (result.rows.length === 0) {
-      const fallback = await sql`
-        SELECT id FROM submissions
-        WHERE category = ${category} AND approved = true
-        ORDER BY
-          CASE
-            WHEN duration_seconds IS NOT NULL AND duration_seconds BETWEEN 15 AND 300 THEN 0
-            WHEN duration_seconds IS NULL THEN 1
-            ELSE 2
-          END,
-          RANDOM()
-        LIMIT 1
+    try {
+      const existing = await sql`
+        SELECT id FROM daily_cards WHERE date = ${today} AND category = ${category}
       `
-      if (fallback.rows.length > 0) {
-        await sql`
-          INSERT INTO daily_cards (date, category, submission_id)
-          VALUES (${today}, ${category}, ${fallback.rows[0].id})
-          ON CONFLICT (date, category) DO NOTHING
+      if (existing.rows.length > 0) continue
+
+      // Try with duration prioritization first
+      let result
+      try {
+        result = await sql`
+          SELECT s.id FROM submissions s
+          WHERE s.category = ${category}
+            AND s.approved = true
+            AND s.id NOT IN (
+              SELECT submission_id FROM shown_cards WHERE user_id = ${userId}
+            )
+          ORDER BY
+            CASE
+              WHEN s.duration_seconds IS NOT NULL AND s.duration_seconds BETWEEN 15 AND 300 THEN 0
+              WHEN s.duration_seconds IS NULL THEN 1
+              ELSE 2
+            END,
+            RANDOM()
+          LIMIT 1
+        `
+      } catch (durationError) {
+        // Fallback without duration if column doesn't exist
+        console.log('Duration column error, using simple random:', durationError.message)
+        result = await sql`
+          SELECT s.id FROM submissions s
+          WHERE s.category = ${category}
+            AND s.approved = true
+            AND s.id NOT IN (
+              SELECT submission_id FROM shown_cards WHERE user_id = ${userId}
+            )
+          ORDER BY RANDOM()
+          LIMIT 1
         `
       }
-    } else {
-      await sql`
-        INSERT INTO daily_cards (date, category, submission_id)
-        VALUES (${today}, ${category}, ${result.rows[0].id})
-        ON CONFLICT (date, category) DO NOTHING
-      `
-      await sql`
-        INSERT INTO shown_cards (user_id, submission_id)
-        VALUES (${userId}, ${result.rows[0].id})
-        ON CONFLICT DO NOTHING
-      `
+
+      if (result.rows.length === 0) {
+        // Try fallback with all videos in category
+        let fallback
+        try {
+          fallback = await sql`
+            SELECT id FROM submissions
+            WHERE category = ${category} AND approved = true
+            ORDER BY
+              CASE
+                WHEN duration_seconds IS NOT NULL AND duration_seconds BETWEEN 15 AND 300 THEN 0
+                WHEN duration_seconds IS NULL THEN 1
+                ELSE 2
+              END,
+              RANDOM()
+            LIMIT 1
+          `
+        } catch (durationError) {
+          // Fallback without duration
+          fallback = await sql`
+            SELECT id FROM submissions
+            WHERE category = ${category} AND approved = true
+            ORDER BY RANDOM()
+            LIMIT 1
+          `
+        }
+        if (fallback.rows.length > 0) {
+          await sql`
+            INSERT INTO daily_cards (date, category, submission_id)
+            VALUES (${today}, ${category}, ${fallback.rows[0].id})
+            ON CONFLICT (date, category) DO NOTHING
+          `
+        }
+      } else {
+        await sql`
+          INSERT INTO daily_cards (date, category, submission_id)
+          VALUES (${today}, ${category}, ${result.rows[0].id})
+          ON CONFLICT (date, category) DO NOTHING
+        `
+        await sql`
+          INSERT INTO shown_cards (user_id, submission_id)
+          VALUES (${userId}, ${result.rows[0].id})
+          ON CONFLICT DO NOTHING
+        `
+      }
+    } catch (error) {
+      console.error(`Error generating daily card for ${category}:`, error)
+      // Continue with next category even if this one fails
     }
   }
 }
