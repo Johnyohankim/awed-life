@@ -123,9 +123,11 @@ export async function POST(request) {
     }
 
     await sql`
-      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id, duration_seconds, journal_text)
-      VALUES (${videoLink}, ${category}, ${hashtags || ''}, ${email || ''}, false, ${submittedByUserId}, ${durationSeconds}, ${journal || ''})
+      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id, duration_seconds)
+      VALUES (${videoLink}, ${category}, ${hashtags || ''}, ${email || ''}, false, ${submittedByUserId}, ${durationSeconds})
     `
+
+    // TODO: Store journal text when submissions table is updated with journal_text column
 
     return Response.json({ success: true })
 
