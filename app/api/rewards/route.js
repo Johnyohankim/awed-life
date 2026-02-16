@@ -2,6 +2,44 @@ import { sql } from '@vercel/postgres'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+// Calculate streak from consecutive days with kept cards
+function calculateStreak(dates) {
+  if (dates.length === 0) return 0
+
+  // Sort dates descending (most recent first)
+  const sortedDates = dates
+    .map(d => new Date(d.kept_date))
+    .sort((a, b) => b - a)
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  let streak = 0
+  let currentDate = new Date(today)
+
+  for (const date of sortedDates) {
+    const checkDate = new Date(date)
+    checkDate.setHours(0, 0, 0, 0)
+
+    const daysDiff = Math.floor((currentDate - checkDate) / (1000 * 60 * 60 * 24))
+
+    if (daysDiff === 0) {
+      // Same day as expected
+      streak++
+      currentDate.setDate(currentDate.getDate() - 1)
+    } else if (daysDiff === 1) {
+      // Next consecutive day
+      streak++
+      currentDate.setDate(currentDate.getDate() - 1)
+    } else {
+      // Streak broken
+      break
+    }
+  }
+
+  return streak
+}
+
 // Check if user has reached milestones and hasn't claimed yet
 export async function GET() {
   try {
@@ -11,7 +49,7 @@ export async function GET() {
     }
 
     const userResult = await sql`
-      SELECT id, streak_count FROM users WHERE email = ${session.user.email}
+      SELECT id FROM users WHERE email = ${session.user.email}
     `
 
     if (userResult.rows.length === 0) {
@@ -19,15 +57,16 @@ export async function GET() {
     }
 
     const userId = userResult.rows[0].id
-    const currentStreak = userResult.rows[0].streak_count || 0
 
-    // Get total unique days with cards
+    // Get all unique days with cards
     const cardsResult = await sql`
       SELECT DISTINCT DATE(kept_at) as kept_date
       FROM user_cards
       WHERE user_id = ${userId}
+      ORDER BY kept_date DESC
     `
     const totalDays = cardsResult.rows.length
+    const currentStreak = calculateStreak(cardsResult.rows)
 
     // Check which rewards have been claimed
     const claimsResult = await sql`

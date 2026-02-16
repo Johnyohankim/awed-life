@@ -797,7 +797,7 @@ export default function JourneyPage() {
               </div>
 
               {/* Preview image */}
-              <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
+              <div className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
                 <img
                   src="/rewards/awed-goods.png"
                   alt="Rewards preview"
