@@ -123,8 +123,8 @@ export async function POST(request) {
     }
 
     const result = await sql`
-      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id, journal_text)
-      VALUES (${videoLink}, ${category}, ${hashtags || ''}, '', false, ${submittedByUserId}, ${journal || ''})
+      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id)
+      VALUES (${videoLink}, ${category}, ${hashtags || ''}, '', false, ${submittedByUserId})
       RETURNING id
     `
 
