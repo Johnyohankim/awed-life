@@ -222,6 +222,8 @@ export default function AdminPage() {
   const [bulkSubmitting, setBulkSubmitting] = useState(false)
   const [bulkResult, setBulkResult] = useState(null)
   const [usersCount, setUsersCount] = useState(0)
+  const [cleaningVideos, setCleaningVideos] = useState(false)
+  const [cleanResult, setCleanResult] = useState(null)
   const router = useRouter()
 
   useEffect(() => { checkAuth() }, [])
@@ -281,6 +283,18 @@ export default function AdminPage() {
     finally { setBulkSubmitting(false) }
   }
 
+  const handleCleanBlockedVideos = async () => {
+    if (!confirm('This will scan all YouTube videos and remove any that are blocked from embedding. Continue?')) return
+    setCleaningVideos(true); setCleanResult(null)
+    try {
+      const r = await fetch('/api/admin/clean-blocked-videos', { method: 'POST' })
+      const result = await r.json()
+      setCleanResult(result)
+      if (result.success) { loadSubmissions(); loadCardCounts() }
+    } catch { alert('Error cleaning videos') }
+    finally { setCleaningVideos(false) }
+  }
+
   if (!isAuthenticated || loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center"><p className="text-gray-600">Loading...</p></div>
   )
@@ -326,7 +340,31 @@ export default function AdminPage() {
             className="px-5 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 transition-all">
             📊 Analytics
           </button>
+          <button
+            onClick={handleCleanBlockedVideos}
+            disabled={cleaningVideos}
+            className="px-5 py-2 rounded-lg font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            {cleaningVideos ? '🔄 Scanning...' : '🧹 Clean Blocked Videos'}
+          </button>
         </div>
+
+        {/* Clean result banner */}
+        {cleanResult && (
+          <div className={`mb-6 p-4 rounded-lg ${cleanResult.success ? 'bg-blue-50 border border-blue-200' : 'bg-red-50 border border-red-200'}`}>
+            {cleanResult.success ? (
+              <div>
+                <p className="text-blue-800 font-medium">✓ Scan complete!</p>
+                <p className="text-sm text-blue-700 mt-1">Checked {cleanResult.checked} videos, removed {cleanResult.removed} blocked videos</p>
+                {cleanResult.errors.length > 0 && (
+                  <p className="text-sm text-yellow-700 mt-1">⚠ {cleanResult.errors.length} errors during check</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-red-800">{cleanResult.error}</p>
+            )}
+            <button onClick={() => setCleanResult(null)} className="text-xs underline mt-2">Dismiss</button>
+          </div>
+        )}
 
         {/* Bulk tab */}
         {activeTab === 'bulk' && (
