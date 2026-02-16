@@ -129,6 +129,15 @@ export default function AnalyticsPage() {
   const totalReactions = awedCount + nawedCount
   const awedPercentage = totalReactions > 0 ? Math.round((awedCount / totalReactions) * 100) : 0
 
+  // Debug: log the reaction stats
+  console.log('Reaction Stats Debug:', {
+    rawStats: data.reactionStats,
+    awedCount,
+    nawedCount,
+    totalReactions,
+    awedPercentage
+  })
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -239,6 +248,10 @@ export default function AnalyticsPage() {
           {/* Reaction Stats */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-bold mb-4">Reactions</h2>
+            {/* Debug info */}
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
+              <strong>Debug:</strong> awedCount={awedCount}, nawedCount={nawedCount}, total={totalReactions}, awedPct={awedPercentage}%
+            </div>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-2">
