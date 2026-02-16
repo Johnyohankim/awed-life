@@ -315,7 +315,14 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
         <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="text-white font-bold text-lg drop-shadow">{label}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-white font-bold text-lg drop-shadow">{label}</h3>
+                {card.is_submission && !card.approved && (
+                  <span className="px-2 py-0.5 rounded text-xs font-bold text-amber-900 bg-amber-300 border border-amber-400">
+                    ⏳ Pending
+                  </span>
+                )}
+              </div>
               <p className="text-white/90 text-sm">{date}</p>
             </div>
             <div className="flex gap-2">
@@ -455,6 +462,12 @@ function ThumbnailCard({ card, onClick }) {
         <div className={`absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-medium text-white bg-gradient-to-r ${color} shadow-sm`}>
           {label}
         </div>
+
+        {card.is_submission && !card.approved && (
+          <div className="absolute top-2 right-2 px-2 py-1 rounded-md text-xs font-bold text-amber-900 bg-amber-300 shadow-sm border border-amber-400">
+            ⏳ Pending
+          </div>
+        )}
       </div>
 
       <div className="mt-2">

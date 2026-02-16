@@ -23,16 +23,18 @@ export async function GET() {
 
     // Get all kept cards with submission details
     const cardsResult = await sql`
-      SELECT 
+      SELECT
         uc.id,
         uc.journal_text,
         uc.journal_question,
         uc.is_public,
         uc.kept_at,
+        uc.is_submission,
         s.id as submission_id,
         s.video_link,
         s.category,
-        s.hashtags
+        s.hashtags,
+        s.approved
       FROM user_cards uc
       JOIN submissions s ON uc.submission_id = s.id
       WHERE uc.user_id = ${userId}

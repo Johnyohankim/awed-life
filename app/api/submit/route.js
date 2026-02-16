@@ -122,12 +122,21 @@ export async function POST(request) {
       return Response.json({ error: 'This video has already been submitted' }, { status: 400 })
     }
 
-    await sql`
-      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id)
-      VALUES (${videoLink}, ${category}, ${hashtags || ''}, '', false, ${submittedByUserId})
+    const result = await sql`
+      INSERT INTO submissions (video_link, category, hashtags, email, approved, submitted_by_user_id, journal_text)
+      VALUES (${videoLink}, ${category}, ${hashtags || ''}, '', false, ${submittedByUserId}, ${journal || ''})
+      RETURNING id
     `
 
-    // TODO: Store journal text when submissions table is updated with journal_text column
+    const submissionId = result.rows[0].id
+
+    // Create user_card immediately if user is logged in (will show as pending)
+    if (submittedByUserId) {
+      await sql`
+        INSERT INTO user_cards (user_id, submission_id, journal_text, is_public, is_submission)
+        VALUES (${submittedByUserId}, ${submissionId}, ${journal || ''}, false, true)
+      `
+    }
 
     return Response.json({ success: true })
 
