@@ -212,22 +212,33 @@ export default function SubmitPage() {
                 </p>
               </div>
 
-              {/* Compact category dropdown */}
+              {/* Colorful category buttons */}
               <div className="bg-white rounded-xl shadow-sm p-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
                   Category <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="">Select a category...</option>
+                <div className="grid grid-cols-2 gap-2">
                   {CATEGORIES.map(cat => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => setCategory(cat.value)}
+                      className={`flex items-center gap-2 p-2.5 rounded-lg border-2 text-left transition-all ${
+                        category === cat.value
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-100 hover:border-gray-200'
+                      }`}
+                    >
+                      <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${cat.color} flex-shrink-0`} />
+                      <span className="text-xs font-medium truncate">{cat.label}</span>
+                      {category === cat.value && (
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-blue-500 ml-auto flex-shrink-0">
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        </svg>
+                      )}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
 
               {/* Hashtags */}
