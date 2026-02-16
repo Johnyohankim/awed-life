@@ -423,18 +423,27 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
   )
 }
 
-function FeaturedCard({ card, onClick }) {
+function FeaturedCard({ card, onClick, isClosed }) {
   const router = useRouter()
   const quote = categoryQuotes[card.category] || ''
-  
+
   return (
     <div
-      onClick={() => !card.isEmpty && onClick(card)}
+      onClick={() => !card.isEmpty && !isClosed && onClick(card)}
       className={`relative aspect-[16/9] md:aspect-[21/9] rounded-3xl shadow-xl transition-all duration-200 ${
-        card.isEmpty ? 'cursor-default' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-[0.98] hover:scale-[1.02] hover:shadow-2xl'
+        card.isEmpty || isClosed ? 'cursor-default opacity-60' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-[0.98] hover:scale-[1.02] hover:shadow-2xl'
       }`}
     >
-      {card.isEmpty ? (
+      {isClosed ? (
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-3xl flex flex-col items-center justify-center p-8 relative`}>
+          <div className="absolute inset-0 bg-black bg-opacity-40 rounded-3xl" />
+          <div className="relative z-10 text-center">
+            <p className="text-white text-4xl md:text-5xl mb-3">🔒</p>
+            <p className="text-white font-bold text-xl md:text-2xl mb-2">{card.label}</p>
+            <p className="text-white text-sm md:text-base opacity-90">Already kept a card from this category today</p>
+          </div>
+        </div>
+      ) : card.isEmpty ? (
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-3xl flex flex-col items-center justify-center p-8 relative overflow-hidden`}>
           <div className="absolute inset-0 bg-black bg-opacity-20" />
           <div className="relative z-10 text-center">
@@ -475,17 +484,26 @@ function FeaturedCard({ card, onClick }) {
   )
 }
 
-function SmallCard({ card, onClick }) {
+function SmallCard({ card, onClick, isClosed }) {
   const router = useRouter()
-  
+
   return (
     <div
-      onClick={() => !card.isEmpty && onClick(card)}
+      onClick={() => !card.isEmpty && !isClosed && onClick(card)}
       className={`relative aspect-[3/4] rounded-xl shadow-md transition-all duration-200 ${
-        card.isEmpty ? 'cursor-default' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-95 hover:scale-105 hover:shadow-lg'
+        card.isEmpty || isClosed ? 'cursor-default opacity-60' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-95 hover:scale-105 hover:shadow-lg'
       }`}
     >
-      {card.isEmpty ? (
+      {isClosed ? (
+        <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-xl flex flex-col items-center justify-center p-3 relative`}>
+          <div className="absolute inset-0 bg-black bg-opacity-40 rounded-xl" />
+          <div className="relative z-10 text-center">
+            <p className="text-white text-3xl mb-2">🔒</p>
+            <p className="text-white font-bold text-xs">{card.label}</p>
+            <p className="text-white text-[10px] mt-1 opacity-90 leading-tight">Already kept today</p>
+          </div>
+        </div>
+      ) : card.isEmpty ? (
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-xl flex flex-col items-center justify-center p-3 relative overflow-hidden`}>
           <div className="absolute inset-0 bg-black bg-opacity-20" />
           <div className="relative z-10 text-center">
@@ -564,6 +582,7 @@ export default function CardsPage() {
   const [isSubmissionCard, setIsSubmissionCard] = useState(false)
   const [keptToday, setKeptToday] = useState(0)
   const [allowedKeeps, setAllowedKeeps] = useState(1)
+  const [keptCategories, setKeptCategories] = useState([])
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [achievementCount, setAchievementCount] = useState(null)
   const [totalCards, setTotalCards] = useState(0)
@@ -595,6 +614,7 @@ export default function CardsPage() {
         setCards(rotatedCards)
         setKeptToday(data.keptToday || 0)
         setAllowedKeeps(data.allowedKeeps || 1)
+        setKeptCategories(data.keptCategories || [])
         setSubmissionSlots(data.submissionSlots || [])
         setSubmissionPoints(data.submissionPoints || 0)
       }
@@ -706,7 +726,7 @@ export default function CardsPage() {
         {/* Featured card - large */}
         {featuredCard && (
           <div className="mb-6">
-            <FeaturedCard card={featuredCard} onClick={c => handleCardClick(c, false)} />
+            <FeaturedCard card={featuredCard} onClick={c => handleCardClick(c, false)} isClosed={keptCategories.includes(featuredCard.category)} />
           </div>
         )}
 
@@ -714,7 +734,7 @@ export default function CardsPage() {
         {remainingCards.length > 0 && (
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-10">
             {remainingCards.map(card => (
-              <SmallCard key={card.category} card={card} onClick={c => handleCardClick(c, false)} />
+              <SmallCard key={card.category} card={card} onClick={c => handleCardClick(c, false)} isClosed={keptCategories.includes(card.category)} />
             ))}
           </div>
         )}

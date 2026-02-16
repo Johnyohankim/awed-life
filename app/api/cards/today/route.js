@@ -367,6 +367,17 @@ export async function GET() {
     `
     const keptToday = parseInt(keptTodayResult.rows[0]?.count || 0)
 
+    // Get categories kept today
+    const keptCategoriesResult = await sql`
+      SELECT DISTINCT s.category
+      FROM user_cards uc
+      JOIN submissions s ON uc.submission_id = s.id
+      WHERE uc.user_id = ${userId}
+        AND DATE(uc.kept_at) = ${today}
+        AND uc.is_submission = false
+    `
+    const keptCategories = keptCategoriesResult.rows.map(row => row.category)
+
     // Get top 3 favorite categories for insights
     const sortedPreferences = Object.entries(categoryPreferences)
       .sort(([, a], [, b]) => b - a)
@@ -384,6 +395,7 @@ export async function GET() {
       submissionPoints,
       keptToday,
       allowedKeeps,
+      keptCategories,
       recommendations: {
         enabled: true,
         topCategories: sortedPreferences,
