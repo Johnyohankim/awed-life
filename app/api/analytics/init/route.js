@@ -3,7 +3,11 @@ import { sql } from '@vercel/postgres'
 // Run this once to create the analytics_events table
 export async function GET() {
   try {
-    await sql`
+    console.log('Starting analytics table creation...')
+
+    // Create table
+    console.log('Creating table...')
+    const tableResult = await sql`
       CREATE TABLE IF NOT EXISTS analytics_events (
         id SERIAL PRIMARY KEY,
         event_name VARCHAR(100) NOT NULL,
@@ -13,22 +17,37 @@ export async function GET() {
         created_at TIMESTAMP DEFAULT NOW()
       )
     `
+    console.log('Table created:', tableResult)
 
+    // Create indexes
+    console.log('Creating event_name index...')
     await sql`
       CREATE INDEX IF NOT EXISTS idx_analytics_event_name ON analytics_events(event_name)
     `
 
+    console.log('Creating user_id index...')
     await sql`
       CREATE INDEX IF NOT EXISTS idx_analytics_user_id ON analytics_events(user_id)
     `
 
+    console.log('Creating created_at index...')
     await sql`
       CREATE INDEX IF NOT EXISTS idx_analytics_created_at ON analytics_events(created_at)
     `
 
-    return Response.json({ success: true, message: 'Analytics table created' })
+    console.log('All indexes created successfully')
+    return Response.json({ success: true, message: 'Analytics table created successfully' })
   } catch (error) {
     console.error('Error creating analytics table:', error)
-    return Response.json({ error: error.message }, { status: 500 })
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
+    return Response.json({
+      success: false,
+      error: error.message,
+      details: error.stack
+    }, { status: 500 })
   }
 }

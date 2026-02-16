@@ -24,14 +24,14 @@ export async function GET(request) {
     const totalEvents = await sql`
       SELECT COUNT(*) as count
       FROM analytics_events
-      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      WHERE created_at >= NOW() - make_interval(days := ${days})
     `
 
     // Events by name
     const eventsByName = await sql`
       SELECT event_name, COUNT(*) as count
       FROM analytics_events
-      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      WHERE created_at >= NOW() - make_interval(days := ${days})
       GROUP BY event_name
       ORDER BY count DESC
     `
@@ -40,7 +40,7 @@ export async function GET(request) {
     const dailyActiveUsers = await sql`
       SELECT DATE(created_at) as date, COUNT(DISTINCT user_id) as users
       FROM analytics_events
-      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      WHERE created_at >= NOW() - make_interval(days := ${days})
         AND user_id IS NOT NULL
       GROUP BY DATE(created_at)
       ORDER BY date DESC
@@ -53,7 +53,7 @@ export async function GET(request) {
         COUNT(*) as count
       FROM analytics_events
       WHERE event_name = 'card_kept'
-        AND created_at >= NOW() - INTERVAL '${days} days'
+        AND created_at >= NOW() - make_interval(days := ${days})
         AND properties->>'category' IS NOT NULL
       GROUP BY properties->>'category'
       ORDER BY count DESC
@@ -66,7 +66,7 @@ export async function GET(request) {
         COUNT(*) as count
       FROM analytics_events
       WHERE event_name IN ('reaction_awed', 'reaction_nawed')
-        AND created_at >= NOW() - INTERVAL '${days} days'
+        AND created_at >= NOW() - make_interval(days := ${days})
       GROUP BY event_name
     `
 
@@ -77,7 +77,7 @@ export async function GET(request) {
         COUNT(*) as count
       FROM analytics_events
       WHERE event_name = 'milestone_achieved'
-        AND created_at >= NOW() - INTERVAL '${days} days'
+        AND created_at >= NOW() - make_interval(days := ${days})
         AND properties->>'milestone' IS NOT NULL
       GROUP BY properties->>'milestone'
       ORDER BY (properties->>'milestone')::integer
