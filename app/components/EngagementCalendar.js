@@ -134,39 +134,6 @@ export default function EngagementCalendar({ cards, onMilestoneReached }) {
           )
         })}
       </div>
-
-      {/* Progress toward milestones */}
-      <div className="mt-3 space-y-2">
-        {currentStreak < 7 && (
-          <div>
-            <div className="flex justify-between text-xs text-gray-600 mb-1">
-              <span>7-day streak reward</span>
-              <span className="font-semibold">{currentStreak}/7 🎁</span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all"
-                style={{ width: `${(currentStreak / 7) * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {totalDays < 20 && (
-          <div>
-            <div className="flex justify-between text-xs text-gray-600 mb-1">
-              <span>20-day total reward</span>
-              <span className="font-semibold">{totalDays}/20 🎁</span>
-            </div>
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all"
-                style={{ width: `${(totalDays / 20) * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
