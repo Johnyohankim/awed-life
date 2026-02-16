@@ -133,6 +133,10 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Submit error:', error)
-    return Response.json({ error: 'Failed to submit' }, { status: 500 })
+    return Response.json({
+      error: 'Failed to submit',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    }, { status: 500 })
   }
 }
