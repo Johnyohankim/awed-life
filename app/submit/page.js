@@ -104,7 +104,10 @@ export default function SubmitPage() {
       if (result.success) {
         setSubmitted(true)
       } else {
-        setError(result.error || 'Something went wrong. Please try again.')
+        const errorMsg = result.details
+          ? `${result.error}: ${result.details}`
+          : result.error || 'Something went wrong. Please try again.'
+        setError(errorMsg)
       }
     } catch (err) {
       setError('Error submitting. Please try again.')
