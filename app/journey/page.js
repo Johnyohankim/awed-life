@@ -606,10 +606,10 @@ export default function JourneyPage() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
-        {/* Profile header */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-4">
-          <div className="flex items-center gap-4 mb-4">
+      <div className="container mx-auto px-3 py-3 max-w-6xl">
+        {/* Compact Profile + Milestones */}
+        <div className="bg-white rounded-2xl shadow-sm p-4 mb-3">
+          <div className="flex items-start gap-3 mb-3">
             <AvatarCircle name={profile.name} size="lg" />
             <div className="flex-1 min-w-0">
               {editing ? (
@@ -618,136 +618,109 @@ export default function JourneyPage() {
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="text-xl font-bold border-b-2 border-blue-500 outline-none w-full"
+                    className="text-lg font-bold border-b-2 border-blue-500 outline-none w-full"
                     autoFocus
                     onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
                   />
-                  <button onClick={handleSaveName} disabled={saving} className="text-sm text-blue-600 font-medium whitespace-nowrap">
+                  <button onClick={handleSaveName} disabled={saving} className="text-xs text-blue-600 font-medium whitespace-nowrap">
                     {saving ? 'Saving...' : 'Save'}
                   </button>
-                  <button onClick={() => { setEditing(false); setNewName(profile.name) }} className="text-sm text-gray-400">
+                  <button onClick={() => { setEditing(false); setNewName(profile.name) }} className="text-xs text-gray-400">
                     Cancel
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold truncate">{profile.name || 'Anonymous'}</h1>
-                  <button onClick={() => setEditing(true)} className="text-gray-400 text-sm flex-shrink-0">✏️</button>
+                  <h1 className="text-lg font-bold truncate">{profile.name || 'Anonymous'}</h1>
+                  <button onClick={() => setEditing(true)} className="text-gray-400 text-xs flex-shrink-0">✏️</button>
                 </div>
               )}
-              <p className="text-gray-500 text-xs mt-1">
-                Since {new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+              <p className="text-gray-500 text-xs">
+                Since {new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
               </p>
+              {/* Milestones inline */}
+              {stats && (
+                <div className="flex gap-1 mt-2 overflow-x-auto">
+                  {MILESTONE_DATA.map((milestone) => (
+                    stats.total >= milestone.count && (
+                      <span key={milestone.count} className="text-lg" title={milestone.label}>
+                        {milestone.emoji}
+                      </span>
+                    )
+                  ))}
+                </div>
+              )}
             </div>
+            <button
+              onClick={handleCopyLink}
+              className="flex-shrink-0 px-3 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-600 active:bg-gray-50"
+            >
+              {copied ? '✓' : '🔗'}
+            </button>
           </div>
-
-          <button
-            onClick={handleCopyLink}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-xl text-sm text-gray-600 active:bg-gray-50 transition-colors"
-          >
-            {copied ? '✓ Link Copied!' : '🔗 Share My Journey'}
-          </button>
         </div>
 
-        {/* Stats */}
+        {/* Compact Stats */}
         {stats && (
-          <div className="bg-white rounded-2xl shadow-sm p-5 mb-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center mb-5">
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-2xl md:text-3xl font-bold">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">Cards</p>
+          <div className="bg-white rounded-2xl shadow-sm p-3 mb-3">
+            <div className="grid grid-cols-3 gap-2 text-center mb-3">
+              <div className="bg-gray-50 rounded-lg p-2">
+                <p className="text-xl font-bold">{stats.total}</p>
+                <p className="text-xs text-gray-500">Cards</p>
               </div>
-              <div className="bg-orange-50 rounded-xl p-3">
-                <p className="text-2xl md:text-3xl font-bold">🔥 {stats.streak}</p>
-                <p className="text-xs text-gray-500 mt-1">Streak</p>
+              <div className="bg-orange-50 rounded-lg p-2">
+                <p className="text-xl font-bold">🔥 {stats.streak}</p>
+                <p className="text-xs text-gray-500">Streak</p>
               </div>
-              <div className="bg-blue-50 rounded-xl p-3">
-                <p className="text-2xl md:text-3xl font-bold">{stats.categories}/8</p>
-                <p className="text-xs text-gray-500 mt-1">Categories</p>
-              </div>
-              <div className="bg-purple-50 rounded-xl p-3">
-                <p className="text-2xl md:text-3xl font-bold">⭐ {profile.submissionPoints || 0}</p>
-                <p className="text-xs text-gray-500 mt-1">Submissions</p>
+              <div className="bg-purple-50 rounded-lg p-2">
+                <p className="text-xl font-bold">⭐ {profile.submissionPoints || 0}</p>
+                <p className="text-xs text-gray-500">Submissions</p>
               </div>
             </div>
 
             <button
               onClick={() => router.push('/submit')}
-              className="w-full mb-5 flex items-center justify-center gap-2 px-4 py-3 bg-purple-50 border border-purple-200 rounded-xl text-sm text-purple-700 font-medium hover:bg-purple-100 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg text-xs text-purple-700 font-medium active:bg-purple-100"
             >
               <span>⭐</span>
-              Submit a moment — earn extra card slots
+              Submit a moment — earn extra slots
             </button>
-
-            {milestoneProgress && (
-              <div className="mb-5">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>{stats.total} cards</span>
-                  <span>Next: {milestoneProgress.next}</span>
-                </div>
-                <div className="w-full bg-gray-100 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${milestoneProgress.progress}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-400 mt-1 text-center">
-                  {milestoneProgress.next - stats.total} cards to next milestone
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Milestones */}
-        {stats && (
-          <div className="bg-white rounded-2xl shadow-sm p-5 mb-6">
-            <h2 className="text-base font-bold mb-4">Milestones</h2>
-            <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
-              {MILESTONE_DATA.map((milestone) => (
-                <MilestoneBadge
-                  key={milestone.count}
-                  milestone={milestone}
-                  earned={stats.total >= milestone.count}
-                />
-              ))}
-            </div>
           </div>
         )}
 
         {/* Collection section */}
-        <div className="mb-4">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">My Collection</h2>
-          <p className="text-gray-600 text-sm">Your personal awe moments</p>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold">My Collection</h2>
+          {stats && <span className="text-xs text-gray-500">{stats.total} cards</span>}
         </div>
 
         {cards.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
-            <p className="text-5xl mb-4">🎴</p>
-            <h3 className="text-xl font-bold mb-2">No cards yet</h3>
-            <p className="text-gray-600 mb-6 text-sm">Start collecting awe moments today!</p>
-            <button onClick={() => router.push('/cards')} className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 font-medium">
+          <div className="text-center py-12 bg-white rounded-2xl shadow-sm">
+            <p className="text-4xl mb-3">🎴</p>
+            <h3 className="text-lg font-bold mb-2">No cards yet</h3>
+            <p className="text-gray-600 mb-4 text-sm">Start collecting awe moments today!</p>
+            <button onClick={() => router.push('/cards')} className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700 font-medium text-sm">
               View Today's Cards
             </button>
           </div>
         ) : (
           <>
-            <div className="mb-4 flex justify-end">
+            <div className="mb-3 flex gap-2 items-center">
               <select
                 value={sortMode}
                 onChange={(e) => setSortMode(e.target.value)}
-                className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="category">Category (A-Z)</option>
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="category">A-Z</option>
               </select>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-6 -mx-4 px-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-3 -mx-4 px-4">
               <button
                 onClick={() => setActiveFilter('all')}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                   activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 shadow-sm'
                 }`}
               >
@@ -757,7 +730,7 @@ export default function JourneyPage() {
                 <button
                   key={cat}
                   onClick={() => setActiveFilter(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                     activeFilter === cat ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 shadow-sm'
                   }`}
                 >
@@ -766,7 +739,7 @@ export default function JourneyPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredCards.map((card) => (
                 <ThumbnailCard key={card.id} card={card} onClick={setSelectedCard} />
               ))}
