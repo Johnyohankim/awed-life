@@ -231,9 +231,10 @@ function OnboardingModal({ onClose }) {
   )
 }
 
-function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard, totalCards }) {
+function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard, totalCards, keptCategories }) {
+  const categoryAlreadyKept = !isSubmissionCard && (keptCategories || []).includes(card.category)
   const [keeping, setKeeping] = useState(false)
-  const [kept, setKept] = useState(card.isKept || isSubmissionCard)
+  const [kept, setKept] = useState(card.isKept || isSubmissionCard || categoryAlreadyKept)
   const [showJournal, setShowJournal] = useState(false)
 
   // Chat state
@@ -873,7 +874,7 @@ export default function CardsPage() {
         </div>
 
         {/* Today's Most Awed Moment */}
-        {aweOfDay && (
+        {aweOfDay && !keptCategories.includes(aweOfDay.category) && (
           <TodaysAwedMoment
             moment={aweOfDay}
             source={aweOfDaySource}
@@ -883,7 +884,7 @@ export default function CardsPage() {
               category: aweOfDay.category,
               label: categoryLabels[aweOfDay.category] || aweOfDay.category,
               color: categoryColors[aweOfDay.category] || 'from-gray-400 to-gray-600',
-              isKept: false,
+              isKept: keptCategories.includes(aweOfDay.category),
               isEmpty: false
             }, false)}
           />
@@ -935,6 +936,7 @@ export default function CardsPage() {
           alreadyKeptToday={!isSubmissionCard && keptToday >= allowedKeeps}
           isSubmissionCard={isSubmissionCard}
           totalCards={totalCards}
+          keptCategories={keptCategories}
         />
       )}
 
