@@ -1,15 +1,15 @@
-'use client'
+import Link from 'next/link'
 
-import { useRouter } from 'next/navigation'
+export const metadata = {
+  title: 'Terms of Service — Awed',
+}
 
 export default function TermsPage() {
-  const router = useRouter()
-
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-3xl">
-          <button onClick={() => router.push('/')} className="text-2xl font-bold">Awed</button>
+          <Link href="/" className="text-2xl font-bold text-gray-900">Awed</Link>
         </div>
       </nav>
 
@@ -75,7 +75,9 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold mb-3">6. Privacy</h2>
             <p className="text-gray-700 leading-relaxed">
-              We collect and use your information as described in our Privacy Policy. By using Awed, you consent to our data practices.
+              We collect and use your information as described in our{' '}
+              <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>.
+              By using Awed, you consent to our data practices.
             </p>
           </section>
 
@@ -109,10 +111,9 @@ export default function TermsPage() {
 
         </div>
 
-        <div className="mt-8 text-center">
-          <button onClick={() => router.push('/')} className="text-blue-600 hover:text-blue-700 font-medium">
-            ← Back to Awed
-          </button>
+        <div className="mt-8 flex justify-center gap-6 text-sm text-gray-500">
+          <Link href="/" className="text-blue-600 hover:text-blue-700 font-medium">← Back to Awed</Link>
+          <Link href="/privacy" className="hover:text-gray-700">Privacy Policy</Link>
         </div>
       </div>
     </div>

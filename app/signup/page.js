@@ -166,6 +166,13 @@ export default function SignUp() {
             Sign in
           </Link>
         </p>
+
+        <p className="mt-4 text-center text-xs text-gray-400">
+          By signing up you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-gray-600">Terms</Link>
+          {' '}and{' '}
+          <Link href="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>
+        </p>
       </div>
     </div>
   )

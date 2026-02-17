@@ -83,6 +83,7 @@ export function FooterLinks() {
       <button onClick={() => router.push('/login')} className="hover:text-white transition-colors">Sign In</button>
       <a href="https://blog.awed.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Blog</a>
       <button onClick={() => router.push('/terms')} className="hover:text-white transition-colors">Terms</button>
+      <button onClick={() => router.push('/privacy')} className="hover:text-white transition-colors">Privacy</button>
     </div>
   )
 }

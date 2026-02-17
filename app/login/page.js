@@ -125,10 +125,17 @@ function LoginForm() {
         </div>
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
             Sign up
           </Link>
+        </p>
+
+        <p className="mt-4 text-center text-xs text-gray-400">
+          By signing in you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-gray-600">Terms</Link>
+          {' '}and{' '}
+          <Link href="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>
         </p>
       </div>
     </div>
