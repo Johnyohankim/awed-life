@@ -13,11 +13,13 @@ export const metadata = {
     siteName: 'Awed',
     locale: 'en_US',
     type: 'website',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Awed - Daily Awe Moments' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Awed - Daily Awe Moments',
     description: 'A daily ritual of awe. Choose a card, reflect, collect.',
+    images: ['/opengraph-image'],
   },
   verification: {
     // We'll add Google Search Console verification here later
