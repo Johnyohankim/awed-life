@@ -136,12 +136,12 @@ function RecentSubmissions() {
   )
 }
 
-// Preview card — single Nature card with live Claude chat
+// Preview card — single Moral Beauty card with live Claude chat
 const PREVIEW_CARD = {
-  category: 'nature',
-  label: 'Nature',
-  videoId: '9udylvYXRJI',
-  color: 'from-green-400 to-emerald-600',
+  category: 'moral-beauty',
+  label: 'Moral Beauty',
+  videoId: '7ckfH6Sj9xk',
+  color: 'from-rose-400 to-pink-600',
 }
 
 function ChatPreview({ session }) {
