@@ -1,0 +1,51 @@
+import { NextResponse } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
+
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+const CATEGORY_CONTEXT = {
+  'moral-beauty': 'witnessing an act of human kindness, courage, or virtue',
+  'collective-effervescence': 'experiencing the electricity of people coming together',
+  'nature': 'a moment of natural wonder',
+  'music': 'a piece of music that touches something deep',
+  'visual-design': 'a striking piece of visual art or design',
+  'spirituality': 'a spiritual or transcendent experience',
+  'life-death': 'reflecting on the cycles of life and death',
+  'epiphany': 'a sudden moment of insight or realization',
+}
+
+export async function POST(request) {
+  const { messages, category } = await request.json()
+
+  const context = CATEGORY_CONTEXT[category] || 'an awe-inspiring moment'
+
+  const systemPrompt = `You are a warm, gentle guide helping someone reflect on an awe-inspiring experience — specifically, ${context}.
+
+Your role: ask simple, open questions that help them go a little deeper into what they felt.
+
+Rules:
+- Keep each response to 1-2 short sentences only
+- Be warm but not gushing
+- No bullet points or lists
+- If the user has responded 2 or more times, offer a brief closing reflection instead of another question — something that honors what they shared
+- Never use generic affirmations like "That's so interesting!" or "Great reflection!"
+- Don't parrot their words back to them
+- Use plain, everyday language
+- Start the very first message with a short open question about the moment`
+
+  try {
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 120,
+      system: systemPrompt,
+      messages: messages.length > 0 ? messages : [
+        { role: 'user', content: `I just watched something related to ${context}. Help me reflect on it.` }
+      ],
+    })
+
+    return NextResponse.json({ reply: response.content[0].text })
+  } catch (error) {
+    console.error('Preview chat error:', error)
+    return NextResponse.json({ error: 'Chat failed' }, { status: 500 })
+  }
+}
