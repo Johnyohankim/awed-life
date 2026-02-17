@@ -237,6 +237,11 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
   const [kept, setKept] = useState(card.isKept || isSubmissionCard || categoryAlreadyKept)
   const [showJournal, setShowJournal] = useState(false)
 
+  // If keptCategories updates while modal is open, lock the card immediately
+  useEffect(() => {
+    if (categoryAlreadyKept) setKept(true)
+  }, [categoryAlreadyKept])
+
   // Chat state
   const [chatMessages, setChatMessages] = useState([])
   const [chatInput, setChatInput] = useState('')
@@ -313,6 +318,11 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
 
   const handleKeep = async () => {
     if (!canKeep || keeping || alreadyKeptToday) return
+    // Guard: category already kept (race condition safety net)
+    if (categoryAlreadyKept) {
+      setKept(true)
+      return
+    }
     setKeeping(true)
 
     // Opening question saved separately; journal body = full dialogue after that
