@@ -3,25 +3,14 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-const CATEGORY_CONTEXT = {
-  'moral-beauty': 'witnessing an act of human kindness, courage, or virtue',
-  'collective-effervescence': 'experiencing the electricity of people coming together',
-  'nature': 'a moment of natural wonder',
-  'music': 'a piece of music that touches something deep',
-  'visual-design': 'a striking piece of visual art or design',
-  'spirituality': 'a spiritual or transcendent experience',
-  'life-death': 'reflecting on the cycles of life and death',
-  'epiphany': 'a sudden moment of insight or realization',
-}
+const PREVIEW_VIDEO_CONTEXT = `A store clerk instinctively catches a baby from a young woman who suddenly begins having a stroke. In a split second, before the mother even falls, the clerk reaches out and grabs the baby. Another bystander rushes over and calls 911.`
 
 export async function POST(request) {
-  const { messages, category } = await request.json()
+  const { messages } = await request.json()
 
-  const context = CATEGORY_CONTEXT[category] || 'an awe-inspiring moment'
+  const systemPrompt = `You are a warm, gentle guide helping someone reflect on a moment of moral beauty they just watched — a store clerk who instinctively caught a baby from a young woman beginning to have a stroke, before anyone else had even processed what was happening. Another bystander stepped in to call 911.
 
-  const systemPrompt = `You are a warm, gentle guide helping someone reflect on an awe-inspiring experience — specifically, ${context}.
-
-Your role: ask simple, open questions that help them go a little deeper into what they felt.
+Your role: ask simple, open questions that help them go a little deeper into what they felt watching this.
 
 Rules:
 - Keep each response to 1-2 short sentences only
@@ -31,15 +20,15 @@ Rules:
 - Never use generic affirmations like "That's so interesting!" or "Great reflection!"
 - Don't parrot their words back to them
 - Use plain, everyday language
-- Start the very first message with a short open question about the moment`
+- Start the very first message with a short, specific open question about what they felt watching that moment — the catch, the instinct, the strangers stepping up`
 
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 120,
+      max_tokens: 150,
       system: systemPrompt,
       messages: messages.length > 0 ? messages : [
-        { role: 'user', content: `I just watched something related to ${context}. Help me reflect on it.` }
+        { role: 'user', content: `I just watched a video of a store clerk catching a baby from a woman having a stroke. Help me reflect on it.` }
       ],
     })
 
