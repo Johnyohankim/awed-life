@@ -11,7 +11,8 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev)",
       "Bash(taskkill:*)",
-      "Bash(npx vercel logs --follow)"
+      "Bash(npx vercel logs --follow)",
+      "Bash(YOUTUBE_API_KEY=AIzaSyDBjQXh_kDbjFO5cbIiMpsBIxrQyej2yxY node:*)"
     ]
   }
 }
