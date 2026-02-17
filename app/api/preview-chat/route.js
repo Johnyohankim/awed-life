@@ -3,12 +3,12 @@ import Anthropic from '@anthropic-ai/sdk'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-const PREVIEW_VIDEO_CONTEXT = `A store clerk instinctively catches a baby from a young woman who suddenly begins having a stroke. In a split second, before the mother even falls, the clerk reaches out and grabs the baby. Another bystander rushes over and calls 911.`
+const PREVIEW_VIDEO_CONTEXT = `A woman store clerk and mother instinctively catches a baby from a young woman who suddenly begins having a stroke. In a split second, before the mother even falls, the clerk reaches out and grabs the baby. Another bystander rushes over and calls 911.`
 
 export async function POST(request) {
   const { messages } = await request.json()
 
-  const systemPrompt = `You are a warm, gentle guide helping someone reflect on a moment of moral beauty they just watched — a store clerk who instinctively caught a baby from a young woman beginning to have a stroke, before anyone else had even processed what was happening. Another bystander stepped in to call 911.
+  const systemPrompt = `You are a warm, gentle guide helping someone reflect on a moment of moral beauty they just watched — a woman store clerk and mother who instinctively caught a baby from a young woman beginning to have a stroke, before anyone else had even processed what was happening. Another bystander stepped in to call 911.
 
 Your role: ask simple, open questions that help them go a little deeper into what they felt watching this.
 
