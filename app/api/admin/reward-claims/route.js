@@ -1,7 +1,7 @@
 import { sql } from '@vercel/postgres'
 import { cookies } from 'next/headers'
 
-export async function GET() {
+export async function GET(request) {
   try {
     const cookieStore = await cookies()
     const authCookie = cookieStore.get('admin-auth')
@@ -9,6 +9,9 @@ export async function GET() {
     if (authCookie?.value !== 'true') {
       return Response.json({ error: 'Unauthorized' }, { status: 403 })
     }
+
+    const { searchParams } = new URL(request.url)
+    const format = searchParams.get('format')
 
     const claims = await sql`
       SELECT
@@ -30,17 +33,20 @@ export async function GET() {
       ORDER BY rc.claimed_at DESC
     `
 
-    // Return as plain text table for easy copying
-    const format = new URL('https://x.com').searchParams // just to get a URLSearchParams trick
-
     const rows = claims.rows
+
+    // Return JSON for admin UI
+    if (format === 'json') {
+      return Response.json({ claims: rows })
+    }
+
+    // Return CSV for download
     if (rows.length === 0) {
       return new Response('No reward claims yet.', {
         headers: { 'Content-Type': 'text/plain' }
       })
     }
 
-    // Build CSV
     const csvHeader = 'ID,Milestone,Email,Full Name,Address,City,State,Zip,Country,Phone,Claimed At,Shipped'
     const csvRows = rows.map(r => [
       r.id,

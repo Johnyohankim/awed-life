@@ -357,6 +357,11 @@ export default function AdminPage() {
             📊 Analytics
           </button>
           <button
+            onClick={() => router.push('/admin/rewards')}
+            className="px-5 py-2 rounded-lg font-medium text-sm bg-gradient-to-r from-pink-500 to-orange-500 text-white hover:from-pink-600 hover:to-orange-600 transition-all">
+            🎁 Rewards
+          </button>
+          <button
             onClick={handleCleanBlockedVideos}
             disabled={cleaningVideos}
             className="px-5 py-2 rounded-lg font-medium text-sm bg-red-600 text-white hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
