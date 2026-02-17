@@ -182,6 +182,16 @@ function ReactionBar({ submissionId }) {
   )
 }
 
+function parseJournalSegments(text) {
+  if (!text) return [{ type: 'plain', text: '' }]
+  if (!text.includes('Guide: ') && !text.includes('You: ')) return [{ type: 'plain', text }]
+  return text.split('\n\n').map(chunk => {
+    if (chunk.startsWith('Guide: ')) return { type: 'guide', text: chunk.slice(7) }
+    if (chunk.startsWith('You: ')) return { type: 'user', text: chunk.slice(5) }
+    return { type: 'plain', text: chunk }
+  })
+}
+
 function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
   const videoId = getYouTubeId(card.video_link)
   const isInstagram = isInstagramUrl(card.video_link)
@@ -190,7 +200,8 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
   const date = new Date(card.kept_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   const [deleting, setDeleting] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const [editedJournal, setEditedJournal] = useState(card.journal_text)
+  const [currentJournalText, setCurrentJournalText] = useState(card.journal_text)
+  const [editSegments, setEditSegments] = useState(() => parseJournalSegments(card.journal_text))
   const [saving, setSaving] = useState(false)
 
   const handleDelete = async () => {
@@ -220,25 +231,31 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
   }
 
   const handleSaveJournal = async () => {
-    if (!card.is_submission && editedJournal.trim().length < 10) {
-      alert('Journal entry must be at least 10 characters')
+    const userText = editSegments.filter(s => s.type !== 'guide').map(s => s.text).join(' ')
+    if (!card.is_submission && userText.trim().length < 10) {
+      alert('Your responses must be at least 10 characters')
       return
     }
+
+    const journalText = editSegments.map(s => {
+      if (s.type === 'guide') return `Guide: ${s.text}`
+      if (s.type === 'user') return `You: ${s.text}`
+      return s.text
+    }).join('\n\n')
 
     setSaving(true)
     try {
       const response = await fetch('/api/collection', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cardId: card.id,
-          journalText: editedJournal
-        })
+        body: JSON.stringify({ cardId: card.id, journalText })
       })
       const data = await response.json()
 
       if (data.success) {
-        onUpdate(card.id, { journal_text: editedJournal })
+        onUpdate(card.id, { journal_text: journalText })
+        setCurrentJournalText(journalText)
+        setEditSegments(parseJournalSegments(journalText))
         setIsEditing(false)
       } else {
         alert(data.error || 'Failed to save journal')
@@ -252,7 +269,7 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
   }
 
   const handleCancelEdit = () => {
-    setEditedJournal(card.journal_text)
+    setEditSegments(parseJournalSegments(currentJournalText))
     setIsEditing(false)
   }
 
@@ -378,14 +395,32 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
             )}
           </div>
           {isEditing ? (
-            <div>
-              <textarea
-                value={editedJournal}
-                onChange={(e) => setEditedJournal(e.target.value)}
-                className="w-full bg-gray-50 rounded-xl p-4 text-gray-700 leading-relaxed border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[120px]"
-                placeholder={card.is_submission ? "Add your reflection..." : "Write your reflection (min 10 characters)"}
-              />
-              <div className="flex gap-2 mt-3">
+            <div className="space-y-3">
+              {editSegments.map((seg, i) => {
+                if (seg.type === 'guide') {
+                  return (
+                    <div key={i}>
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Guide</p>
+                      <p className="text-gray-500 text-sm italic leading-relaxed">{seg.text}</p>
+                    </div>
+                  )
+                }
+                return (
+                  <div key={i}>
+                    {seg.type === 'user' && (
+                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">You</p>
+                    )}
+                    <textarea
+                      value={seg.text}
+                      onChange={e => setEditSegments(prev => prev.map((s, j) => j === i ? { ...s, text: e.target.value } : s))}
+                      className="w-full bg-gray-50 rounded-xl p-3 text-gray-800 text-sm leading-relaxed border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      rows={seg.type === 'user' ? 2 : 4}
+                      placeholder={card.is_submission ? "Add your reflection..." : "Write your reflection (min 10 characters)"}
+                    />
+                  </div>
+                )
+              })}
+              <div className="flex gap-2 mt-1">
                 <button
                   onClick={handleSaveJournal}
                   disabled={saving}
@@ -402,12 +437,33 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
                 </button>
               </div>
               {!card.is_submission && (
-                <p className="text-xs text-gray-500 mt-2">Minimum 10 characters required</p>
+                <p className="text-xs text-gray-500">Minimum 10 characters required</p>
               )}
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{card.journal_text}</p>
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              {currentJournalText?.includes('Guide: ') || currentJournalText?.includes('You: ')
+                ? currentJournalText.split('\n\n').map((chunk, i) => {
+                    if (chunk.startsWith('Guide: ')) {
+                      return (
+                        <div key={i}>
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Guide</p>
+                          <p className="text-gray-500 text-sm italic leading-relaxed">{chunk.slice(7)}</p>
+                        </div>
+                      )
+                    }
+                    if (chunk.startsWith('You: ')) {
+                      return (
+                        <div key={i}>
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">You</p>
+                          <p className="text-gray-800 text-sm leading-relaxed">{chunk.slice(5)}</p>
+                        </div>
+                      )
+                    }
+                    return <p key={i} className="text-gray-700 text-sm leading-relaxed">{chunk}</p>
+                  })
+                : <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{currentJournalText}</p>
+              }
             </div>
           )}
         </div>

@@ -2,11 +2,10 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import AchievementToast from '../components/AchievementToast'
 import AweraCircle from '../components/AweraCircle'
-import { getDailyQuestion } from '../lib/journalQuestions'
 import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_QUOTES, MILESTONES } from '../lib/constants'
 import { trackEvent, EVENTS } from '../lib/analytics'
 
@@ -233,53 +232,107 @@ function OnboardingModal({ onClose }) {
 }
 
 function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard, totalCards }) {
-  const [journalText, setJournalText] = useState(isSubmissionCard ? 'I submitted this awe moment ✨' : '')
   const [keeping, setKeeping] = useState(false)
   const [kept, setKept] = useState(card.isKept || isSubmissionCard)
   const [showJournal, setShowJournal] = useState(false)
-  const [question, setQuestion] = useState('')
+
+  // Chat state
+  const [chatMessages, setChatMessages] = useState([])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const [chatDone, setChatDone] = useState(false)
+  const chatEndRef = useRef(null)
+
+  const userMessages = chatMessages.filter(m => m.role === 'user')
+  const canKeep = userMessages.length > 0 && userMessages.some(m => m.content.trim().length >= 5)
 
   const videoId = getYouTubeId(card.video?.videoLink || card.video_link)
-  const canKeep = journalText.trim().length >= 10
 
-  // Get question for this card
+  // Auto-scroll chat to bottom
   useEffect(() => {
-    if (card.category) {
-      setQuestion(getDailyQuestion(card.category))
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages, chatLoading])
+
+  // Open chat: fetch Claude's first message
+  useEffect(() => {
+    if (showJournal && !kept && !isSubmissionCard && chatMessages.length === 0) {
+      fetchChatReply([])
     }
-  }, [card.category])
+  }, [showJournal])
 
   // Handle back button
   useEffect(() => {
-    // Push a history state when modal opens
     window.history.pushState({ modal: true }, '')
-
-    const handlePopState = (e) => {
-      onClose()
-    }
-
+    const handlePopState = () => onClose()
     window.addEventListener('popstate', handlePopState)
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState)
-    }
+    return () => window.removeEventListener('popstate', handlePopState)
   }, [onClose])
 
-  const handleKeep = async () => {
-    if (!canKeep || keeping) return
-    setKeeping(true)
+  const fetchChatReply = async (messages) => {
+    setChatLoading(true)
     try {
-      // Get local date in YYYY-MM-DD format (browser timezone)
-      const localDate = new Date().toLocaleDateString('en-CA') // en-CA gives YYYY-MM-DD format
+      const res = await fetch('/api/journal-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, category: card.category })
+      })
+      const data = await res.json()
+      if (data.reply) {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+      }
+    } catch (e) {
+      console.error('Chat error:', e)
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if (!chatInput.trim() || chatLoading) return
+    const userMsg = { role: 'user', content: chatInput.trim() }
+    const newMessages = [...chatMessages, userMsg]
+    setChatMessages(newMessages)
+    setChatInput('')
+
+    // Claude replies up to 3 times total (opening + 2 follow-ups)
+    const assistantCount = newMessages.filter(m => m.role === 'assistant').length
+    if (assistantCount < 3) {
+      await fetchChatReply(newMessages)
+    } else {
+      // User has answered 3 times — close the chat with a nudge
+      setTimeout(() => {
+        setChatMessages(prev => [...prev, {
+          role: 'assistant',
+          content: 'Thank you for sharing. You can edit your reflection once you keep the card ✨'
+        }])
+        setChatDone(true)
+      }, 400)
+    }
+  }
+
+  const handleKeep = async () => {
+    if (!canKeep || keeping || alreadyKeptToday) return
+    setKeeping(true)
+
+    // Opening question saved separately; journal body = full dialogue after that
+    const openingQuestion = chatMessages.find(m => m.role === 'assistant')?.content || ''
+    const afterOpening = chatMessages.slice(chatMessages.findIndex(m => m.role === 'assistant') + 1)
+    const journalText = afterOpening
+      .filter(m => m.role !== 'assistant' || !m.content.startsWith('Thank you for sharing.'))
+      .map(m => m.role === 'assistant' ? `Guide: ${m.content}` : `You: ${m.content}`)
+      .join('\n\n')
+
+    try {
+      const localDate = new Date().toLocaleDateString('en-CA')
       const response = await fetch('/api/cards/keep', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           submissionId: card.video?.id || card.submission_id,
-          journalText: journalText.trim(),
+          journalText,
           isPublic: false,
           isSubmission: false,
-          question,
+          question: openingQuestion,
           localDate
         })
       })
@@ -287,13 +340,9 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
       if (data.success) {
         setKept(true)
         onKeep()
-
-        // Track card kept
         trackEvent(EVENTS.CARD_KEPT, {
           category: card.category,
-          streak: data.streak,
-          journalLength: journalText.trim().length,
-          hasQuestion: !!question
+          journalLength: journalText.length,
         })
       } else {
         alert(data.error || 'Error keeping card')
@@ -356,22 +405,22 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
                 onClick={() => setShowJournal(true)}
                 className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-md text-gray-900 font-medium text-sm hover:bg-white transition-all active:scale-95 shadow-lg"
               >
-                ✍️ Write & Keep
+                💬 Talk it through
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Bottom sheet - journal */}
+      {/* Bottom sheet - chat journal */}
       <div
         className={`bg-white rounded-t-3xl transition-all duration-300 ${
-          showJournal || kept || isSubmissionCard ? 'max-h-[60vh]' : 'max-h-0'
-        } overflow-hidden`}
+          showJournal || kept || isSubmissionCard ? 'max-h-[65vh]' : 'max-h-0'
+        } overflow-hidden flex flex-col`}
       >
-        <div className="p-6">
+        <div className="p-5 flex flex-col" style={{ height: showJournal || kept || isSubmissionCard ? '65vh' : 0 }}>
           {/* Drag handle */}
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-3 flex-shrink-0">
             <div className="w-10 h-1 bg-gray-300 rounded-full" />
           </div>
 
@@ -394,28 +443,62 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
             </div>
           ) : (
             <>
-              <h4 className="font-bold text-lg mb-1">{question}</h4>
-              <p className="text-gray-500 text-sm mb-3">Reflect on how this moment made you feel</p>
-              <textarea
-                value={journalText}
-                onChange={e => setJournalText(e.target.value)}
-                placeholder="Write your thoughts here..."
-                rows={4}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-base mb-3"
-                autoFocus
-              />
-              {!canKeep && journalText.length > 0 && (
-                <p className="text-xs text-gray-400 mb-3">{10 - journalText.trim().length} more characters needed</p>
+              {/* Chat messages */}
+              <div className="flex-1 overflow-y-auto space-y-2 mb-3 min-h-0">
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'bg-blue-600 text-white rounded-br-sm'
+                        : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                    }`}>
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 px-4 py-2 rounded-2xl rounded-bl-sm">
+                      <span className="text-gray-400 text-sm tracking-widest">···</span>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Input row — hidden once chat is done */}
+              {!chatDone && (
+                <div className="flex gap-2 flex-shrink-0">
+                  <input
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                    placeholder="Type your reflection..."
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={chatLoading}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!chatInput.trim() || chatLoading}
+                    className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-all"
+                  >
+                    →
+                  </button>
+                </div>
               )}
-              <button
-                onClick={handleKeep}
-                disabled={!canKeep || keeping || alreadyKeptToday}
-                className={`w-full py-4 px-6 rounded-xl font-medium transition-all text-base active:scale-95 ${
-                  canKeep && !alreadyKeptToday ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {keeping ? 'Keeping...' : alreadyKeptToday ? "You've kept a card today" : canKeep ? 'Keep This Card ✨' : 'Write to keep this card'}
-              </button>
+
+              {/* Keep button — appears after first user message */}
+              {canKeep && (
+                <button
+                  onClick={handleKeep}
+                  disabled={keeping || alreadyKeptToday}
+                  className={`mt-2 w-full py-3 rounded-xl font-medium text-sm transition-all active:scale-95 flex-shrink-0 ${
+                    alreadyKeptToday ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {keeping ? 'Keeping...' : alreadyKeptToday ? "You've kept a card today" : 'Keep This Card ✨'}
+                </button>
+              )}
             </>
           )}
         </div>

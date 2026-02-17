@@ -188,12 +188,19 @@ export async function PATCH(request) {
     }
 
     // Update card
-    await sql`
-      UPDATE user_cards
-      SET journal_text = ${journalText.trim()},
-          is_public = ${isPublic !== undefined ? isPublic : sql`is_public`}
-      WHERE id = ${cardId} AND user_id = ${userId}
-    `
+    if (isPublic !== undefined) {
+      await sql`
+        UPDATE user_cards
+        SET journal_text = ${journalText.trim()}, is_public = ${isPublic}
+        WHERE id = ${cardId} AND user_id = ${userId}
+      `
+    } else {
+      await sql`
+        UPDATE user_cards
+        SET journal_text = ${journalText.trim()}
+        WHERE id = ${cardId} AND user_id = ${userId}
+      `
+    }
 
     return Response.json({ success: true })
 

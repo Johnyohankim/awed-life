@@ -358,7 +358,24 @@ export async function GET(request) {
       SELECT submission_points FROM users WHERE id = ${userId}
     `
     const submissionPoints = userResult.rows[0]?.submission_points || 0
-    const allowedKeeps = Math.min(1 + submissionPoints, 8)
+
+    // Calculate bonus keeps already spent in prior days.
+    // Each day has 1 free base keep; anything beyond that uses bonus slots.
+    // bonusSpent = (total keeps before today) - (distinct days with at least one keep before today)
+    const priorKeepsResult = await sql`
+      SELECT
+        COUNT(*) as total_keeps,
+        COUNT(DISTINCT DATE(kept_at)) as days_kept
+      FROM user_cards
+      WHERE user_id = ${userId}
+        AND is_submission = false
+        AND DATE(kept_at) < ${today}
+    `
+    const totalPriorKeeps = parseInt(priorKeepsResult.rows[0]?.total_keeps || 0)
+    const daysPriorKept = parseInt(priorKeepsResult.rows[0]?.days_kept || 0)
+    const bonusSpent = Math.max(0, totalPriorKeeps - daysPriorKept)
+    const bonusRemaining = Math.max(0, submissionPoints - bonusSpent)
+    const allowedKeeps = Math.min(1 + bonusRemaining, 8)
 
     // Get cards kept today (excluding submission cards)
     const keptTodayResult = await sql`
