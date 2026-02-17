@@ -60,16 +60,6 @@ export default function LiveStats() {
         </div>
       </div>
 
-      {stats.activeStreaks > 0 && (
-        <div className="text-center">
-          <div className="text-3xl md:text-4xl font-bold text-white mb-1">
-            🔥 {stats.activeStreaks}
-          </div>
-          <div className="text-sm md:text-base text-white/80">
-            Active Streak{stats.activeStreaks !== 1 ? 's' : ''}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
