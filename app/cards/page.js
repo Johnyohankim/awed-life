@@ -786,6 +786,12 @@ export default function CardsPage() {
   const handleKeep = async () => {
     setKeptToday(prev => prev + 1)
 
+    // Optimistically lock the category so the card can't be re-opened
+    // before loadCards() finishes
+    if (selectedCard && !isSubmissionCard) {
+      setKeptCategories(prev => [...new Set([...prev, selectedCard.category])])
+    }
+
     // Reload cards and get new total
     await loadCards()
 
