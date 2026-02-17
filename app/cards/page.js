@@ -407,17 +407,23 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
           <div className="absolute bottom-24 left-0 right-0 px-4">
             <div className="flex flex-col items-center gap-3">
               {(card.video?.id || card.submission_id) && (
-                <ReactionBar 
+                <ReactionBar
                   submissionId={card.video?.id || card.submission_id}
-                  onReact={() => setShowJournal(true)}
+                  onReact={() => !alreadyKeptToday && setShowJournal(true)}
                 />
               )}
-              <button
-                onClick={() => setShowJournal(true)}
-                className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-md text-gray-900 font-medium text-sm hover:bg-white transition-all active:scale-95 shadow-lg"
-              >
-                💬 Talk it through
-              </button>
+              {alreadyKeptToday ? (
+                <div className="px-6 py-3 rounded-full bg-black/40 backdrop-blur-md text-white text-sm text-center">
+                  You've already kept a card today
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowJournal(true)}
+                  className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-md text-gray-900 font-medium text-sm hover:bg-white transition-all active:scale-95 shadow-lg"
+                >
+                  💬 Talk it through
+                </button>
+              )}
             </div>
           </div>
         )}
