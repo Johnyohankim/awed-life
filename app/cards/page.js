@@ -863,12 +863,14 @@ export default function CardsPage() {
               : "Choose a card to reveal your awe moment"
             }
           </p>
-          {allowedKeeps > 1 && keptToday < allowedKeeps && (
+          {keptToday < allowedKeeps && (
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full">
               <span className="text-purple-700 text-sm font-medium">
-                {keptToday} of {allowedKeeps} cards kept today
+                {keptToday} of {allowedKeeps} card{allowedKeeps !== 1 ? 's' : ''} kept today
               </span>
-              <span className="text-purple-500 text-xs">⭐ {submissionPoints} bonus slots</span>
+              {submissionPoints > 0 && (
+                <span className="text-purple-500 text-xs">⭐ {submissionPoints} bonus slots</span>
+              )}
             </div>
           )}
         </div>
