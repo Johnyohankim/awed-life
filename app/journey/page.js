@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import EngagementCalendar from '../components/EngagementCalendar'
-import RewardClaimModal from '../components/RewardClaimModal'
 import AweraCircle from '../components/AweraCircle'
 import { CATEGORY_COLORS, CATEGORY_LABELS, MILESTONES } from '../lib/constants'
 import { trackEvent, EVENTS } from '../lib/analytics'
@@ -497,8 +496,6 @@ export default function JourneyPage() {
   const [newName, setNewName] = useState('')
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [showRewardModal, setShowRewardModal] = useState(false)
-  const [currentMilestone, setCurrentMilestone] = useState(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -513,27 +510,18 @@ export default function JourneyPage() {
 
   const loadData = async () => {
     try {
-      const [collectionRes, profileRes, rewardsRes] = await Promise.all([
+      const [collectionRes, profileRes] = await Promise.all([
         fetch('/api/collection'),
-        fetch('/api/profile'),
-        fetch('/api/rewards')
+        fetch('/api/profile')
       ])
 
       const collectionData = await collectionRes.json()
       const profileData = await profileRes.json()
-      const rewardsData = await rewardsRes.json()
 
       setCards(collectionData.cards || [])
       setStats(collectionData.stats || null)
       setProfile(profileData)
       setNewName(profileData.name || '')
-
-      // Check if user has reached a new milestone
-      if (rewardsData.newMilestones && rewardsData.newMilestones.length > 0) {
-        // Show modal for first unclaimed milestone
-        setCurrentMilestone(rewardsData.newMilestones[0])
-        setShowRewardModal(true)
-      }
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -569,31 +557,6 @@ export default function JourneyPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleClaimReward = async (shippingInfo) => {
-    try {
-      const response = await fetch('/api/rewards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          milestone: currentMilestone,
-          shippingInfo
-        })
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        alert('🎉 Reward claimed! We\'ll ship it to you soon!')
-        setShowRewardModal(false)
-        setCurrentMilestone(null)
-      } else {
-        alert(data.error || 'Failed to claim reward')
-      }
-    } catch (error) {
-      console.error('Error claiming reward:', error)
-      alert('Failed to claim reward. Please try again.')
-    }
-  }
 
   const handleDeleteCard = (cardId) => {
     setCards(prevCards => prevCards.filter(c => c.id !== cardId))
@@ -749,52 +712,6 @@ export default function JourneyPage() {
           <EngagementCalendar cards={cards} />
         )}
 
-        {/* Rewards Teaser */}
-        {cards.length > 0 && stats && (
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-sm p-4 mb-3 border border-purple-100">
-            <div className="flex items-start gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-sm font-bold text-purple-900">Earn Physical Rewards 🎁</h3>
-                  <span className="px-2 py-0.5 rounded text-xs font-bold text-orange-900 bg-orange-200 border border-orange-300">
-                    Coming Soon
-                  </span>
-                </div>
-                <p className="text-xs text-purple-700 mb-3">
-                  Build your daily awe habit and we'll send you exclusive awed.life goods! Products ship when manufactured.
-                </p>
-
-                {/* Progress indicators */}
-                <div className="space-y-2">
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-purple-900 font-medium">20 cards kept</span>
-                      <span className="text-purple-700">{stats.total}/20</span>
-                    </div>
-                    <div className="h-2 bg-white/60 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all"
-                        style={{ width: `${Math.min((stats.total / 20) * 100, 100)}%` }}
-                      />
-                    </div>
-                    {stats.total >= 20 && (
-                      <p className="text-xs text-green-700 font-semibold mt-1">✓ Unlocked! Claim your reward below.</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Preview image */}
-              <div className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
-                <img
-                  src="/rewards/awed-goods.png"
-                  alt="Rewards preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Collection section */}
         <div className="flex items-center justify-between mb-3">
@@ -867,13 +784,6 @@ export default function JourneyPage() {
         />
       )}
 
-      {showRewardModal && currentMilestone && (
-        <RewardClaimModal
-          milestone={currentMilestone}
-          onClose={() => setShowRewardModal(false)}
-          onSubmit={handleClaimReward}
-        />
-      )}
     </div>
   )
 }
