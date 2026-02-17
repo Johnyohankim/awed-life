@@ -22,9 +22,20 @@ export async function POST(request) {
 
     const userId = userResult.rows[0].id
     const submissionPoints = userResult.rows[0]?.submission_points || 0
-    const allowedKeeps = Math.min(1 + submissionPoints, 8)
     // Use local date from client (browser timezone) or fallback to server time
     const today = localDate || new Date().toISOString().split('T')[0]
+
+    // Lifetime bonus pool: same calculation as cards/today API
+    const priorKeepsResult = await sql`
+      SELECT COUNT(*) as total_keeps, COUNT(DISTINCT DATE(kept_at)) as days_kept
+      FROM user_cards
+      WHERE user_id = ${userId} AND is_submission = false AND DATE(kept_at) < ${today}
+    `
+    const totalPriorKeeps = parseInt(priorKeepsResult.rows[0]?.total_keeps || 0)
+    const daysPriorKept = parseInt(priorKeepsResult.rows[0]?.days_kept || 0)
+    const bonusSpent = Math.max(0, totalPriorKeeps - daysPriorKept)
+    const bonusRemaining = Math.max(0, submissionPoints - bonusSpent)
+    const allowedKeeps = Math.min(1 + bonusRemaining, 8)
 
     // Get submission category
     const submissionResult = await sql`
@@ -71,9 +82,11 @@ export async function POST(request) {
     }
 
     // Save card to collection
+    // kept_at is set to the client's local date (not server UTC) to ensure
+    // DATE(kept_at) = localDate comparisons work across all timezones
     await sql`
-      INSERT INTO user_cards (user_id, submission_id, journal_text, journal_question, is_public, is_submission)
-      VALUES (${userId}, ${submissionId}, ${journalText.trim()}, ${question || null}, ${isPublic || false}, ${isSubmission || false})
+      INSERT INTO user_cards (user_id, submission_id, journal_text, journal_question, is_public, is_submission, kept_at)
+      VALUES (${userId}, ${submissionId}, ${journalText.trim()}, ${question || null}, ${isPublic || false}, ${isSubmission || false}, ${today}::date)
     `
 
     // Mark card as shown
