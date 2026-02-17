@@ -207,19 +207,50 @@ function ChatPreview({ session }) {
   const userMessages = chatMessages.filter(m => m.role === 'user')
   const canComplete = userMessages.length > 0
 
+  const OTHER_CARDS = [
+    { label: 'Nature', color: 'from-green-400 to-emerald-600' },
+    { label: 'Music', color: 'from-purple-400 to-violet-600' },
+    { label: 'Collective Effervescence', color: 'from-orange-400 to-red-600' },
+    { label: 'Visual Design', color: 'from-blue-400 to-cyan-600' },
+    { label: 'Spirituality & Religion', color: 'from-amber-400 to-yellow-600' },
+    { label: 'Life & Death', color: 'from-slate-400 to-gray-600' },
+    { label: 'Epiphany', color: 'from-indigo-400 to-blue-600' },
+  ]
+
   return (
     <>
-      {/* Single card */}
-      <div className="flex justify-center">
+      {/* Card row: 7 dimmed + 1 active */}
+      <div className="flex items-end justify-center gap-2 overflow-x-auto pb-2 px-2">
+        {/* First 3 dimmed cards */}
+        {OTHER_CARDS.slice(0, 3).map(card => (
+          <div
+            key={card.label}
+            className={`flex-shrink-0 w-20 md:w-24 aspect-[3/4] rounded-xl bg-gradient-to-br ${card.color} opacity-30 flex items-end justify-center p-2`}
+          >
+            <p className="text-white text-[10px] font-semibold text-center leading-tight drop-shadow">{card.label}</p>
+          </div>
+        ))}
+
+        {/* Active card */}
         <div
           onClick={openPreview}
-          className={`relative w-48 aspect-[3/4] cursor-pointer transform transition-transform hover:scale-105 rounded-2xl shadow-xl bg-gradient-to-br ${PREVIEW_CARD.color} flex items-center justify-center p-4`}
+          className={`flex-shrink-0 w-36 md:w-44 aspect-[3/4] cursor-pointer transform transition-transform hover:scale-105 rounded-2xl shadow-xl bg-gradient-to-br ${PREVIEW_CARD.color} flex items-center justify-center p-4 ring-2 ring-white/60`}
         >
           <div className="text-center">
-            <p className="text-white font-bold text-lg drop-shadow-lg mb-2">{PREVIEW_CARD.label}</p>
+            <p className="text-white font-bold text-base drop-shadow-lg mb-1">{PREVIEW_CARD.label}</p>
             <p className="text-white text-xs opacity-80">Tap to experience</p>
           </div>
         </div>
+
+        {/* Last 4 dimmed cards */}
+        {OTHER_CARDS.slice(3).map(card => (
+          <div
+            key={card.label}
+            className={`flex-shrink-0 w-20 md:w-24 aspect-[3/4] rounded-xl bg-gradient-to-br ${card.color} opacity-30 flex items-end justify-center p-2`}
+          >
+            <p className="text-white text-[10px] font-semibold text-center leading-tight drop-shadow">{card.label}</p>
+          </div>
+        ))}
       </div>
 
       {open && (
