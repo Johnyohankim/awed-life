@@ -654,18 +654,6 @@ export default function JourneyPage() {
               <p className="text-gray-500 text-xs">
                 Since {new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
               </p>
-              {/* Milestones inline */}
-              {stats && (
-                <div className="flex gap-1 mt-2 overflow-x-auto">
-                  {MILESTONE_DATA.map((milestone) => (
-                    stats.total >= milestone.count && (
-                      <span key={milestone.count} className="text-lg" title={milestone.label}>
-                        {milestone.emoji}
-                      </span>
-                    )
-                  ))}
-                </div>
-              )}
             </div>
             <button
               onClick={handleCopyLink}
@@ -678,8 +666,11 @@ export default function JourneyPage() {
 
         {/* Awera — growing circle */}
         {stats && (
-          <div className="bg-white rounded-2xl shadow-sm p-4 mb-3 flex flex-col items-center">
+          <div className="bg-white rounded-2xl shadow-sm p-4 mb-3 flex flex-col items-center relative">
             <AweraCircle totalCards={stats.total} size="lg" />
+            <p className="absolute bottom-3 right-3 text-[10px] text-gray-300 text-right max-w-[90px] leading-tight italic">
+              More cards, bigger Awera
+            </p>
           </div>
         )}
 
