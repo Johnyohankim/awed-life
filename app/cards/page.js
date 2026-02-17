@@ -574,6 +574,60 @@ function SubmissionCard({ card, onClick }) {
   )
 }
 
+function TodaysAwedMoment({ moment, source, onClick }) {
+  const videoId = getYouTubeId(moment.video_link)
+  const thumbnail = videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null
+  const color = categoryColors[moment.category] || 'from-gray-400 to-gray-600'
+  const label = categoryLabels[moment.category] || moment.category
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Today's Most Awed</h3>
+        {source === 'awed' && moment.awed_count > 0 && (
+          <span className="flex items-center gap-1 text-xs text-gray-400">
+            <img src="/awed-emoji.png" alt="awed" width={14} height={14} />
+            {moment.awed_count}
+          </span>
+        )}
+      </div>
+      <div
+        onClick={onClick}
+        className="relative rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-xl active:scale-[0.98] transition-all duration-200"
+      >
+        {thumbnail ? (
+          <img src={thumbnail} alt={label} className="w-full aspect-video object-cover" />
+        ) : (
+          <div className={`w-full aspect-video bg-gradient-to-br ${color}`} />
+        )}
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/25" />
+
+        {/* Play button */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+            <svg viewBox="0 0 24 24" className="w-7 h-7 fill-gray-900 ml-1">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        </div>
+
+        {/* Category pill */}
+        <div className={`absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${color} shadow`}>
+          {label}
+        </div>
+
+        {source === 'random' && (
+          <div className="absolute bottom-3 right-3 px-2 py-1 rounded-full text-xs text-white/80 bg-black/30 backdrop-blur-sm">
+            Featured
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function CardsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -589,6 +643,8 @@ export default function CardsPage() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [achievementCount, setAchievementCount] = useState(null)
   const [totalCards, setTotalCards] = useState(0)
+  const [aweOfDay, setAweOfDay] = useState(null)
+  const [aweOfDaySource, setAweOfDaySource] = useState(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -611,8 +667,12 @@ export default function CardsPage() {
     try {
       // Get local date in YYYY-MM-DD format (browser timezone)
       const localDate = new Date().toLocaleDateString('en-CA') // en-CA gives YYYY-MM-DD format
-      const response = await fetch(`/api/cards/today?localDate=${localDate}`)
+      const [response, aweRes] = await Promise.all([
+        fetch(`/api/cards/today?localDate=${localDate}`),
+        fetch('/api/awe-of-day')
+      ])
       const data = await response.json()
+      const aweData = await aweRes.json()
       if (data.cards) {
         // Apply smart rotation to feature different category each day
         const rotatedCards = getSmartRotatedCards(data.cards)
@@ -622,6 +682,10 @@ export default function CardsPage() {
         setKeptCategories(data.keptCategories || [])
         setSubmissionSlots(data.submissionSlots || [])
         setSubmissionPoints(data.submissionPoints || 0)
+      }
+      if (aweData.moment) {
+        setAweOfDay(aweData.moment)
+        setAweOfDaySource(aweData.source)
       }
       
       // Get total card count for achievement tracking
@@ -726,6 +790,23 @@ export default function CardsPage() {
             </div>
           )}
         </div>
+
+        {/* Today's Most Awed Moment */}
+        {aweOfDay && (
+          <TodaysAwedMoment
+            moment={aweOfDay}
+            source={aweOfDaySource}
+            onClick={() => handleCardClick({
+              video_link: aweOfDay.video_link,
+              submission_id: aweOfDay.id,
+              category: aweOfDay.category,
+              label: categoryLabels[aweOfDay.category] || aweOfDay.category,
+              color: categoryColors[aweOfDay.category] || 'from-gray-400 to-gray-600',
+              isKept: false,
+              isEmpty: false
+            }, false)}
+          />
+        )}
 
         {/* Featured card - large */}
         {featuredCard && (
