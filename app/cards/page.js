@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import AchievementToast from '../components/AchievementToast'
+import AweraCircle from '../components/AweraCircle'
 import { getDailyQuestion } from '../lib/journalQuestions'
 import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_QUOTES, MILESTONES } from '../lib/constants'
 import { trackEvent, EVENTS } from '../lib/analytics'
@@ -231,11 +232,10 @@ function OnboardingModal({ onClose }) {
   )
 }
 
-function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard }) {
+function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmissionCard, totalCards }) {
   const [journalText, setJournalText] = useState(isSubmissionCard ? 'I submitted this awe moment ✨' : '')
   const [keeping, setKeeping] = useState(false)
   const [kept, setKept] = useState(card.isKept || isSubmissionCard)
-  const [streak, setStreak] = useState(null)
   const [showJournal, setShowJournal] = useState(false)
   const [question, setQuestion] = useState('')
 
@@ -286,7 +286,6 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
       const data = await response.json()
       if (data.success) {
         setKept(true)
-        setStreak(data.streak)
         onKeep()
 
         // Track card kept
@@ -332,9 +331,6 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
               <h3 className="text-white font-bold text-lg drop-shadow">{card.label || card.category}</h3>
               {isSubmissionCard && (
                 <p className="text-white/90 text-sm">⭐ Your submission</p>
-              )}
-              {kept && streak && (
-                <p className="text-orange-400 text-sm font-medium">🔥 {streak} day streak!</p>
               )}
             </div>
             <button
@@ -387,10 +383,12 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
             </div>
           ) : kept ? (
             <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-              <p className="text-2xl mb-2">✨</p>
-              <p className="text-green-800 font-bold text-lg mb-1">Card Kept!</p>
-              {streak && <p className="text-orange-500 font-medium text-sm">🔥 {streak} day streak!</p>}
-              <button onClick={onClose} className="mt-4 text-blue-600 hover:text-blue-700 font-medium text-sm">
+              <p className="text-2xl mb-1">✨</p>
+              <p className="text-green-800 font-bold text-lg mb-3">Card Kept!</p>
+              <div className="flex justify-center">
+                <AweraCircle totalCards={(totalCards || 0) + 1} size="sm" />
+              </div>
+              <button onClick={onClose} className="mt-3 text-blue-600 hover:text-blue-700 font-medium text-sm">
                 Explore more cards →
               </button>
             </div>
@@ -853,6 +851,7 @@ export default function CardsPage() {
           onKeep={handleKeep}
           alreadyKeptToday={!isSubmissionCard && keptToday >= allowedKeeps}
           isSubmissionCard={isSubmissionCard}
+          totalCards={totalCards}
         />
       )}
 

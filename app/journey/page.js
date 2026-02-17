@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import EngagementCalendar from '../components/EngagementCalendar'
 import RewardClaimModal from '../components/RewardClaimModal'
+import AweraCircle from '../components/AweraCircle'
 import { CATEGORY_COLORS, CATEGORY_LABELS, MILESTONES } from '../lib/constants'
 import { trackEvent, EVENTS } from '../lib/analytics'
 
@@ -712,17 +713,20 @@ export default function JourneyPage() {
           </div>
         </div>
 
+        {/* Awera — growing circle */}
+        {stats && (
+          <div className="bg-white rounded-2xl shadow-sm p-4 mb-3 flex flex-col items-center">
+            <AweraCircle totalCards={stats.total} size="lg" />
+          </div>
+        )}
+
         {/* Compact Stats */}
         {stats && (
           <div className="bg-white rounded-2xl shadow-sm p-3 mb-3">
-            <div className="grid grid-cols-3 gap-2 text-center mb-3">
+            <div className="grid grid-cols-2 gap-2 text-center mb-3">
               <div className="bg-gray-50 rounded-lg p-2">
                 <p className="text-xl font-bold">{stats.total}</p>
                 <p className="text-xs text-gray-500">Cards</p>
-              </div>
-              <div className="bg-orange-50 rounded-lg p-2">
-                <p className="text-xl font-bold">🔥 {stats.streak}</p>
-                <p className="text-xs text-gray-500">Streak</p>
               </div>
               <div className="bg-purple-50 rounded-lg p-2">
                 <p className="text-xl font-bold">⭐ {profile.submissionPoints || 0}</p>
@@ -764,24 +768,8 @@ export default function JourneyPage() {
                 <div className="space-y-2">
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-purple-900 font-medium">7-day streak</span>
-                      <span className="text-purple-700">{stats.streak}/7 days</span>
-                    </div>
-                    <div className="h-2 bg-white/60 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all"
-                        style={{ width: `${Math.min((stats.streak / 7) * 100, 100)}%` }}
-                      />
-                    </div>
-                    {stats.streak >= 7 && (
-                      <p className="text-xs text-green-700 font-semibold mt-1">✓ Unlocked! Claim your reward below.</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-purple-900 font-medium">20 total days</span>
-                      <span className="text-purple-700">{stats.total}/20 days</span>
+                      <span className="text-purple-900 font-medium">20 cards kept</span>
+                      <span className="text-purple-700">{stats.total}/20</span>
                     </div>
                     <div className="h-2 bg-white/60 rounded-full overflow-hidden">
                       <div
