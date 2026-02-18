@@ -898,7 +898,7 @@ export default function CardsPage() {
         </div>
 
         {/* Today's Most Awed Moment */}
-        {aweOfDay && !keptCategories.includes(aweOfDay.category) && (
+        {aweOfDay && (
           <TodaysAwedMoment
             moment={aweOfDay}
             source={aweOfDaySource}
