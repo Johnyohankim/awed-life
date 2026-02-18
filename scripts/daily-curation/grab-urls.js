@@ -29,46 +29,70 @@ if (!ANTHROPIC_KEY) {
 
 const DATE = process.argv[2] || new Date().toISOString().split('T')[0]
 
-const CATEGORIES = [
-  'moral-beauty',
-  'collective-effervescence',
-  'nature',
-  'music',
-  'visual-design',
-  'spirituality',
-  'life-death',
-  'epiphany'
-]
-
-const CATEGORY_DESCRIPTIONS = {
-  'moral-beauty': 'acts of kindness, courage, virtue, compassion, selflessness, people helping others',
-  'collective-effervescence': 'crowds singing together, flash mobs, group celebrations, shared joy, community gatherings, sports fans uniting',
-  'nature': 'stunning landscapes, wildlife, aurora borealis, ocean, mountains, timelapse of nature, breathtaking scenery',
-  'music': 'live performances that move audiences to tears, unexpected musical talent, orchestras, street musicians, awe-inspiring concerts',
-  'visual-design': 'mesmerizing art installations, incredible architecture, optical illusions, stunning visual art, mind-bending design',
-  'spirituality': 'sacred rituals, meditation, religious ceremonies, moments of transcendence, spiritual experiences across world religions',
-  'life-death': 'birth moments, hospice care, life cycles in nature, metamorphosis, the miracle of life beginning and ending',
-  'epiphany': 'eureka moments, mind-expanding thought experiments, perspective-shifting realizations, scientific discoveries explained simply'
+// Load config from prompts.json
+const PROMPTS_PATH = path.join(__dirname, 'prompts.json')
+if (!fs.existsSync(PROMPTS_PATH)) {
+  console.error('Error: prompts.json not found in', __dirname)
+  process.exit(1)
 }
+const PROMPTS = JSON.parse(fs.readFileSync(PROMPTS_PATH, 'utf8'))
+const CATEGORIES = Object.keys(PROMPTS.categories)
+
+console.log(`Loaded ${CATEGORIES.length} categories from prompts.json`)
 
 const anthropic = new Anthropic({ apiKey: ANTHROPIC_KEY })
 
+// Load queries and URLs from all previous JSON files to avoid repeats
+function loadPastData() {
+  const pastQueries = {} // { category: [query, query, ...] }
+  const pastUrls = new Set()
+  const dir = path.join(__dirname)
+  const files = fs.readdirSync(dir).filter(f => /^\d{4}-\d{2}-\d{2}\.json$/.test(f) && f !== `${DATE}.json`)
+  for (const file of files) {
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'))
+      for (const [cat, videos] of Object.entries(data.categories || {})) {
+        if (!pastQueries[cat]) pastQueries[cat] = new Set()
+        for (const v of videos) {
+          if (v.query) pastQueries[cat].add(v.query)
+          if (v.url) pastUrls.add(v.url)
+        }
+      }
+    } catch (_) { /* skip broken files */ }
+  }
+  for (const cat of Object.keys(pastQueries)) {
+    pastQueries[cat] = [...pastQueries[cat]]
+  }
+  return { pastQueries, pastUrls }
+}
+
+const { pastQueries, pastUrls } = loadPastData()
+console.log(`Loaded ${pastUrls.size} previously fetched URLs to deduplicate`)
+
 async function generateQueriesForCategory(category) {
-  const description = CATEGORY_DESCRIPTIONS[category]
+  const config = PROMPTS.categories[category]
+  const description = config.description
+  const avoidRules = config.avoid ? ` ${config.avoid}.` : ''
+  const past = pastQueries[category] || []
+  const avoidBlock = past.length > 0
+    ? `\nPreviously used queries (DO NOT reuse or rephrase these):\n${past.map(q => `- "${q}"`).join('\n')}\n`
+    : ''
+
   const message = await anthropic.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 300,
     messages: [{
       role: 'user',
-      content: `Generate 3 YouTube search queries to find short, embeddable, awe-inspiring videos about: ${description}
+      content: `Generate 3 YouTube search queries to find short, embeddable, awe-inspiring videos about: ${description}.${avoidRules}
 
 Category: ${category}
 Today's date: ${DATE}
-
+${avoidBlock}
 Rules:
 - Each query should be specific enough to return high-quality, genuine videos (not clickbait)
 - Prefer queries that find real moments over AI-generated or fictional content
 - Keep queries under 8 words each
+- Come up with FRESH, CREATIVE angles — explore different sub-topics within this category
 - Return ONLY the 3 queries, one per line, no numbering or explanation`
     }]
   })
@@ -88,6 +112,31 @@ function fetchJSON(url) {
       })
     }).on('error', reject)
   })
+}
+
+// Parse ISO 8601 duration (PT1M30S) to seconds
+function parseDuration(iso) {
+  const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+  if (!m) return 0
+  return (parseInt(m[1] || 0) * 3600) + (parseInt(m[2] || 0) * 60) + parseInt(m[3] || 0)
+}
+
+// Fetch actual durations for a list of video IDs, returns { videoId: seconds }
+async function getVideoDurations(videoIds) {
+  if (videoIds.length === 0) return {}
+  const params = new URLSearchParams({
+    part: 'contentDetails',
+    id: videoIds.join(','),
+    key: YOUTUBE_KEY
+  })
+  const url = `https://www.googleapis.com/youtube/v3/videos?${params}`
+  const data = await fetchJSON(url)
+  if (data.error) throw new Error(`YouTube API error: ${data.error.message}`)
+  const durations = {}
+  for (const item of (data.items || [])) {
+    durations[item.id] = parseDuration(item.contentDetails.duration)
+  }
+  return durations
 }
 
 async function searchYouTube(query, maxResults = 5) {
@@ -145,7 +194,7 @@ async function grabAllCategories() {
       try {
         const found = await searchYouTube(query, 5)
         for (const video of found) {
-          if (!seenUrls.has(video.url)) {
+          if (!seenUrls.has(video.url) && !pastUrls.has(video.url)) {
             seenUrls.add(video.url)
             videos.push({ ...video, query })
           }
@@ -153,6 +202,26 @@ async function grabAllCategories() {
         await new Promise(r => setTimeout(r, 300))
       } catch (err) {
         console.error(`  YouTube error for "${query}": ${err.message}`)
+      }
+    }
+
+    // Step 3: Filter by minimum duration if configured
+    const minDur = PROMPTS.categories[category]?.minDurationSeconds || 0
+    if (minDur > 0 && videos.length > 0) {
+      const ids = videos.map(v => v.url.match(/v=([^&]+)/)?.[1]).filter(Boolean)
+      try {
+        const durations = await getVideoDurations(ids)
+        const before = videos.length
+        const filtered = videos.filter(v => {
+          const id = v.url.match(/v=([^&]+)/)?.[1]
+          const dur = durations[id]
+          return dur && dur >= minDur
+        })
+        videos.length = 0
+        videos.push(...filtered)
+        console.log(`  Duration filter (>=${Math.floor(minDur/60)}:${String(minDur%60).padStart(2,'0')}): kept ${videos.length}/${before}`)
+      } catch (err) {
+        console.error(`  Duration check error: ${err.message}`)
       }
     }
 

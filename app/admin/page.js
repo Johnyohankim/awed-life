@@ -392,7 +392,7 @@ export default function AdminPage() {
         {activeTab === 'bulk' && (
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h2 className="text-xl font-bold mb-2">Bulk Add Videos</h2>
-            <p className="text-gray-500 text-sm mb-6">One URL per line. All auto-approved.</p>
+            <p className="text-gray-500 text-sm mb-6">One URL per line. Added as unapproved for review.</p>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
               <select value={bulkCategory} onChange={e => setBulkCategory(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg">

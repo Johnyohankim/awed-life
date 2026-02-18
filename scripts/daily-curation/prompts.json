@@ -1,0 +1,44 @@
+{
+  "categories": {
+    "moral-beauty": {
+      "description": "acts of kindness, courage, virtue, compassion, selflessness, people helping others",
+      "avoid": "NO animated stories, kids content, AI generated content, or 'random act of kindness' videos",
+      "minDurationSeconds": 150
+    },
+    "collective-effervescence": {
+      "description": "crowds singing together, flash mobs, group celebrations, shared joy, community gatherings, sports fans uniting",
+      "avoid": "",
+      "minDurationSeconds": 60
+    },
+    "nature": {
+      "description": "stunning landscapes, wildlife, aurora borealis, ocean, mountains, timelapse of nature, breathtaking scenery",
+      "avoid": "",
+      "minDurationSeconds": 60
+    },
+    "music": {
+      "description": "live performances that move audiences to tears, unexpected musical talent, orchestras, street musicians, awe-inspiring concerts",
+      "avoid": "",
+      "minDurationSeconds": 60
+    },
+    "visual-design": {
+      "description": "mesmerizing art, incredible architecture, graphic design, advertisement, legendary historic visual experiences, stunning visual art",
+      "avoid": "NO 3D illusions",
+      "minDurationSeconds": 60
+    },
+    "spirituality": {
+      "description": "sacred rituals, meditation, religious ceremonies, moments of transcendence, spiritual experiences across world religions",
+      "avoid": "",
+      "minDurationSeconds": 60
+    },
+    "life-death": {
+      "description": "birth moments, hospice care, life cycles in nature, metamorphosis, the miracle of life beginning and ending",
+      "avoid": "NO birth or death instruction from doctor or nurse",
+      "minDurationSeconds": 60
+    },
+    "epiphany": {
+      "description": "eureka moments, mind-expanding thought experiments, perspective-shifting realizations, scientific discoveries explained simply",
+      "avoid": "",
+      "minDurationSeconds": 60
+    }
+  }
+}

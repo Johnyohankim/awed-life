@@ -133,10 +133,10 @@ export async function POST(request) {
           }
         }
 
-        // Insert as approved with generated hashtags
+        // Insert as unapproved — review in admin before approving
         await sql`
           INSERT INTO submissions (video_link, category, hashtags, email, approved)
-          VALUES (${trimmed}, ${category}, ${hashtags}, 'admin-bulk', true)
+          VALUES (${trimmed}, ${category}, ${hashtags}, 'admin-bulk', false)
         `
         added++
       } catch (error) {
