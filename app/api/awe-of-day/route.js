@@ -2,7 +2,9 @@ import { sql } from '@vercel/postgres'
 
 export async function GET() {
   try {
-    // Find the submission with the most 'awed' reactions
+    const today = new Date().toISOString().split('T')[0]
+
+    // Find the submission with the most 'awed' reactions TODAY
     const topAwedResult = await sql`
       SELECT
         s.id,
@@ -13,6 +15,7 @@ export async function GET() {
       JOIN moment_reactions mr ON s.id = mr.submission_id
       WHERE mr.reaction_type = 'awed'
         AND s.approved = true
+        AND mr.created_at::date = ${today}::date
       GROUP BY s.id, s.video_link, s.category
       ORDER BY awed_count DESC, s.id DESC
       LIMIT 1
@@ -32,7 +35,6 @@ export async function GET() {
     }
 
     // Fallback: pick a random approved submission, seeded by day so it's stable for 24h
-    const today = new Date().toISOString().split('T')[0]
     const randomResult = await sql`
       SELECT id, video_link, category
       FROM submissions
