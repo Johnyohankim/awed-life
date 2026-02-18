@@ -111,12 +111,20 @@ export async function POST(request) {
       if (!trimmed) continue
 
       try {
-        // Check for duplicate
+        // Check for duplicate in submissions
         const existing = await sql`
           SELECT id FROM submissions WHERE video_link = ${trimmed}
         `
-
         if (existing.rows.length > 0) {
+          skipped++
+          continue
+        }
+
+        // Check if previously rejected
+        const rejected = await sql`
+          SELECT id FROM rejected_videos WHERE video_link = ${trimmed}
+        `
+        if (rejected.rows.length > 0) {
           skipped++
           continue
         }
@@ -124,9 +132,10 @@ export async function POST(request) {
         // Extract YouTube ID and fetch title
         const videoId = getYouTubeId(trimmed)
         let hashtags = ''
+        let title = null
 
         if (videoId) {
-          const title = await getYouTubeTitle(videoId)
+          title = await getYouTubeTitle(videoId)
           if (title) {
             hashtags = await generateHashtags(title, category)
             console.log(`Generated hashtags for "${title}": ${hashtags}`)
@@ -137,6 +146,12 @@ export async function POST(request) {
         await sql`
           INSERT INTO submissions (video_link, category, hashtags, email, approved)
           VALUES (${trimmed}, ${category}, ${hashtags}, 'admin-bulk', false)
+        `
+
+        // Track in curation batch for finalize feedback
+        await sql`
+          INSERT INTO curation_batches (video_link, category, youtube_title)
+          VALUES (${trimmed}, ${category}, ${title})
         `
         added++
       } catch (error) {

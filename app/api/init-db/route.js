@@ -99,6 +99,27 @@ export async function GET() {
       )
     `
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS curation_batches (
+        id SERIAL PRIMARY KEY,
+        batch_date DATE NOT NULL DEFAULT CURRENT_DATE,
+        video_link TEXT NOT NULL,
+        category TEXT NOT NULL,
+        youtube_title TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS rejected_videos (
+        id SERIAL PRIMARY KEY,
+        video_link TEXT NOT NULL UNIQUE,
+        category TEXT NOT NULL,
+        youtube_title TEXT,
+        rejected_at TIMESTAMP DEFAULT NOW()
+      )
+    `
+
     // Add new columns if they don't exist yet (safe migrations)
     await sql`
       ALTER TABLE submissions 

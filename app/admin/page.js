@@ -225,6 +225,9 @@ export default function AdminPage() {
   const [cleaningVideos, setCleaningVideos] = useState(false)
   const [cleanResult, setCleanResult] = useState(null)
   const [cleaningCards, setCleaningCards] = useState(false)
+  const [finalizingBatch, setFinalizingBatch] = useState(false)
+  const [finalizeResult, setFinalizeResult] = useState(null)
+  const [finalizeDate, setFinalizeDate] = useState(new Date().toISOString().split('T')[0])
   const router = useRouter()
 
   useEffect(() => { checkAuth() }, [])
@@ -294,6 +297,17 @@ export default function AdminPage() {
       if (result.success) { loadSubmissions(); loadCardCounts() }
     } catch { alert('Error cleaning videos') }
     finally { setCleaningVideos(false) }
+  }
+
+  const handleFinalizeBatch = async () => {
+    if (!confirm(`Finalize batch for ${finalizeDate}? This will mark deleted videos as rejected for future search improvement.`)) return
+    setFinalizingBatch(true); setFinalizeResult(null)
+    try {
+      const r = await fetch('/api/admin/finalize-batch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ batchDate: finalizeDate }) })
+      const result = await r.json()
+      setFinalizeResult(result)
+    } catch { setFinalizeResult({ error: 'Network error' }) }
+    finally { setFinalizingBatch(false) }
   }
 
   const handleCleanDailyCards = async () => {
@@ -415,6 +429,33 @@ export default function AdminPage() {
                 {bulkResult.success ? <><p className="text-green-800 font-medium">✓ {bulkResult.added} videos added!</p>{bulkResult.skipped > 0 && <p className="text-yellow-700 text-sm mt-1">⚠ {bulkResult.skipped} duplicates skipped</p>}</> : <p className="text-red-800">{bulkResult.error}</p>}
               </div>
             )}
+
+            {/* Finalize Batch */}
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <h3 className="text-lg font-bold mb-2">Finalize Batch</h3>
+              <p className="text-gray-500 text-sm mb-4">After reviewing and deleting unsuitable videos, click to save rejection feedback for future searches.</p>
+              <div className="flex items-center gap-3">
+                <input type="date" value={finalizeDate} onChange={e => setFinalizeDate(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm" />
+                <button onClick={handleFinalizeBatch} disabled={finalizingBatch}
+                  className={`px-5 py-2 rounded-lg font-medium text-sm ${finalizingBatch ? 'bg-gray-100 text-gray-400' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
+                  {finalizingBatch ? 'Finalizing...' : 'Finalize Batch'}
+                </button>
+              </div>
+              {finalizeResult && (
+                <div className={`mt-4 p-4 rounded-lg ${finalizeResult.success ? 'bg-purple-50 border border-purple-200' : 'bg-red-50 border border-red-200'}`}>
+                  {finalizeResult.success ? (
+                    <div>
+                      <p className="text-purple-800 font-medium">Batch finalized for {finalizeResult.date}</p>
+                      <p className="text-sm text-purple-700 mt-1">{finalizeResult.total} total — {finalizeResult.kept} kept, {finalizeResult.rejected} rejected</p>
+                      {finalizeResult.rejected > 0 && <p className="text-sm text-purple-600 mt-1">Rejection patterns saved for future searches.</p>}
+                    </div>
+                  ) : (
+                    <p className="text-red-800">{finalizeResult.error}</p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

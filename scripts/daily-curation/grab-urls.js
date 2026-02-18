@@ -15,6 +15,9 @@ const fs = require('fs')
 const path = require('path')
 const Anthropic = require('@anthropic-ai/sdk')
 
+// Load .env.local from project root for DATABASE_URL
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env.local') })
+
 const YOUTUBE_KEY = process.env.YOUTUBE_API_KEY
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 
@@ -69,6 +72,54 @@ function loadPastData() {
 const { pastQueries, pastUrls } = loadPastData()
 console.log(`Loaded ${pastUrls.size} previously fetched URLs to deduplicate`)
 
+// Load rejection feedback from Neon DB
+let rejectionFeedback = {} // { category: { titles: [...], count: N } }
+async function loadRejectionFeedback() {
+  const dbUrl = process.env.POSTGRES_URL
+  if (!dbUrl) {
+    console.log('No POSTGRES_URL found, skipping rejection feedback')
+    return
+  }
+
+  const { Pool } = require('pg')
+  const pool = new Pool({ connectionString: dbUrl, ssl: { rejectUnauthorized: false } })
+
+  try {
+    // Get rejected video titles grouped by category (last 90 days)
+    const result = await pool.query(`
+      SELECT category, youtube_title
+      FROM rejected_videos
+      WHERE rejected_at > NOW() - INTERVAL '90 days'
+        AND youtube_title IS NOT NULL AND youtube_title != ''
+      ORDER BY rejected_at DESC
+    `)
+
+    // Also load rejected URLs to skip
+    const urlResult = await pool.query(`SELECT video_link FROM rejected_videos`)
+    for (const row of urlResult.rows) {
+      pastUrls.add(row.video_link)
+    }
+
+    // Group titles by category
+    for (const row of result.rows) {
+      if (!rejectionFeedback[row.category]) {
+        rejectionFeedback[row.category] = { titles: [], count: 0 }
+      }
+      rejectionFeedback[row.category].count++
+      if (rejectionFeedback[row.category].titles.length < 20) {
+        rejectionFeedback[row.category].titles.push(row.youtube_title)
+      }
+    }
+
+    await pool.end()
+
+    const totalRejected = Object.values(rejectionFeedback).reduce((sum, f) => sum + f.count, 0)
+    console.log(`Loaded ${totalRejected} rejection patterns from DB (${urlResult.rows.length} rejected URLs)`)
+  } catch (err) {
+    console.error('Error loading rejection feedback:', err.message)
+  }
+}
+
 async function generateQueriesForCategory(category) {
   const config = PROMPTS.categories[category]
   const description = config.description
@@ -76,6 +127,12 @@ async function generateQueriesForCategory(category) {
   const past = pastQueries[category] || []
   const avoidBlock = past.length > 0
     ? `\nPreviously used queries (DO NOT reuse or rephrase these):\n${past.map(q => `- "${q}"`).join('\n')}\n`
+    : ''
+
+  // Add rejection feedback from finalized batches
+  const feedback = rejectionFeedback[category]
+  const rejectionBlock = feedback && feedback.titles.length > 0
+    ? `\nVideos like these were REJECTED by our curator (avoid similar content):\n${feedback.titles.map(t => `- "${t}"`).join('\n')}\n`
     : ''
 
   const message = await anthropic.messages.create({
@@ -87,7 +144,7 @@ async function generateQueriesForCategory(category) {
 
 Category: ${category}
 Today's date: ${DATE}
-${avoidBlock}
+${avoidBlock}${rejectionBlock}
 Rules:
 - Each query should be specific enough to return high-quality, genuine videos (not clickbait)
 - Prefer queries that find real moments over AI-generated or fictional content
@@ -235,6 +292,9 @@ async function grabAllCategories() {
 async function main() {
   console.log(`Daily YouTube URL Grab — ${DATE}`)
   console.log('='.repeat(40))
+
+  // Load rejection feedback from DB before generating queries
+  await loadRejectionFeedback()
 
   const results = await grabAllCategories()
 
