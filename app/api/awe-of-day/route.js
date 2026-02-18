@@ -4,7 +4,23 @@ export async function GET() {
   try {
     const today = new Date().toISOString().split('T')[0]
 
-    // Find the submission with the most 'awed' reactions TODAY
+    // Pick a random approved submission, seeded by day so it's stable for 24h
+    const randomResult = await sql`
+      SELECT id, video_link, category
+      FROM submissions
+      WHERE approved = true
+      ORDER BY MD5(id::text || ${today})
+      LIMIT 1
+    `
+
+    if (randomResult.rows.length === 0) {
+      return Response.json({ moment: null })
+    }
+
+    let picked = { ...randomResult.rows[0], awed_count: 0 }
+    let source = 'random'
+
+    // If someone got awed reactions today, show that instead
     const topAwedResult = await sql`
       SELECT
         s.id,
@@ -23,37 +39,16 @@ export async function GET() {
 
     if (topAwedResult.rows.length > 0) {
       const row = topAwedResult.rows[0]
-      return Response.json({
-        moment: {
-          id: row.id,
-          video_link: row.video_link,
-          category: row.category,
-          awed_count: parseInt(row.awed_count)
-        },
-        source: 'awed'
-      })
+      picked = {
+        id: row.id,
+        video_link: row.video_link,
+        category: row.category,
+        awed_count: parseInt(row.awed_count)
+      }
+      source = 'awed'
     }
 
-    // Fallback: pick a random approved submission, seeded by day so it's stable for 24h
-    const randomResult = await sql`
-      SELECT id, video_link, category
-      FROM submissions
-      WHERE approved = true
-      ORDER BY MD5(id::text || ${today})
-      LIMIT 1
-    `
-
-    if (randomResult.rows.length > 0) {
-      return Response.json({
-        moment: {
-          ...randomResult.rows[0],
-          awed_count: 0
-        },
-        source: 'random'
-      })
-    }
-
-    return Response.json({ moment: null })
+    return Response.json({ moment: picked, source })
 
   } catch (error) {
     console.error('Error fetching awe of day:', error)

@@ -179,19 +179,23 @@ function parseDuration(iso) {
 }
 
 // Fetch actual durations for a list of video IDs, returns { videoId: seconds }
+// Batches in chunks of 50 (YouTube API limit)
 async function getVideoDurations(videoIds) {
   if (videoIds.length === 0) return {}
-  const params = new URLSearchParams({
-    part: 'contentDetails',
-    id: videoIds.join(','),
-    key: YOUTUBE_KEY
-  })
-  const url = `https://www.googleapis.com/youtube/v3/videos?${params}`
-  const data = await fetchJSON(url)
-  if (data.error) throw new Error(`YouTube API error: ${data.error.message}`)
   const durations = {}
-  for (const item of (data.items || [])) {
-    durations[item.id] = parseDuration(item.contentDetails.duration)
+  for (let i = 0; i < videoIds.length; i += 50) {
+    const chunk = videoIds.slice(i, i + 50)
+    const params = new URLSearchParams({
+      part: 'contentDetails',
+      id: chunk.join(','),
+      key: YOUTUBE_KEY
+    })
+    const url = `https://www.googleapis.com/youtube/v3/videos?${params}`
+    const data = await fetchJSON(url)
+    if (data.error) throw new Error(`YouTube API error: ${data.error.message}`)
+    for (const item of (data.items || [])) {
+      durations[item.id] = parseDuration(item.contentDetails.duration)
+    }
   }
   return durations
 }
