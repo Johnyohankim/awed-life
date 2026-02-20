@@ -796,8 +796,8 @@ export default function JourneyPage() {
 
         {/* Collection section */}
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold">My Collection</h2>
-          {stats && <span className="text-xs text-gray-500">{stats.total} cards</span>}
+          <h2 className="text-lg font-bold">Awe Moments</h2>
+          {stats && <span className="text-xs text-gray-500">{stats.total} moments</span>}
         </div>
 
         {cards.length === 0 ? (
