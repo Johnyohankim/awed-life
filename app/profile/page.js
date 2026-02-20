@@ -164,6 +164,7 @@ export default function ProfilePage() {
           <div className="hidden md:flex items-center gap-4">
             {isOwnProfile && (
               <>
+                <button onClick={() => router.push('/explore')} className="text-sm text-gray-600 hover:text-gray-900">Explore</button>
                 <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Cards</button>
                 <button onClick={() => router.push('/journey')} className="text-sm text-gray-600 hover:text-gray-900">My Journey</button>
                 <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>

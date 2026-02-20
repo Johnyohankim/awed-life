@@ -869,6 +869,7 @@ export default function CardsPage() {
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
           <button onClick={() => router.push('/cards')} className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</button>
           <div className="hidden md:flex items-center gap-4">
+            <button onClick={() => router.push('/explore')} className="text-sm text-gray-600 hover:text-gray-900">Explore</button>
             <button onClick={() => router.push('/journey')} className="text-sm text-gray-600 hover:text-gray-900">My Journey</button>
             <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
@@ -949,6 +950,17 @@ export default function CardsPage() {
           </div>
         )}
       </div>
+
+      {/* Floating submit button */}
+      <button
+        onClick={() => router.push('/submit')}
+        className="fixed bottom-24 md:bottom-8 right-4 md:right-8 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all active:scale-90 z-30"
+        aria-label="Submit an awe moment"
+      >
+        <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+      </button>
 
       <BottomNav />
 

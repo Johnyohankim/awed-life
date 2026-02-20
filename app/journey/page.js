@@ -671,6 +671,7 @@ export default function JourneyPage() {
         <div className="container mx-auto flex justify-between items-center max-w-6xl">
           <button onClick={() => router.push('/cards')} className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</button>
           <div className="hidden md:flex items-center gap-4">
+            <button onClick={() => router.push('/explore')} className="text-sm text-gray-600 hover:text-gray-900">Explore</button>
             <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Today's Cards</button>
             <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
