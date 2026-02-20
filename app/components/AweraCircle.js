@@ -119,26 +119,6 @@ export default function AweraCircle({ totalCards = 0, totalWalks = 0, size = 'lg
           `}</style>
         </defs>
 
-        {/* Walk rays — behind the circle */}
-        {showRays && rays.map((ray, i) => (
-          <line
-            key={i}
-            x1={ray.x1}
-            y1={ray.y1}
-            x2={ray.x2}
-            y2={ray.y2}
-            stroke={color.stroke}
-            strokeWidth={ray.width}
-            strokeLinecap="round"
-            filter="url(#ray-glow)"
-            opacity="0.7"
-            style={{
-              transition: 'all 0.8s ease-out',
-              transitionDelay: `${i * 50}ms`,
-            }}
-          />
-        ))}
-
         {/* Breathing rings wrapper */}
         <g className="awera-rings">
           {/* Glow halo */}
@@ -162,6 +142,26 @@ export default function AweraCircle({ totalCards = 0, totalWalks = 0, size = 'lg
             style={{ transition: 'r 1.2s ease-out, stroke 0.8s ease-in-out' }}
           />
         </g>
+
+        {/* Walk rays — on top of the glow halo */}
+        {showRays && rays.map((ray, i) => (
+          <line
+            key={i}
+            x1={ray.x1}
+            y1={ray.y1}
+            x2={ray.x2}
+            y2={ray.y2}
+            stroke={color.stroke}
+            strokeWidth={ray.width}
+            strokeLinecap="round"
+            filter="url(#ray-glow)"
+            opacity="0.7"
+            style={{
+              transition: 'all 0.8s ease-out',
+              transitionDelay: `${i * 50}ms`,
+            }}
+          />
+        ))}
 
         {/* Lotus/meditation silhouette — fixed size, always centered */}
         <g transform="translate(100, 104)" fill="#1e293b" opacity="0.6">
