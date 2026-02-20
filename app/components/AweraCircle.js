@@ -31,9 +31,9 @@ function getStage(totalCards) {
 function generateRays(count, circleRadius) {
   const rays = []
   const gap = 6 // gap between circle edge and ray start
-  // Ray length grows slightly with more walks, from 18 to 30
-  const baseLength = 18
-  const maxLength = 30
+  // Ray length grows slightly with more walks, from 9 to 15
+  const baseLength = 9
+  const maxLength = 15
   const rayLength = Math.min(baseLength + count * 0.8, maxLength)
   const rayWidth = 5
 
