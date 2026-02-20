@@ -30,12 +30,12 @@ function getStage(totalCards) {
 // Generate evenly-spaced rays around the circle
 function generateRays(count, circleRadius) {
   const rays = []
-  const gap = 4 // gap between circle edge and ray start
-  // Ray length grows slightly with more walks, from 12 to 24
-  const baseLength = 12
-  const maxLength = 24
+  const gap = 6 // gap between circle edge and ray start
+  // Ray length grows slightly with more walks, from 18 to 30
+  const baseLength = 18
+  const maxLength = 30
   const rayLength = Math.min(baseLength + count * 0.8, maxLength)
-  const rayWidth = 3.5
+  const rayWidth = 5
 
   for (let i = 0; i < count; i++) {
     const angle = (i / count) * 360 - 90 // start from top
@@ -144,7 +144,7 @@ export default function AweraCircle({ totalCards = 0, totalWalks = 0, size = 'lg
         </g>
 
         {/* Walk rays — on top of the glow halo */}
-        {showRays && rays.map((ray, i) => (
+        {totalWalks > 0 && rays.map((ray, i) => (
           <line
             key={i}
             x1={ray.x1}
@@ -154,12 +154,7 @@ export default function AweraCircle({ totalCards = 0, totalWalks = 0, size = 'lg
             stroke={color.stroke}
             strokeWidth={ray.width}
             strokeLinecap="round"
-            filter="url(#ray-glow)"
-            opacity="0.7"
-            style={{
-              transition: 'all 0.8s ease-out',
-              transitionDelay: `${i * 50}ms`,
-            }}
+            opacity="0.85"
           />
         ))}
 
