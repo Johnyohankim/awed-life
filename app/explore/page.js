@@ -325,10 +325,10 @@ export default function ExplorePage() {
       <div className="container mx-auto px-4 py-6 max-w-5xl">
         <div className="text-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">Explore Awe</h2>
-          <p className="text-gray-600 text-sm md:text-base mb-2">
+          <p className="text-gray-500 text-sm md:text-base mb-2">
             {keptToday
               ? 'You\'ve kept an activity today. Come back tomorrow! ✨'
-              : 'Flip a card to discover an activity, keep one per day'
+              : 'Bring awe into your life. Flip a card and keep the one you feel like trying.'
             }
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full">
