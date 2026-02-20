@@ -8,6 +8,7 @@ import EngagementCalendar from '../components/EngagementCalendar'
 import AweraCircle from '../components/AweraCircle'
 import { CATEGORY_COLORS, CATEGORY_LABELS, MILESTONES } from '../lib/constants'
 import { trackEvent, EVENTS } from '../lib/analytics'
+import { TIME_HORIZONS } from '../lib/exploreActivities'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -552,6 +553,7 @@ export default function JourneyPage() {
   const [newName, setNewName] = useState('')
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [exploreKeeps, setExploreKeeps] = useState([])
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -566,18 +568,21 @@ export default function JourneyPage() {
 
   const loadData = async () => {
     try {
-      const [collectionRes, profileRes] = await Promise.all([
+      const [collectionRes, profileRes, exploreRes] = await Promise.all([
         fetch('/api/collection'),
-        fetch('/api/profile')
+        fetch('/api/profile'),
+        fetch('/api/explore')
       ])
 
       const collectionData = await collectionRes.json()
       const profileData = await profileRes.json()
+      const exploreData = await exploreRes.json()
 
       setCards(collectionData.cards || [])
       setStats(collectionData.stats || null)
       setProfile(profileData)
       setNewName(profileData.name || '')
+      setExploreKeeps(exploreData.keeps || [])
     } catch (error) {
       console.error('Error loading data:', error)
     } finally {
@@ -760,6 +765,42 @@ export default function JourneyPage() {
           <EngagementCalendar cards={cards} />
         )}
 
+
+        {/* Explore Activities */}
+        {exploreKeeps.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold">Explore Activities</h2>
+              <span className="text-xs text-gray-500">{exploreKeeps.length} kept</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {exploreKeeps.map((keep) => {
+                const color = categoryColors[keep.category] || 'from-gray-400 to-gray-600'
+                const label = categoryLabels[keep.category] || keep.category
+                const horizon = TIME_HORIZONS[keep.horizon]
+                const date = new Date(keep.kept_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                return (
+                  <div key={keep.activity_id} className="group relative">
+                    <div className={`relative aspect-video rounded-xl overflow-hidden shadow-md bg-gradient-to-br ${color} flex flex-col items-center justify-center p-4`}>
+                      <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-[10px] font-medium border border-white/20 mb-2">
+                        {horizon?.emoji} {horizon?.label}
+                      </span>
+                      <p className="text-white font-semibold text-xs text-center leading-snug drop-shadow">
+                        {keep.activity_text}
+                      </p>
+                      <div className={`absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-medium text-white bg-gradient-to-r ${color} shadow-sm`}>
+                        {label}
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-xs text-gray-500">{date}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Collection section */}
         <div className="flex items-center justify-between mb-3">
