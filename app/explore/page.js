@@ -123,7 +123,7 @@ function FeaturedExploreCard({ card, onKeep, keptToday, isFlipped, onFlip }) {
         <div className={`w-full h-full bg-gradient-to-br ${card.color} rounded-3xl flex flex-col items-center justify-center p-8`}>
           <p className="text-white text-4xl md:text-5xl mb-3">✅</p>
           <p className="text-white font-bold text-xl md:text-2xl">{card.label}</p>
-          <p className="text-white text-sm mt-2 opacity-90">All activities collected!</p>
+          <p className="text-white text-sm mt-2 opacity-90">All walks collected!</p>
         </div>
       </div>
     )
@@ -177,7 +177,7 @@ function FeaturedExploreCard({ card, onKeep, keptToday, isFlipped, onFlip }) {
                   <p className="text-white text-sm md:text-base opacity-90 italic leading-relaxed mb-4 drop-shadow">
                     {card.subtitle}
                   </p>
-                  <p className="text-white text-sm md:text-base opacity-80 font-medium">Tap to reveal your activity</p>
+                  <p className="text-white text-sm md:text-base opacity-80 font-medium">Tap to reveal your awe walk</p>
                 </>
               )}
             </div>
@@ -327,13 +327,13 @@ export default function ExplorePage() {
           <h2 className="text-2xl md:text-3xl font-bold mb-2">Explore Awe</h2>
           <p className="text-gray-500 text-sm md:text-base mb-2">
             {keptToday
-              ? 'You\'ve kept an activity today. Come back tomorrow! ✨'
+              ? 'You\'ve kept a walk today. Come back tomorrow! ✨'
               : 'Bring awe into your life. Flip a card and keep the one you feel like trying.'
             }
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full">
             <span className="text-blue-700 text-sm font-medium">
-              {totalKept} activit{totalKept === 1 ? 'y' : 'ies'} collected
+              {totalKept} walk{totalKept !== 1 ? 's' : ''} collected
             </span>
           </div>
         </div>

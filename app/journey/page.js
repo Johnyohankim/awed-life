@@ -766,11 +766,11 @@ export default function JourneyPage() {
         )}
 
 
-        {/* Explore Activities */}
+        {/* Awe Walks */}
         {exploreKeeps.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold">Explore Activities</h2>
+              <h2 className="text-lg font-bold">Awe Walks</h2>
               <span className="text-xs text-gray-500">{exploreKeeps.length} kept</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
