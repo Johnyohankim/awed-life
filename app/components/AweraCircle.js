@@ -27,20 +27,52 @@ function getStage(totalCards) {
   return { name: 'Seed', description: 'Your practice begins', colorIndex: 0 }
 }
 
-export default function AweraCircle({ totalCards = 0, size = 'lg' }) {
+// Generate evenly-spaced rays around the circle
+function generateRays(count, circleRadius) {
+  const rays = []
+  const gap = 4 // gap between circle edge and ray start
+  // Ray length grows slightly with more walks, from 12 to 24
+  const baseLength = 12
+  const maxLength = 24
+  const rayLength = Math.min(baseLength + count * 0.8, maxLength)
+  const rayWidth = 3.5
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * 360 - 90 // start from top
+    const rad = (angle * Math.PI) / 180
+    const startR = circleRadius + gap
+    const endR = circleRadius + gap + rayLength
+
+    rays.push({
+      x1: 100 + Math.cos(rad) * startR,
+      y1: 100 + Math.sin(rad) * startR,
+      x2: 100 + Math.cos(rad) * endR,
+      y2: 100 + Math.sin(rad) * endR,
+      width: rayWidth,
+      // Round cap lines for friendly look
+      roundX: 100 + Math.cos(rad) * (endR + 1),
+      roundY: 100 + Math.sin(rad) * (endR + 1),
+    })
+  }
+  return rays
+}
+
+export default function AweraCircle({ totalCards = 0, totalWalks = 0, size = 'lg' }) {
   const targetRadius = getRadius(totalCards)
   const [radius, setRadius] = useState(14) // start small for mount animation
+  const [showRays, setShowRays] = useState(false)
   const stage = getStage(totalCards)
   const color = STAGE_COLORS[stage.colorIndex]
 
   const svgSize = size === 'lg' ? 180 : 120
-  // Scale the viewBox coordinates to match svgSize
-  const scale = svgSize / 200
 
   useEffect(() => {
     const timer = setTimeout(() => setRadius(targetRadius), 80)
-    return () => clearTimeout(timer)
+    const rayTimer = setTimeout(() => setShowRays(true), 600)
+    return () => { clearTimeout(timer); clearTimeout(rayTimer) }
   }, [targetRadius])
+
+  const rays = generateRays(totalWalks, radius)
 
   return (
     <div className="flex flex-col items-center">
@@ -63,6 +95,13 @@ export default function AweraCircle({ totalCards = 0, size = 'lg' }) {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          <filter id="ray-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="1.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
           <style>{`
             @keyframes awera-breathe {
               0%, 100% { transform: scale(1); opacity: 0.9; }
@@ -73,8 +112,32 @@ export default function AweraCircle({ totalCards = 0, size = 'lg' }) {
               transform-origin: center;
               animation: awera-breathe 5s ease-in-out infinite;
             }
+            @keyframes ray-appear {
+              0% { opacity: 0; transform: scaleY(0); }
+              100% { opacity: 1; transform: scaleY(1); }
+            }
           `}</style>
         </defs>
+
+        {/* Walk rays — behind the circle */}
+        {showRays && rays.map((ray, i) => (
+          <line
+            key={i}
+            x1={ray.x1}
+            y1={ray.y1}
+            x2={ray.x2}
+            y2={ray.y2}
+            stroke={color.stroke}
+            strokeWidth={ray.width}
+            strokeLinecap="round"
+            filter="url(#ray-glow)"
+            opacity="0.7"
+            style={{
+              transition: 'all 0.8s ease-out',
+              transitionDelay: `${i * 50}ms`,
+            }}
+          />
+        ))}
 
         {/* Breathing rings wrapper */}
         <g className="awera-rings">

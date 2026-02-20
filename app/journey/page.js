@@ -729,9 +729,9 @@ export default function JourneyPage() {
         {/* Awera — growing circle */}
         {stats && (
           <div className="bg-white rounded-2xl shadow-sm p-4 mb-3 flex flex-col items-center relative">
-            <AweraCircle totalCards={stats.total} size="lg" />
+            <AweraCircle totalCards={stats.total} totalWalks={exploreKeeps.length} size="lg" />
             <p className="absolute bottom-3 right-3 text-[10px] text-gray-300 text-right max-w-[90px] leading-tight italic">
-              More cards, bigger Awera
+              Moments grow Awera, walks add rays
             </p>
           </div>
         )}
@@ -754,7 +754,7 @@ export default function JourneyPage() {
 
         {/* Engagement Calendar */}
         {cards.length > 0 && (
-          <EngagementCalendar cards={cards} />
+          <EngagementCalendar cards={cards} exploreKeeps={exploreKeeps} />
         )}
 
 

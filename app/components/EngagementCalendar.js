@@ -2,13 +2,21 @@
 
 import { useState } from 'react'
 
-export default function EngagementCalendar({ cards, onMilestoneReached }) {
+export default function EngagementCalendar({ cards, exploreKeeps = [], onMilestoneReached }) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
-  // Get dates when user kept cards
-  const engagedDates = new Set(
+  // Get dates when user kept moment cards
+  const momentDates = new Set(
     cards.map(card => new Date(card.kept_at).toDateString())
   )
+
+  // Get dates when user kept walk cards
+  const walkDates = new Set(
+    exploreKeeps.map(keep => new Date(keep.kept_at).toDateString())
+  )
+
+  // Combined engaged dates (either moment or walk)
+  const engagedDates = new Set([...momentDates, ...walkDates])
 
   // Calculate total engaged days
   const totalDays = engagedDates.size
@@ -55,13 +63,17 @@ export default function EngagementCalendar({ cards, onMilestoneReached }) {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day)
       const dateStr = date.toDateString()
-      const isEngaged = engagedDates.has(dateStr)
+      const hasMoment = momentDates.has(dateStr)
+      const hasWalk = walkDates.has(dateStr)
+      const isEngaged = hasMoment || hasWalk
       const isToday = dateStr === new Date().toDateString()
 
       days.push({
         day,
         date,
         isEngaged,
+        hasMoment,
+        hasWalk,
         isToday
       })
     }
@@ -116,23 +128,42 @@ export default function EngagementCalendar({ cards, onMilestoneReached }) {
             return <div key={i} className="aspect-square" />
           }
 
+          const bgClass = day.hasMoment && day.hasWalk
+            ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-sm'
+            : day.hasMoment
+              ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-sm'
+              : day.hasWalk
+                ? 'bg-gradient-to-br from-blue-400 to-cyan-500 text-white shadow-sm'
+                : 'bg-gray-50 text-gray-400'
+
           return (
             <div
               key={i}
-              className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all ${
+              className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all relative ${
                 day.isToday
                   ? 'ring-2 ring-blue-500 ring-offset-1'
                   : ''
-              } ${
-                day.isEngaged
-                  ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-sm'
-                  : 'bg-gray-50 text-gray-400'
-              }`}
+              } ${bgClass}`}
             >
               {day.day}
+              {day.hasMoment && day.hasWalk && (
+                <span className="absolute bottom-0.5 right-0.5 w-2 h-2 bg-cyan-300 rounded-full border border-white" />
+              )}
             </div>
           )
         })}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-4 mt-2 text-[10px] text-gray-400">
+        <div className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded bg-gradient-to-br from-purple-500 to-pink-500 inline-block" />
+          <span>Moment</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded bg-gradient-to-br from-blue-400 to-cyan-500 inline-block" />
+          <span>Walk</span>
+        </div>
       </div>
     </div>
   )
