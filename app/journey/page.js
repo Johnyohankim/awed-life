@@ -739,24 +739,16 @@ export default function JourneyPage() {
         {/* Compact Stats */}
         {stats && (
           <div className="bg-white rounded-2xl shadow-sm p-3 mb-3">
-            <div className="grid grid-cols-2 gap-2 text-center mb-3">
+            <div className="grid grid-cols-2 gap-2 text-center">
               <div className="bg-gray-50 rounded-lg p-2">
                 <p className="text-xl font-bold">{stats.total}</p>
-                <p className="text-xs text-gray-500">Cards</p>
+                <p className="text-xs text-gray-500">Moments</p>
               </div>
-              <div className="bg-purple-50 rounded-lg p-2">
-                <p className="text-xl font-bold">⭐ {profile.submissionPoints || 0}</p>
-                <p className="text-xs text-gray-500">Submissions</p>
+              <div className="bg-blue-50 rounded-lg p-2">
+                <p className="text-xl font-bold">{exploreKeeps.length}</p>
+                <p className="text-xs text-gray-500">Walks</p>
               </div>
             </div>
-
-            <button
-              onClick={() => router.push('/submit')}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg text-xs text-purple-700 font-medium active:bg-purple-100"
-            >
-              <span>⭐</span>
-              Submit a moment — earn extra slots
-            </button>
           </div>
         )}
 
