@@ -16,34 +16,31 @@ export async function GET(request, { params }) {
     const user = userResult.rows[0]
 
     const statsResult = await sql`
-      SELECT 
-        COUNT(*) as total_cards,
-        COUNT(DISTINCT s.category) as categories_count
+      SELECT
+        COUNT(*) as total_cards
       FROM user_cards uc
-      JOIN submissions s ON uc.submission_id = s.id
       WHERE uc.user_id = ${user.id}
     `
 
-    const recentResult = await sql`
-      SELECT 
-        uc.id,
-        s.category,
-        uc.kept_at
-      FROM user_cards uc
-      JOIN submissions s ON uc.submission_id = s.id
-      WHERE uc.user_id = ${user.id}
-      ORDER BY uc.kept_at DESC
-      LIMIT 8
-    `
+    // Count explore walks (table may not exist yet)
+    let totalWalks = 0
+    try {
+      const walksResult = await sql`
+        SELECT COUNT(*) as total_walks
+        FROM explore_keeps
+        WHERE user_id = ${user.id}
+      `
+      totalWalks = parseInt(walksResult.rows[0].total_walks)
+    } catch (e) {
+      // table doesn't exist yet, that's fine
+    }
 
     return Response.json({
       id: user.id,
       name: user.name,
       createdAt: user.created_at,
-      streak: user.streak_count || 0,
       totalCards: parseInt(statsResult.rows[0].total_cards),
-      categoriesCount: parseInt(statsResult.rows[0].categories_count),
-      recentCards: recentResult.rows
+      totalWalks,
     })
 
   } catch (error) {
