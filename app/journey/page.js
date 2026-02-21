@@ -762,7 +762,7 @@ export default function JourneyPage() {
           <button onClick={() => router.push('/cards')} className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</button>
           <div className="hidden md:flex items-center gap-4">
             <button onClick={() => router.push('/explore')} className="text-sm text-gray-600 hover:text-gray-900">Explore</button>
-            <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Today's Cards</button>
+            <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Today</button>
             <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
           <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>
@@ -904,7 +904,7 @@ export default function JourneyPage() {
             <h3 className="text-lg font-bold mb-2">No moments yet</h3>
             <p className="text-gray-600 mb-4 text-sm">Start collecting awe moments today!</p>
             <button onClick={() => router.push('/cards')} className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700 font-medium text-sm">
-              View Today's Cards
+              View Today's Moments
             </button>
           </div>
         ) : (
