@@ -166,10 +166,14 @@ function UsersTab({ onUsersCountChange }) {
                   </div>
 
                   {/* Stats grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
                     <div className="bg-gray-50 rounded-lg p-3 text-center">
                       <p className="text-lg font-bold">{user.total_cards}</p>
-                      <p className="text-xs text-gray-500">Cards</p>
+                      <p className="text-xs text-gray-500">Moments</p>
+                    </div>
+                    <div className="bg-cyan-50 rounded-lg p-3 text-center">
+                      <p className="text-lg font-bold">{user.total_walks || 0}</p>
+                      <p className="text-xs text-gray-500">Walks</p>
                     </div>
                     <div className="bg-orange-50 rounded-lg p-3 text-center">
                       <p className="text-lg font-bold">🔥 {user.streak_count || 0}</p>
@@ -214,7 +218,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [cardCounts, setCardCounts] = useState([])
-  const [activeTab, setActiveTab] = useState('submissions')
+  const [activeTab, setActiveTab] = useState('users')
   const [editingCategory, setEditingCategory] = useState(null)
   const [newCategory, setNewCategory] = useState('')
   const [bulkUrls, setBulkUrls] = useState('')
@@ -236,9 +240,17 @@ export default function AdminPage() {
     try {
       const r = await fetch('/api/admin/check-auth')
       const result = await r.json()
-      if (result.authenticated) { setIsAuthenticated(true); loadSubmissions(); loadCardCounts() }
+      if (result.authenticated) { setIsAuthenticated(true); loadSubmissions(); loadCardCounts(); loadUsersCount() }
       else router.push('/admin/login')
     } catch { router.push('/admin/login') }
+  }
+
+  const loadUsersCount = async () => {
+    try {
+      const r = await fetch('/api/admin/users')
+      const data = await r.json()
+      setUsersCount(data.users?.length || 0)
+    } catch (e) { console.error(e) }
   }
 
   const loadSubmissions = async () => {

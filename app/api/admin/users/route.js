@@ -13,6 +13,7 @@ export async function GET() {
         u.streak_count,
         u.submission_points,
         (SELECT COUNT(*) FROM user_cards WHERE user_id = u.id) as total_cards,
+        (SELECT COUNT(*) FROM explore_keeps WHERE user_id = u.id) as total_walks,
         (SELECT COUNT(*) FROM submissions WHERE submitted_by_user_id = u.id AND approved = true) as approved_submissions,
         (SELECT COUNT(*) FROM reactions WHERE user_id = u.id) as total_reactions
       FROM users u
