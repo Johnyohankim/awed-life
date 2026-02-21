@@ -356,7 +356,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
           journalLength: journalText.length,
         })
       } else {
-        alert(data.error || 'Error keeping card')
+        alert(data.error || 'Error keeping moment')
       }
     } catch (error) {
       alert('Something went wrong')
@@ -414,7 +414,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
               )}
               {alreadyKeptToday ? (
                 <div className="px-6 py-3 rounded-full bg-black/40 backdrop-blur-md text-white text-sm text-center">
-                  You've already kept a card today
+                  You've already kept a moment today
                 </div>
               ) : (
                 <button
@@ -450,12 +450,12 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
           ) : kept ? (
             <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
               <p className="text-2xl mb-1">✨</p>
-              <p className="text-green-800 font-bold text-lg mb-3">Card Kept!</p>
+              <p className="text-green-800 font-bold text-lg mb-3">Moment Kept!</p>
               <div className="flex justify-center">
                 <AweraCircle totalCards={(totalCards || 0) + 1} size="sm" />
               </div>
               <button onClick={onClose} className="mt-3 text-blue-600 hover:text-blue-700 font-medium text-sm">
-                Explore more cards →
+                Explore more moments →
               </button>
             </div>
           ) : (
@@ -513,7 +513,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
                     alreadyKeptToday ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
-                  {keeping ? 'Keeping...' : alreadyKeptToday ? "You've kept a card today" : 'Keep This Card ✨'}
+                  {keeping ? 'Keeping...' : alreadyKeptToday ? "You've kept a moment today" : 'Keep This Moment ✨'}
                 </button>
               )}
             </>
@@ -541,7 +541,7 @@ function FeaturedCard({ card, onClick, isClosed }) {
           <div className="relative z-10 text-center">
             <p className="text-white text-4xl md:text-5xl mb-3">🔒</p>
             <p className="text-white font-bold text-xl md:text-2xl mb-2">{card.label}</p>
-            <p className="text-white text-sm md:text-base opacity-90">Already kept a card from this category today</p>
+            <p className="text-white text-sm md:text-base opacity-90">Already kept a moment from this category today</p>
           </div>
         </div>
       ) : card.isEmpty ? (
@@ -882,14 +882,14 @@ export default function CardsPage() {
           <h2 className="text-2xl md:text-3xl font-bold mb-2">Today's Awe Moments</h2>
           <p className="text-gray-600 text-sm md:text-base mb-2">
             {keptToday >= allowedKeeps 
-              ? `You've kept ${keptToday} card${keptToday > 1 ? 's' : ''} today. Come back tomorrow! ✨` 
+              ? `You've kept ${keptToday} moment${keptToday > 1 ? 's' : ''} today. Come back tomorrow! ✨`
               : "Choose a card to reveal your awe moment"
             }
           </p>
           {keptToday < allowedKeeps && (
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full">
               <span className="text-purple-700 text-sm font-medium">
-                {keptToday} of {allowedKeeps} card{allowedKeeps !== 1 ? 's' : ''} kept today
+                {keptToday} of {allowedKeeps} moment{allowedKeeps !== 1 ? 's' : ''} kept today
               </span>
               {submissionPoints > 0 && (
                 <span className="text-purple-500 text-xs">⭐ {submissionPoints} bonus slots</span>
@@ -934,13 +934,13 @@ export default function CardsPage() {
         {submissionSlots.length > 0 && (
           <div className="mt-8">
             <div className="flex items-center gap-3 mb-4">
-              <h3 className="text-lg font-bold">Your Submissions</h3>
+              <h3 className="text-lg font-bold">Your Moments</h3>
               <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
                 ⭐ {submissionPoints} point{submissionPoints !== 1 ? 's' : ''}
               </span>
             </div>
             <p className="text-gray-500 text-sm mb-4">
-              These moments are permanently in your collection — one per approved submission.
+              These moments are permanently yours — one per approved submission.
             </p>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
               {submissionSlots.map(card => (

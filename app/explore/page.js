@@ -204,7 +204,7 @@ function FeaturedExploreCard({ card, onKeep, keptToday, isFlipped, onFlip }) {
                 </div>
               ) : keptToday ? (
                 <div className="inline-block px-6 py-3 rounded-xl bg-black/20 text-white/60 text-sm">
-                  You've already kept a card today
+                  You've already kept a walk today
                 </div>
               ) : (
                 <button
@@ -212,7 +212,7 @@ function FeaturedExploreCard({ card, onKeep, keptToday, isFlipped, onFlip }) {
                   disabled={keeping}
                   className="px-8 py-3 rounded-xl bg-white/90 text-gray-900 font-semibold text-sm active:scale-95 transition-all hover:bg-white shadow-lg"
                 >
-                  {keeping ? 'Keeping...' : 'Keep This Activity ✨'}
+                  {keeping ? 'Keeping...' : 'Keep This Walk ✨'}
                 </button>
               )}
             </div>
@@ -285,7 +285,7 @@ export default function ExplorePage() {
         setTotalKept(prev => prev + 1)
         return true
       } else {
-        alert(data.error || 'Error keeping card')
+        alert(data.error || 'Error keeping walk')
         return false
       }
     } catch (error) {
@@ -328,7 +328,7 @@ export default function ExplorePage() {
           <p className="text-gray-500 text-sm md:text-base mb-2">
             {keptToday
               ? 'You\'ve kept a walk today. Come back tomorrow! ✨'
-              : 'Bring awe into your life. Flip a card and keep the one you feel like trying.'
+              : 'Bring awe into your life. Flip a card and keep the walk you feel like trying.'
             }
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full">

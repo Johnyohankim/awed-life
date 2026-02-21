@@ -803,7 +803,7 @@ export default function JourneyPage() {
         {cards.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-2xl shadow-sm">
             <p className="text-4xl mb-3">🎴</p>
-            <h3 className="text-lg font-bold mb-2">No cards yet</h3>
+            <h3 className="text-lg font-bold mb-2">No moments yet</h3>
             <p className="text-gray-600 mb-4 text-sm">Start collecting awe moments today!</p>
             <button onClick={() => router.push('/cards')} className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700 font-medium text-sm">
               View Today's Cards

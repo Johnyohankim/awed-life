@@ -153,7 +153,7 @@ export default function SubmitPage() {
               Your awe moment has been submitted for review.
             </p>
             <p className="text-gray-500 text-xs mb-6">
-              Once approved, it will be auto-added to your collection and you'll earn <span className="font-semibold text-purple-600">+1 point</span>. ⭐
+              Once approved, it will be added to your moments and you'll earn <span className="font-semibold text-purple-600">+1 point</span>. ⭐
             </p>
             <div className="flex flex-col gap-2">
               <button
@@ -176,7 +176,7 @@ export default function SubmitPage() {
             <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3 flex items-center gap-2">
               <span className="text-xl">⭐</span>
               <p className="text-purple-700 text-xs">
-                <span className="font-semibold">Earn +1 point</span> for each approved submission
+                <span className="font-semibold">Earn +1 point</span> for each approved moment
               </p>
             </div>
 
