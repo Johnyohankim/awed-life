@@ -539,6 +539,90 @@ function ThumbnailCard({ card, onClick }) {
   )
 }
 
+function WalkDetailModal({ walk, onClose }) {
+  const color = categoryColors[walk.category] || 'from-gray-400 to-gray-600'
+  const label = categoryLabels[walk.category] || walk.category
+  const horizon = TIME_HORIZONS[walk.horizon]
+  const date = walk.completed_at
+    ? new Date(walk.completed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    : new Date(walk.kept_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+
+  useEffect(() => {
+    window.history.pushState({ modal: true }, '')
+    const handlePopState = () => onClose()
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [onClose])
+
+  return (
+    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+      {/* Walk header */}
+      <div className={`bg-gradient-to-br ${color} p-6 relative`}>
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="relative z-10">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <span className="inline-block px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-xs font-medium border border-white/20 mb-2">
+                {horizon?.emoji} {horizon?.label}
+              </span>
+              <p className="text-white font-bold text-lg leading-snug drop-shadow">
+                {walk.activity_text}
+              </p>
+              <p className="text-white/70 text-xs mt-1">{label} · {date}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all flex-shrink-0 ml-3"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Reflection content */}
+      <div className="flex-1 bg-white overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-center mb-4">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+          <h4 className="font-bold text-lg mb-3">Your Reflection</h4>
+          {walk.reflection_text ? (
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              {walk.reflection_text.includes('Guide: ') || walk.reflection_text.includes('You: ')
+                ? walk.reflection_text.split('\n\n').map((chunk, i) => {
+                    if (chunk.startsWith('Guide: ')) {
+                      return (
+                        <div key={i}>
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Guide</p>
+                          <p className="text-gray-500 text-sm italic leading-relaxed">{chunk.slice(7)}</p>
+                        </div>
+                      )
+                    }
+                    if (chunk.startsWith('You: ')) {
+                      return (
+                        <div key={i}>
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">You</p>
+                          <p className="text-gray-800 text-sm leading-relaxed">{chunk.slice(5)}</p>
+                        </div>
+                      )
+                    }
+                    return <p key={i} className="text-gray-700 text-sm leading-relaxed">{chunk}</p>
+                  })
+                : <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{walk.reflection_text}</p>
+              }
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-xl p-4 text-center">
+              <p className="text-gray-400 text-sm">No reflection recorded</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function JourneyPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -554,6 +638,7 @@ export default function JourneyPage() {
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
   const [exploreKeeps, setExploreKeeps] = useState([])
+  const [selectedWalk, setSelectedWalk] = useState(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -763,17 +848,20 @@ export default function JourneyPage() {
           <div className="mb-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-bold">Awe Walks</h2>
-              <span className="text-xs text-gray-500">{exploreKeeps.length} kept</span>
+              <span className="text-xs text-gray-500">{exploreKeeps.length} completed</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {exploreKeeps.map((keep) => {
                 const color = categoryColors[keep.category] || 'from-gray-400 to-gray-600'
                 const label = categoryLabels[keep.category] || keep.category
                 const horizon = TIME_HORIZONS[keep.horizon]
-                const date = new Date(keep.kept_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                const date = new Date(keep.completed_at || keep.kept_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                 return (
                   <div key={keep.activity_id} className="group relative">
-                    <div className={`relative aspect-video rounded-xl overflow-hidden shadow-md bg-gradient-to-br ${color} flex flex-col items-center justify-center p-4`}>
+                    <div
+                      onClick={() => setSelectedWalk(keep)}
+                      className={`relative aspect-video rounded-xl overflow-hidden shadow-md hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer bg-gradient-to-br ${color} flex flex-col items-center justify-center p-4`}
+                    >
                       <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-[10px] font-medium border border-white/20 mb-2">
                         {horizon?.emoji} {horizon?.label}
                       </span>
@@ -783,8 +871,18 @@ export default function JourneyPage() {
                       <div className={`absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-medium text-white bg-gradient-to-r ${color} shadow-sm`}>
                         {label}
                       </div>
+                      {keep.reflection_text && (
+                        <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-white/20 text-white text-[10px]">
+                          💬
+                        </div>
+                      )}
                     </div>
                     <div className="mt-2">
+                      {keep.reflection_text && (
+                        <p className="text-sm text-gray-700 line-clamp-1 mb-0.5">
+                          {keep.reflection_text.replace(/^(Guide|You): /gm, '').substring(0, 50)}...
+                        </p>
+                      )}
                       <p className="text-xs text-gray-500">{date}</p>
                     </div>
                   </div>
@@ -862,6 +960,13 @@ export default function JourneyPage() {
           onClose={() => setSelectedCard(null)}
           onDelete={handleDeleteCard}
           onUpdate={handleUpdateCard}
+        />
+      )}
+
+      {selectedWalk && (
+        <WalkDetailModal
+          walk={selectedWalk}
+          onClose={() => setSelectedWalk(null)}
         />
       )}
 
