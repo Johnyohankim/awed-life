@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import AchievementToast from '../components/AchievementToast'
 import AweraCircle from '../components/AweraCircle'
+import WelcomeChat from '../components/WelcomeChat'
 import { CATEGORY_COLORS, CATEGORY_LABELS, CATEGORY_QUOTES, MILESTONES } from '../lib/constants'
 import { trackEvent, EVENTS } from '../lib/analytics'
 
@@ -166,69 +167,6 @@ function ReactionBar({ submissionId, onReact }) {
         <span className="font-medium text-sm text-white">Nawed</span>
         {nawedCount > 0 && <span className="text-sm text-white/80">{nawedCount}</span>}
       </button>
-    </div>
-  )
-}
-
-function OnboardingModal({ onClose }) {
-  const [step, setStep] = useState(0)
-
-  const steps = [
-    {
-      emoji: '🎴',
-      title: 'Choose a Card',
-      description: 'Each day, 8 new awe moments await. Tap any card to reveal your moment of wonder.'
-    },
-    {
-      emoji: '✨',
-      title: 'Watch & Feel',
-      description: 'Let the moment wash over you. Notice how it makes you feel. There\'s no rush.'
-    },
-    {
-      emoji: '📝',
-      title: 'Reflect & Keep',
-      description: 'Write just 10 characters about how it made you feel. That\'s it. Your moment is saved forever.'
-    }
-  ]
-
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose} style={{ overscrollBehavior: 'contain' }}>
-      <div className="bg-surface-card rounded-3xl max-w-md w-full p-8" onClick={e => e.stopPropagation()}>
-        <div className="text-center mb-8">
-          <p className="text-6xl mb-4">{steps[step].emoji}</p>
-          <h2 className="font-bold text-2xl mb-2 text-text-primary">{steps[step].title}</h2>
-          <p className="text-text-secondary leading-relaxed">{steps[step].description}</p>
-        </div>
-
-        <div className="flex justify-center gap-2 mb-6">
-          {steps.map((_, i) => (
-            <div key={i} className={`h-2 rounded-full transition-[width,background-color] ${i === step ? 'w-8 bg-primary' : 'w-2 bg-border'}`} />
-          ))}
-        </div>
-
-        <div className="flex gap-3">
-          {step > 0 && (
-            <button
-              onClick={() => setStep(step - 1)}
-              className="flex-1 py-3 px-6 border-2 border-border text-text-secondary rounded-xl font-medium hover:bg-surface"
-            >
-              Back
-            </button>
-          )}
-          <button
-            onClick={() => step < steps.length - 1 ? setStep(step + 1) : onClose()}
-            className="flex-1 py-3 px-6 bg-primary text-white rounded-xl font-medium hover:bg-primary-hover"
-          >
-            {step < steps.length - 1 ? 'Next' : 'Start Collecting ✨'}
-          </button>
-        </div>
-
-        {step === 0 && (
-          <button onClick={onClose} className="w-full mt-3 text-sm text-text-muted hover:text-text-secondary">
-            Skip tutorial
-          </button>
-        )}
-      </div>
     </div>
   )
 }
@@ -728,7 +666,7 @@ export default function CardsPage() {
   const [keptToday, setKeptToday] = useState(0)
   const [allowedKeeps, setAllowedKeeps] = useState(1)
   const [keptCategories, setKeptCategories] = useState([])
-  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(false)
   const [achievementCount, setAchievementCount] = useState(null)
   const [totalCards, setTotalCards] = useState(0)
   const [aweOfDay, setAweOfDay] = useState(null)
@@ -741,10 +679,7 @@ export default function CardsPage() {
   useEffect(() => {
     if (status === 'authenticated') {
       loadCards()
-      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
-      if (!hasSeenOnboarding) {
-        setShowOnboarding(true)
-      }
+      setShowWelcome(true)
 
       // Track page view
       trackEvent(EVENTS.PAGE_VIEWED, { page: 'cards' })
@@ -834,9 +769,8 @@ export default function CardsPage() {
     })
   }
 
-  const handleCloseOnboarding = () => {
-    setShowOnboarding(false)
-    localStorage.setItem('hasSeenOnboarding', 'true')
+  const handleWelcomeComplete = () => {
+    setShowWelcome(false)
   }
 
   if (status === 'loading' || loading) {
@@ -966,7 +900,12 @@ export default function CardsPage() {
         />
       )}
 
-      {showOnboarding && <OnboardingModal onClose={handleCloseOnboarding} />}
+      {showWelcome && (
+        <WelcomeChat
+          userName={session?.user?.name}
+          onComplete={handleWelcomeComplete}
+        />
+      )}
 
       {achievementCount && (
         <AchievementToast 

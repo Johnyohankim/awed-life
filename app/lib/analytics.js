@@ -56,6 +56,10 @@ export const EVENTS = {
   JOURNAL_STARTED: 'journal_started',
   JOURNAL_COMPLETED: 'journal_completed',
 
+  // Welcome
+  WELCOME_COMPLETED: 'welcome_completed',
+  WELCOME_SKIPPED: 'welcome_skipped',
+
   // Navigation
   PAGE_VIEWED: 'page_viewed',
   COLLECTION_VIEWED: 'collection_viewed',
