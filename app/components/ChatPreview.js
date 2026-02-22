@@ -95,7 +95,7 @@ export default function ChatPreview() {
           </div>
         ))}
 
-        <div
+        <button
           onClick={openPreview}
           className={`flex-shrink-0 w-36 md:w-44 aspect-[3/4] cursor-pointer transform transition-transform hover:scale-105 rounded-2xl shadow-xl bg-gradient-to-br ${PREVIEW_CARD.color} flex items-center justify-center p-4 ring-2 ring-white/60`}
         >
@@ -103,7 +103,7 @@ export default function ChatPreview() {
             <p className="text-white font-bold text-base drop-shadow-lg mb-1">{PREVIEW_CARD.label}</p>
             <p className="text-white text-xs opacity-80">Tap to experience</p>
           </div>
-        </div>
+        </button>
 
         {OTHER_CARDS.slice(3).map(card => (
           <div
@@ -116,7 +116,7 @@ export default function ChatPreview() {
       </div>
 
       {open && (
-        <div className="fixed inset-0 bg-black z-50 flex flex-col">
+        <div className="fixed inset-0 bg-black z-50 flex flex-col" style={{ overscrollBehavior: 'contain' }}>
           <div className="flex-1 relative">
             <iframe
               className="w-full h-full"
@@ -130,6 +130,7 @@ export default function ChatPreview() {
               <h3 className="text-white font-bold text-lg drop-shadow">{PREVIEW_CARD.label}</h3>
               <button
                 onClick={() => setOpen(false)}
+                aria-label="Close video"
                 className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20"
               >
                 ×
@@ -187,17 +188,20 @@ export default function ChatPreview() {
                   {!chatDone && (
                     <div className="flex gap-2 flex-shrink-0">
                       <input
+                        name="reflection"
+                        autoComplete="off"
                         value={chatInput}
                         onChange={e => setChatInput(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                        placeholder="Type your reflection..."
+                        placeholder="Type your reflection\u2026"
                         className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={chatLoading}
                       />
                       <button
                         onClick={handleSend}
                         disabled={!chatInput.trim() || chatLoading}
-                        className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-all"
+                        aria-label="Send message"
+                        className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
                       >
                         →
                       </button>

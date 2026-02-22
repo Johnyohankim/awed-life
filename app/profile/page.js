@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 
@@ -135,7 +136,7 @@ export default function ProfilePage() {
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading profile...</p>
+        <p className="text-gray-600">Loading profile\u2026</p>
       </div>
     )
   }
@@ -158,15 +159,15 @@ export default function ProfilePage() {
       {/* Nav */}
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-3xl">
-          <button onClick={() => router.push(isOwnProfile ? '/cards' : '/')} className="text-2xl font-bold">
+          <Link href={isOwnProfile ? '/cards' : '/'} className="text-2xl font-bold">
             Awed
-          </button>
+          </Link>
           <div className="hidden md:flex items-center gap-4">
             {isOwnProfile && (
               <>
-                <button onClick={() => router.push('/explore')} className="text-sm text-gray-600 hover:text-gray-900">Explore</button>
-                <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Cards</button>
-                <button onClick={() => router.push('/journey')} className="text-sm text-gray-600 hover:text-gray-900">My Journey</button>
+                <Link href="/explore" className="text-sm text-gray-600 hover:text-gray-900">Explore</Link>
+                <Link href="/cards" className="text-sm text-gray-600 hover:text-gray-900">Cards</Link>
+                <Link href="/journey" className="text-sm text-gray-600 hover:text-gray-900">My Journey</Link>
                 <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
               </>
             )}

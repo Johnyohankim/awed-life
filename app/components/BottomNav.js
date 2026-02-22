@@ -1,9 +1,9 @@
 'use client'
 
-import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export default function BottomNav() {
-  const router = useRouter()
   const pathname = usePathname()
 
   const tabs = [
@@ -43,9 +43,9 @@ export default function BottomNav() {
         {tabs.map((tab) => {
           const active = pathname === tab.path
           return (
-            <button
+            <Link
               key={tab.path}
-              onClick={() => router.push(tab.path)}
+              href={tab.path}
               className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl transition-colors ${
                 active ? 'text-blue-600' : 'text-gray-400'
               }`}
@@ -54,7 +54,7 @@ export default function BottomNav() {
               <span className={`text-xs font-medium ${active ? 'text-blue-600' : 'text-gray-400'}`}>
                 {tab.label}
               </span>
-            </button>
+            </Link>
           )
         })}
       </div>

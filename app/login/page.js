@@ -71,6 +71,9 @@ function LoginForm() {
             </label>
             <input
               type="email"
+              name="email"
+              autoComplete="email"
+              spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -84,6 +87,8 @@ function LoginForm() {
             </label>
             <input
               type="password"
+              name="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -96,7 +101,7 @@ function LoginForm() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-medium"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in\u2026' : 'Sign In'}
           </button>
         </form>
 
@@ -146,7 +151,7 @@ export default function Login() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">Loading\u2026</p>
       </div>
     }>
       <LoginForm />

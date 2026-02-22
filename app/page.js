@@ -29,7 +29,7 @@ export default function Home() {
           </div>
         </div>
         <div className="absolute bottom-8 left-0 right-0 flex justify-center animate-bounce">
-          <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white opacity-60">
+          <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white opacity-60" aria-hidden="true">
             <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
           </svg>
         </div>

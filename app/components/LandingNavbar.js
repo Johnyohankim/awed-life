@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function LandingNavbar() {
   const { data: session } = useSession()
-  const router = useRouter()
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -16,7 +15,7 @@ export default function LandingNavbar() {
   }, [])
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,box-shadow] duration-300 ${
       scrolled ? 'bg-white shadow-sm' : 'bg-transparent'
     }`}>
       <div className="container mx-auto px-4 py-4 flex justify-between items-center max-w-6xl">
@@ -35,28 +34,28 @@ export default function LandingNavbar() {
             Blog
           </a>
           {session ? (
-            <button
-              onClick={() => router.push('/cards')}
+            <Link
+              href="/cards"
               className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
             >
               Open App →
-            </button>
+            </Link>
           ) : (
             <>
-              <button
-                onClick={() => router.push('/login')}
+              <Link
+                href="/login"
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white hover:bg-opacity-20'
                 }`}
               >
                 Sign In
-              </button>
-              <button
-                onClick={() => router.push('/signup')}
+              </Link>
+              <Link
+                href="/signup"
                 className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
               >
                 Get Started
-              </button>
+              </Link>
             </>
           )}
         </div>

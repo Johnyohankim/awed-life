@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import EngagementCalendar from '../components/EngagementCalendar'
@@ -289,7 +290,7 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col" style={{ overscrollBehavior: 'contain' }}>
       <div className="flex-1 relative">
         {isInstagram ? (
           <a
@@ -351,6 +352,7 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
                 disabled={deleting}
                 className="w-10 h-10 rounded-full bg-red-500/20 backdrop-blur-md border border-red-400/30 flex items-center justify-center text-white hover:bg-red-500/30 transition-all disabled:opacity-50"
                 title="Delete card"
+                aria-label="Delete card"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white">
                   <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
@@ -358,7 +360,8 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
               </button>
               <button
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all"
+                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-colors"
+                aria-label="Close"
               >
                 ×
               </button>
@@ -483,9 +486,10 @@ function ThumbnailCard({ card, onClick }) {
 
   return (
     <div className="group relative">
-      <div
+      <button
+        type="button"
         onClick={() => onClick(card)}
-        className="relative aspect-video rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-200 active:scale-[0.98]"
+        className="relative w-full text-left aspect-video rounded-xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-[transform,box-shadow] duration-200 active:scale-[0.98]"
       >
         {thumbnail ? (
           <>
@@ -527,11 +531,11 @@ function ThumbnailCard({ card, onClick }) {
             ⏳ Pending
           </div>
         )}
-      </div>
+      </button>
 
       <div className="mt-2">
         <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-          {card.journal_text?.substring(0, 60)}{card.journal_text?.length > 60 ? '...' : ''}
+          {card.journal_text?.substring(0, 60)}{card.journal_text?.length > 60 ? '\u2026' : ''}
         </p>
         <p className="text-xs text-gray-500">{date}</p>
       </div>
@@ -555,7 +559,7 @@ function WalkDetailModal({ walk, onClose }) {
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col" style={{ overscrollBehavior: 'contain' }}>
       {/* Walk header */}
       <div className={`bg-gradient-to-br ${color} p-6 relative`}>
         <div className="absolute inset-0 bg-black/20" />
@@ -572,7 +576,8 @@ function WalkDetailModal({ walk, onClose }) {
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all flex-shrink-0 ml-3"
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-colors flex-shrink-0 ml-3"
+              aria-label="Close"
             >
               ×
             </button>
@@ -746,7 +751,7 @@ export default function JourneyPage() {
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading your journey...</p>
+        <p className="text-gray-600">Loading your journey\u2026</p>
       </div>
     )
   }
@@ -759,10 +764,10 @@ export default function JourneyPage() {
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-6xl">
-          <button onClick={() => router.push('/cards')} className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</button>
+          <Link href="/cards" className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</Link>
           <div className="hidden md:flex items-center gap-4">
-            <button onClick={() => router.push('/explore')} className="text-sm text-gray-600 hover:text-gray-900">Explore</button>
-            <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Today</button>
+            <Link href="/explore" className="text-sm text-gray-600 hover:text-gray-900">Explore</Link>
+            <Link href="/cards" className="text-sm text-gray-600 hover:text-gray-900">Today</Link>
             <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
           <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>
@@ -858,9 +863,10 @@ export default function JourneyPage() {
                 const date = new Date(keep.completed_at || keep.kept_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                 return (
                   <div key={keep.activity_id} className="group relative">
-                    <div
+                    <button
+                      type="button"
                       onClick={() => setSelectedWalk(keep)}
-                      className={`relative aspect-video rounded-xl overflow-hidden shadow-md hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer bg-gradient-to-br ${color} flex flex-col items-center justify-center p-4`}
+                      className={`relative w-full text-left aspect-video rounded-xl overflow-hidden shadow-md hover:shadow-xl active:scale-[0.98] transition-[transform,box-shadow] cursor-pointer bg-gradient-to-br ${color} flex flex-col items-center justify-center p-4`}
                     >
                       <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-[10px] font-medium border border-white/20 mb-2">
                         {horizon?.emoji} {horizon?.label}
@@ -876,11 +882,11 @@ export default function JourneyPage() {
                           💬
                         </div>
                       )}
-                    </div>
+                    </button>
                     <div className="mt-2">
                       {keep.reflection_text && (
                         <p className="text-sm text-gray-700 line-clamp-1 mb-0.5">
-                          {keep.reflection_text.replace(/^(Guide|You): /gm, '').substring(0, 50)}...
+                          {keep.reflection_text.replace(/^(Guide|You): /gm, '').substring(0, 50)}\u2026
                         </p>
                       )}
                       <p className="text-xs text-gray-500">{date}</p>

@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import BottomNav from '../components/BottomNav'
 import AchievementToast from '../components/AchievementToast'
@@ -142,9 +143,9 @@ function ReactionBar({ submissionId, onReact }) {
     <div className="flex items-center justify-center gap-3">
       <button
         onClick={() => handleReaction('awed')}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-all active:scale-95 ${
-          reaction === 'awed' 
-            ? 'border-yellow-400 bg-yellow-400/30' 
+        className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-[background-color,border-color,transform] active:scale-95 ${
+          reaction === 'awed'
+            ? 'border-yellow-400 bg-yellow-400/30'
             : 'border-white/30 bg-white/10 hover:bg-white/20'
         }`}
       >
@@ -154,9 +155,9 @@ function ReactionBar({ submissionId, onReact }) {
       </button>
       <button
         onClick={() => handleReaction('nawed')}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-all active:scale-95 ${
-          reaction === 'nawed' 
-            ? 'border-blue-400 bg-blue-400/30' 
+        className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-[background-color,border-color,transform] active:scale-95 ${
+          reaction === 'nawed'
+            ? 'border-blue-400 bg-blue-400/30'
             : 'border-white/30 bg-white/10 hover:bg-white/20'
         }`}
       >
@@ -190,7 +191,7 @@ function OnboardingModal({ onClose }) {
   ]
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" onClick={onClose} style={{ overscrollBehavior: 'contain' }}>
       <div className="bg-white rounded-3xl max-w-md w-full p-8" onClick={e => e.stopPropagation()}>
         <div className="text-center mb-8">
           <p className="text-6xl mb-4">{steps[step].emoji}</p>
@@ -200,7 +201,7 @@ function OnboardingModal({ onClose }) {
 
         <div className="flex justify-center gap-2 mb-6">
           {steps.map((_, i) => (
-            <div key={i} className={`h-2 rounded-full transition-all ${i === step ? 'w-8 bg-blue-600' : 'w-2 bg-gray-200'}`} />
+            <div key={i} className={`h-2 rounded-full transition-[width,background-color] ${i === step ? 'w-8 bg-blue-600' : 'w-2 bg-gray-200'}`} />
           ))}
         </div>
 
@@ -366,7 +367,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
   }
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col" style={{ overscrollBehavior: 'contain' }}>
       {/* Video container - fullscreen */}
       <div className="flex-1 relative">
         {videoId ? (
@@ -395,7 +396,8 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all"
+              aria-label="Close video"
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-colors"
             >
               ×
             </button>
@@ -419,7 +421,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
               ) : (
                 <button
                   onClick={() => setShowJournal(true)}
-                  className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-md text-gray-900 font-medium text-sm hover:bg-white transition-all active:scale-95 shadow-lg"
+                  className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-md text-gray-900 font-medium text-sm hover:bg-white transition-[background-color,transform] active:scale-95 shadow-lg"
                 >
                   💬 Talk it through
                 </button>
@@ -431,7 +433,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
 
       {/* Bottom sheet - chat journal */}
       <div
-        className={`bg-white rounded-t-3xl transition-all duration-300 ${
+        className={`bg-white rounded-t-3xl transition-[max-height] duration-300 ${
           showJournal || kept || isSubmissionCard ? 'max-h-[65vh]' : 'max-h-0'
         } overflow-hidden flex flex-col`}
       >
@@ -487,17 +489,20 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
               {!chatDone && (
                 <div className="flex gap-2 flex-shrink-0">
                   <input
+                    name="reflection"
+                    autoComplete="off"
                     value={chatInput}
                     onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                    placeholder="Type your reflection..."
+                    placeholder="Type your reflection\u2026"
                     className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     disabled={chatLoading}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={!chatInput.trim() || chatLoading}
-                    className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-all"
+                    aria-label="Send message"
+                    className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
                   >
                     →
                   </button>
@@ -509,11 +514,11 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
                 <button
                   onClick={handleKeep}
                   disabled={keeping || alreadyKeptToday}
-                  className={`mt-2 w-full py-3 rounded-xl font-medium text-sm transition-all active:scale-95 flex-shrink-0 ${
+                  className={`mt-2 w-full py-3 rounded-xl font-medium text-sm transition-[background-color,transform] active:scale-95 flex-shrink-0 ${
                     alreadyKeptToday ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
                   }`}
                 >
-                  {keeping ? 'Keeping...' : alreadyKeptToday ? "You've kept a moment today" : 'Keep This Moment ✨'}
+                  {keeping ? 'Keeping\u2026' : alreadyKeptToday ? "You've kept a moment today" : 'Keep This Moment ✨'}
                 </button>
               )}
             </>
@@ -529,9 +534,10 @@ function FeaturedCard({ card, onClick, isClosed }) {
   const quote = categoryQuotes[card.category] || ''
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => !card.isEmpty && !isClosed && onClick(card)}
-      className={`relative aspect-[16/9] md:aspect-[21/9] rounded-3xl shadow-xl transition-all duration-200 ${
+      className={`relative w-full text-left aspect-[16/9] md:aspect-[21/9] rounded-3xl shadow-xl transition-[transform,box-shadow,opacity] duration-200 ${
         card.isEmpty || isClosed ? 'cursor-default opacity-60' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-[0.98] hover:scale-[1.02] hover:shadow-2xl'
       }`}
     >
@@ -581,7 +587,7 @@ function FeaturedCard({ card, onClick, isClosed }) {
           </div>
         </div>
       )}
-    </div>
+    </button>
   )
 }
 
@@ -589,9 +595,10 @@ function SmallCard({ card, onClick, isClosed }) {
   const router = useRouter()
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => !card.isEmpty && !isClosed && onClick(card)}
-      className={`relative aspect-[3/4] rounded-xl shadow-md transition-all duration-200 ${
+      className={`relative w-full text-left aspect-[3/4] rounded-xl shadow-md transition-[transform,box-shadow,opacity] duration-200 ${
         card.isEmpty || isClosed ? 'cursor-default opacity-60' : card.isKept ? 'cursor-pointer opacity-75' : 'cursor-pointer active:scale-95 hover:scale-105 hover:shadow-lg'
       }`}
     >
@@ -630,7 +637,7 @@ function SmallCard({ card, onClick, isClosed }) {
           <p className="text-white text-xs mt-1 opacity-75">Tap</p>
         </div>
       )}
-    </div>
+    </button>
   )
 }
 
@@ -659,16 +666,17 @@ function SubmissionCard({ card, onClick }) {
   const label = categoryLabels[card.category] || card.category
 
   return (
-    <div
+    <button
+      type="button"
       onClick={() => onClick(card)}
-      className="relative aspect-[3/4] rounded-xl shadow-md cursor-pointer active:scale-95 hover:scale-105 hover:shadow-lg transition-all duration-200"
+      className="relative w-full text-left aspect-[3/4] rounded-xl shadow-md cursor-pointer active:scale-95 hover:scale-105 hover:shadow-lg transition-[transform,box-shadow] duration-200"
     >
       <div className={`w-full h-full bg-gradient-to-br ${color} rounded-xl flex flex-col items-center justify-center p-3`}>
         <p className="text-white text-lg mb-1">⭐</p>
         <p className="text-white font-bold text-center text-xs drop-shadow leading-tight">{label}</p>
         <p className="text-white text-xs mt-1 opacity-75">Yours</p>
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -689,9 +697,10 @@ function TodaysAwedMoment({ moment, source, onClick }) {
           </span>
         )}
       </div>
-      <div
+      <button
+        type="button"
         onClick={onClick}
-        className="relative rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-xl active:scale-[0.98] transition-all duration-200"
+        className="relative w-full text-left rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-xl active:scale-[0.98] transition-[transform,box-shadow] duration-200"
       >
         {thumbnail ? (
           <img src={thumbnail} alt={label} className="w-full aspect-video object-cover" />
@@ -721,7 +730,7 @@ function TodaysAwedMoment({ moment, source, onClick }) {
             Featured
           </div>
         )}
-      </div>
+      </button>
     </div>
   )
 }
@@ -852,7 +861,7 @@ export default function CardsPage() {
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading your cards...</p>
+        <p className="text-gray-600">Loading your cards\u2026</p>
       </div>
     )
   }
@@ -867,10 +876,10 @@ export default function CardsPage() {
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
-          <button onClick={() => router.push('/cards')} className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</button>
+          <Link href="/cards" className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</Link>
           <div className="hidden md:flex items-center gap-4">
-            <button onClick={() => router.push('/explore')} className="text-sm text-gray-600 hover:text-gray-900">Explore</button>
-            <button onClick={() => router.push('/journey')} className="text-sm text-gray-600 hover:text-gray-900">My Journey</button>
+            <Link href="/explore" className="text-sm text-gray-600 hover:text-gray-900">Explore</Link>
+            <Link href="/journey" className="text-sm text-gray-600 hover:text-gray-900">My Journey</Link>
             <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
           <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>
@@ -954,7 +963,7 @@ export default function CardsPage() {
       {/* Floating submit button */}
       <button
         onClick={() => router.push('/submit')}
-        className="fixed bottom-24 md:bottom-8 right-4 md:right-8 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all active:scale-90 z-30"
+        className="fixed bottom-24 md:bottom-8 right-4 md:right-8 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-[background-color,box-shadow,transform] active:scale-90 z-30"
         aria-label="Submit an awe moment"
       >
         <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white">

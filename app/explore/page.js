@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import BottomNav from '../components/BottomNav'
 import { TIME_HORIZONS } from '../lib/exploreActivities'
@@ -107,7 +108,7 @@ function ExploreCard({ card, onSave, keptToday, queueFull, isFlipped, onFlip }) 
                   disabled={saving}
                   className="w-full py-2 rounded-lg bg-white/90 text-gray-900 text-xs font-semibold active:scale-95 transition-all hover:bg-white"
                 >
-                  {saving ? '...' : 'Save ✨'}
+                  {saving ? '\u2026' : 'Save ✨'}
                 </button>
               )}
             </div>
@@ -221,7 +222,7 @@ function FeaturedExploreCard({ card, onSave, keptToday, queueFull, isFlipped, on
                   disabled={saving}
                   className="px-8 py-3 rounded-xl bg-white/90 text-gray-900 font-semibold text-sm active:scale-95 transition-all hover:bg-white shadow-lg"
                 >
-                  {saving ? 'Saving...' : 'Save This Walk ✨'}
+                  {saving ? 'Saving\u2026' : 'Save This Walk ✨'}
                 </button>
               )}
             </div>
@@ -344,7 +345,7 @@ function WalkReflectionModal({ walk, onClose, onComplete }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col" style={{ overscrollBehavior: 'contain' }}>
       {/* Walk info header */}
       <div className={`bg-gradient-to-br ${color} p-6 relative`}>
         <div className="absolute inset-0 bg-black/20" />
@@ -361,7 +362,8 @@ function WalkReflectionModal({ walk, onClose, onComplete }) {
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-all flex-shrink-0 ml-3"
+              aria-label="Close"
+              className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white text-2xl hover:bg-white/20 transition-colors flex-shrink-0 ml-3"
             >
               ×
             </button>
@@ -401,14 +403,17 @@ function WalkReflectionModal({ walk, onClose, onComplete }) {
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                placeholder="How did the walk go?"
+                name="reflection"
+                autoComplete="off"
+                placeholder="How did the walk go\u2026"
                 className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={chatLoading}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!chatInput.trim() || chatLoading}
-                className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-all"
+                aria-label="Send message"
+                className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
               >
                 →
               </button>
@@ -527,7 +532,7 @@ export default function ExplorePage() {
   if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">Loading\u2026</p>
       </div>
     )
   }
@@ -542,11 +547,11 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <nav className="bg-white border-b border-gray-100 px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
-          <button onClick={() => router.push('/cards')} className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</button>
+          <Link href="/cards" className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</Link>
           <div className="hidden md:flex items-center gap-4">
-            <button onClick={() => router.push('/explore')} className="text-sm text-blue-600 font-medium">Explore</button>
-            <button onClick={() => router.push('/cards')} className="text-sm text-gray-600 hover:text-gray-900">Today</button>
-            <button onClick={() => router.push('/journey')} className="text-sm text-gray-600 hover:text-gray-900">My Journey</button>
+            <Link href="/explore" className="text-sm text-blue-600 font-medium">Explore</Link>
+            <Link href="/cards" className="text-sm text-gray-600 hover:text-gray-900">Today</Link>
+            <Link href="/journey" className="text-sm text-gray-600 hover:text-gray-900">My Journey</Link>
             <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
           </div>
           <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>

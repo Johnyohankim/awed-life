@@ -119,7 +119,7 @@ export default function SubmitPage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">Loading\u2026</p>
       </div>
     )
   }
@@ -189,9 +189,11 @@ export default function SubmitPage() {
                 </label>
                 <input
                   type="url"
+                  name="videoLink"
+                  autoComplete="off"
                   value={videoLink}
                   onChange={e => setVideoLink(e.target.value)}
-                  placeholder="YouTube or Instagram link"
+                  placeholder="YouTube or Instagram link\u2026"
                   required
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm mb-3"
                 />
@@ -206,7 +208,7 @@ export default function SubmitPage() {
                 <textarea
                   value={journal}
                   onChange={e => setJournal(e.target.value)}
-                  placeholder="What made this moment special? How did it make you feel?"
+                  placeholder="What made this moment special? How did it make you feel\u2026"
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                 />
@@ -251,9 +253,11 @@ export default function SubmitPage() {
                 </label>
                 <input
                   type="text"
+                  name="hashtags"
+                  autoComplete="off"
                   value={hashtags}
                   onChange={e => setHashtags(e.target.value)}
-                  placeholder="#inspiring #beautiful #nature"
+                  placeholder="#inspiring #beautiful #nature\u2026"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 />
               </div>
@@ -273,7 +277,7 @@ export default function SubmitPage() {
                     : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
                 }`}
               >
-                {submitting ? 'Submitting...' : 'Submit ✨'}
+                {submitting ? 'Submitting\u2026' : 'Submit ✨'}
               </button>
 
             </form>

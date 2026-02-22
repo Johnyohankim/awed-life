@@ -116,6 +116,11 @@ export default function AweraCircle({ totalCards = 0, totalWalks = 0, size = 'lg
               0% { opacity: 0; transform: scaleY(0); }
               100% { opacity: 1; transform: scaleY(1); }
             }
+            @media (prefers-reduced-motion: reduce) {
+              .awera-rings {
+                animation: none;
+              }
+            }
           `}</style>
         </defs>
 
