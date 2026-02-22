@@ -67,7 +67,7 @@ function AvatarCircle({ name, size = 'lg' }) {
   const initial = name ? name.charAt(0).toUpperCase() : '?'
   const sizeClasses = size === 'lg' ? 'w-16 h-16 text-2xl' : 'w-12 h-12 text-lg'
   return (
-    <div className={`${sizeClasses} rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0`}>
+    <div className={`${sizeClasses} rounded-full bg-gradient-to-br from-[#C97B84] to-[#957BA8] flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0`}>
       {initial}
     </div>
   )
@@ -86,12 +86,12 @@ const MILESTONE_DATA = [
 function MilestoneBadge({ milestone, earned }) {
   return (
     <div className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all ${
-      earned ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200 bg-gray-50 opacity-40'
+      earned ? 'border-accent bg-accent-light' : 'border-border bg-surface opacity-40'
     }`}>
       <span className="text-2xl mb-1">{milestone.emoji}</span>
       <span className="text-xs font-bold text-center leading-tight">{milestone.label}</span>
-      <span className="text-xs text-gray-500 mt-1">{milestone.count}</span>
-      {earned && <span className="text-xs text-yellow-600 font-medium mt-1">✓</span>}
+      <span className="text-xs text-text-muted mt-1">{milestone.count}</span>
+      {earned && <span className="text-xs text-accent font-medium mt-1">✓</span>}
     </div>
   )
 }
@@ -172,7 +172,7 @@ function ReactionBar({ submissionId }) {
         onClick={() => handleReaction('nawed')}
         className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-all active:scale-95 ${
           reaction === 'nawed'
-            ? 'border-blue-400 bg-blue-400/30'
+            ? 'border-[#6B8FA8] bg-[#6B8FA8]/30'
             : 'border-white/30 bg-white/10 hover:bg-white/20'
         }`}
       >
@@ -297,7 +297,7 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
             href={card.video_link}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex flex-col items-center justify-center hover:opacity-90 transition-opacity"
+            className="w-full h-full bg-gradient-to-br from-[#C4A8D4] via-[#E8B4B8] to-[#E8C4A0] flex flex-col items-center justify-center hover:opacity-90 transition-opacity"
           >
             <svg viewBox="0 0 24 24" className="w-16 h-16 fill-white mb-4">
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
@@ -328,7 +328,7 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
             allowFullScreen
           />
         ) : (
-          <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+          <div className="w-full h-full bg-surface-dark flex items-center justify-center">
             <p className="text-white">Video unavailable</p>
           </div>
         )}
@@ -376,15 +376,15 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
         )}
       </div>
 
-      <div className="bg-white rounded-t-3xl max-h-[40vh] overflow-y-auto">
+      <div className="bg-surface-card rounded-t-3xl max-h-[40vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-center mb-4">
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            <div className="w-10 h-1 bg-border-strong rounded-full" />
           </div>
           {card.journal_question && (
             <div className="mb-4">
-              <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Question</h4>
-              <p className="text-gray-700 font-medium italic">{card.journal_question}</p>
+              <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">Question</h4>
+              <p className="text-text-primary font-medium italic">{card.journal_question}</p>
             </div>
           )}
           <div className="flex justify-between items-center mb-3">
@@ -392,7 +392,7 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
             {!isEditing && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-primary hover:text-primary-hover font-medium"
               >
                 Edit
               </button>
@@ -404,20 +404,20 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
                 if (seg.type === 'guide') {
                   return (
                     <div key={i}>
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Guide</p>
-                      <p className="text-gray-500 text-sm italic leading-relaxed">{seg.text}</p>
+                      <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-0.5">Guide</p>
+                      <p className="text-text-muted text-sm italic leading-relaxed">{seg.text}</p>
                     </div>
                   )
                 }
                 return (
                   <div key={i}>
                     {seg.type === 'user' && (
-                      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">You</p>
+                      <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-0.5">You</p>
                     )}
                     <textarea
                       value={seg.text}
                       onChange={e => setEditSegments(prev => prev.map((s, j) => j === i ? { ...s, text: e.target.value } : s))}
-                      className="w-full bg-gray-50 rounded-xl p-3 text-gray-800 text-sm leading-relaxed border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      className="w-full bg-surface rounded-xl p-3 text-text-primary text-sm leading-relaxed border border-border focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                       rows={seg.type === 'user' ? 2 : 4}
                       placeholder={card.is_submission ? "Add your reflection..." : "Write your reflection (min 10 characters)"}
                     />
@@ -428,45 +428,45 @@ function FullscreenCardModal({ card, onClose, onDelete, onUpdate }) {
                 <button
                   onClick={handleSaveJournal}
                   disabled={saving}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? 'Saving...' : 'Save'}
                 </button>
                 <button
                   onClick={handleCancelEdit}
                   disabled={saving}
-                  className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50"
+                  className="flex-1 bg-primary-light text-text-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-light disabled:opacity-50"
                 >
                   Cancel
                 </button>
               </div>
               {!card.is_submission && (
-                <p className="text-xs text-gray-500">Minimum 10 characters required</p>
+                <p className="text-xs text-text-muted">Minimum 10 characters required</p>
               )}
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+            <div className="bg-surface rounded-xl p-4 space-y-3">
               {currentJournalText?.includes('Guide: ') || currentJournalText?.includes('You: ')
                 ? currentJournalText.split('\n\n').map((chunk, i) => {
                     if (chunk.startsWith('Guide: ')) {
                       return (
                         <div key={i}>
-                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Guide</p>
-                          <p className="text-gray-500 text-sm italic leading-relaxed">{chunk.slice(7)}</p>
+                          <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-0.5">Guide</p>
+                          <p className="text-text-muted text-sm italic leading-relaxed">{chunk.slice(7)}</p>
                         </div>
                       )
                     }
                     if (chunk.startsWith('You: ')) {
                       return (
                         <div key={i}>
-                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">You</p>
-                          <p className="text-gray-800 text-sm leading-relaxed">{chunk.slice(5)}</p>
+                          <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-0.5">You</p>
+                          <p className="text-text-primary text-sm leading-relaxed">{chunk.slice(5)}</p>
                         </div>
                       )
                     }
-                    return <p key={i} className="text-gray-700 text-sm leading-relaxed">{chunk}</p>
+                    return <p key={i} className="text-text-primary text-sm leading-relaxed">{chunk}</p>
                   })
-                : <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{currentJournalText}</p>
+                : <p className="text-text-primary leading-relaxed whitespace-pre-wrap">{currentJournalText}</p>
               }
             </div>
           )}
@@ -497,7 +497,7 @@ function ThumbnailCard({ card, onClick }) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </>
         ) : isInstagram ? (
-          <div className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-br from-[#C4A8D4] via-[#E8B4B8] to-[#E8C4A0] flex items-center justify-center">
             <svg viewBox="0 0 24 24" className="w-12 h-12 fill-white">
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
             </svg>
@@ -516,7 +516,7 @@ function ThumbnailCard({ card, onClick }) {
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
-            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-gray-900 ml-1">
+            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-text-primary ml-1">
               <path d="M8 5v14l11-7z"/>
             </svg>
           </div>
@@ -534,10 +534,10 @@ function ThumbnailCard({ card, onClick }) {
       </button>
 
       <div className="mt-2">
-        <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+        <p className="text-sm font-medium text-text-primary line-clamp-2 mb-1">
           {card.journal_text?.substring(0, 60)}{card.journal_text?.length > 60 ? '\u2026' : ''}
         </p>
-        <p className="text-xs text-gray-500">{date}</p>
+        <p className="text-xs text-text-muted">{date}</p>
       </div>
     </div>
   )
@@ -586,40 +586,40 @@ function WalkDetailModal({ walk, onClose }) {
       </div>
 
       {/* Reflection content */}
-      <div className="flex-1 bg-white overflow-y-auto">
+      <div className="flex-1 bg-surface-card overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-center mb-4">
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            <div className="w-10 h-1 bg-border-strong rounded-full" />
           </div>
           <h4 className="font-bold text-lg mb-3">Your Reflection</h4>
           {walk.reflection_text ? (
-            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+            <div className="bg-surface rounded-xl p-4 space-y-3">
               {walk.reflection_text.includes('Guide: ') || walk.reflection_text.includes('You: ')
                 ? walk.reflection_text.split('\n\n').map((chunk, i) => {
                     if (chunk.startsWith('Guide: ')) {
                       return (
                         <div key={i}>
-                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">Guide</p>
-                          <p className="text-gray-500 text-sm italic leading-relaxed">{chunk.slice(7)}</p>
+                          <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-0.5">Guide</p>
+                          <p className="text-text-muted text-sm italic leading-relaxed">{chunk.slice(7)}</p>
                         </div>
                       )
                     }
                     if (chunk.startsWith('You: ')) {
                       return (
                         <div key={i}>
-                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5">You</p>
-                          <p className="text-gray-800 text-sm leading-relaxed">{chunk.slice(5)}</p>
+                          <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-0.5">You</p>
+                          <p className="text-text-primary text-sm leading-relaxed">{chunk.slice(5)}</p>
                         </div>
                       )
                     }
-                    return <p key={i} className="text-gray-700 text-sm leading-relaxed">{chunk}</p>
+                    return <p key={i} className="text-text-primary text-sm leading-relaxed">{chunk}</p>
                   })
-                : <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{walk.reflection_text}</p>
+                : <p className="text-text-primary leading-relaxed whitespace-pre-wrap">{walk.reflection_text}</p>
               }
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-xl p-4 text-center">
-              <p className="text-gray-400 text-sm">No reflection recorded</p>
+            <div className="bg-surface rounded-xl p-4 text-center">
+              <p className="text-text-muted text-sm">No reflection recorded</p>
             </div>
           )}
         </div>
@@ -750,8 +750,8 @@ export default function JourneyPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading your journey\u2026</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <p className="text-text-secondary">Loading your journey\u2026</p>
       </div>
     )
   }
@@ -761,22 +761,22 @@ export default function JourneyPage() {
   const milestoneProgress = stats ? getMilestoneProgress(stats.total) : null
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <nav className="bg-white border-b border-gray-100 px-4 py-4">
+    <div className="min-h-screen bg-surface pb-20 md:pb-0">
+      <nav className="bg-surface-card border-b border-border px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-6xl">
-          <Link href="/cards" className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</Link>
+          <Link href="/cards" className="font-bold text-2xl hover:text-text-primary transition-colors">Awed</Link>
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/explore" className="text-sm text-gray-600 hover:text-gray-900">Explore</Link>
-            <Link href="/cards" className="text-sm text-gray-600 hover:text-gray-900">Today</Link>
-            <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
+            <Link href="/explore" className="text-sm text-text-secondary hover:text-text-primary">Explore</Link>
+            <Link href="/cards" className="text-sm text-text-secondary hover:text-text-primary">Today</Link>
+            <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-text-secondary hover:text-text-primary">Sign Out</button>
           </div>
-          <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-text-muted">Sign Out</button>
         </div>
       </nav>
 
       <div className="container mx-auto px-3 py-3 max-w-6xl">
         {/* Compact Profile + Milestones */}
-        <div className="bg-white rounded-2xl shadow-sm p-4 mb-3">
+        <div className="bg-surface-card rounded-2xl shadow-sm p-4 mb-3">
           <div className="flex items-start gap-3 mb-3">
             <AvatarCircle name={profile.name} size="lg" />
             <div className="flex-1 min-w-0">
@@ -786,30 +786,30 @@ export default function JourneyPage() {
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="text-lg font-bold border-b-2 border-blue-500 outline-none w-full"
+                    className="text-lg font-bold border-b-2 border-primary outline-none w-full"
                     autoFocus
                     onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
                   />
-                  <button onClick={handleSaveName} disabled={saving} className="text-xs text-blue-600 font-medium whitespace-nowrap">
+                  <button onClick={handleSaveName} disabled={saving} className="text-xs text-primary font-medium whitespace-nowrap">
                     {saving ? 'Saving...' : 'Save'}
                   </button>
-                  <button onClick={() => { setEditing(false); setNewName(profile.name) }} className="text-xs text-gray-400">
+                  <button onClick={() => { setEditing(false); setNewName(profile.name) }} className="text-xs text-text-muted">
                     Cancel
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-bold truncate">{profile.name || 'Anonymous'}</h1>
-                  <button onClick={() => setEditing(true)} className="text-gray-400 text-xs flex-shrink-0">✏️</button>
+                  <button onClick={() => setEditing(true)} className="text-text-muted text-xs flex-shrink-0">✏️</button>
                 </div>
               )}
-              <p className="text-gray-500 text-xs">
+              <p className="text-text-muted text-xs">
                 Since {new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
               </p>
             </div>
             <button
               onClick={handleCopyLink}
-              className="flex-shrink-0 px-3 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-600 active:bg-gray-50"
+              className="flex-shrink-0 px-3 py-1.5 border border-border rounded-lg text-xs text-text-secondary active:bg-surface"
             >
               {copied ? '✓' : '🔗'}
             </button>
@@ -818,9 +818,9 @@ export default function JourneyPage() {
 
         {/* Awera — growing circle */}
         {stats && (
-          <div className="bg-white rounded-2xl shadow-sm p-4 mb-3 flex flex-col items-center relative">
+          <div className="bg-surface-card rounded-2xl shadow-sm p-4 mb-3 flex flex-col items-center relative">
             <AweraCircle totalCards={stats.total} totalWalks={exploreKeeps.length} size="lg" />
-            <p className="absolute bottom-3 right-3 text-[10px] text-gray-300 text-right max-w-[90px] leading-tight italic">
+            <p className="absolute bottom-3 right-3 text-[10px] text-text-muted text-right max-w-[90px] leading-tight italic">
               Moments grow Awera, walks add rays
             </p>
           </div>
@@ -828,15 +828,15 @@ export default function JourneyPage() {
 
         {/* Compact Stats */}
         {stats && (
-          <div className="bg-white rounded-2xl shadow-sm p-3 mb-3">
+          <div className="bg-surface-card rounded-2xl shadow-sm p-3 mb-3">
             <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="bg-gray-50 rounded-lg p-2">
+              <div className="bg-surface rounded-lg p-2">
                 <p className="text-xl font-bold">{stats.total}</p>
-                <p className="text-xs text-gray-500">Moments</p>
+                <p className="text-xs text-text-muted">Moments</p>
               </div>
-              <div className="bg-blue-50 rounded-lg p-2">
+              <div className="bg-primary-light rounded-lg p-2">
                 <p className="text-xl font-bold">{exploreKeeps.length}</p>
-                <p className="text-xs text-gray-500">Walks</p>
+                <p className="text-xs text-text-muted">Walks</p>
               </div>
             </div>
           </div>
@@ -852,8 +852,8 @@ export default function JourneyPage() {
         {exploreKeeps.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold">Awe Walks</h2>
-              <span className="text-xs text-gray-500">{exploreKeeps.length} completed</span>
+              <h2 className="font-bold text-lg">Awe Walks</h2>
+              <span className="text-xs text-text-muted">{exploreKeeps.length} completed</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {exploreKeeps.map((keep) => {
@@ -885,11 +885,11 @@ export default function JourneyPage() {
                     </button>
                     <div className="mt-2">
                       {keep.reflection_text && (
-                        <p className="text-sm text-gray-700 line-clamp-1 mb-0.5">
+                        <p className="text-sm text-text-primary line-clamp-1 mb-0.5">
                           {keep.reflection_text.replace(/^(Guide|You): /gm, '').substring(0, 50)}\u2026
                         </p>
                       )}
-                      <p className="text-xs text-gray-500">{date}</p>
+                      <p className="text-xs text-text-muted">{date}</p>
                     </div>
                   </div>
                 )
@@ -900,16 +900,16 @@ export default function JourneyPage() {
 
         {/* Collection section */}
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold">Awe Moments</h2>
-          {stats && <span className="text-xs text-gray-500">{stats.total} moments</span>}
+          <h2 className="font-bold text-lg">Awe Moments</h2>
+          {stats && <span className="text-xs text-text-muted">{stats.total} moments</span>}
         </div>
 
         {cards.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl shadow-sm">
+          <div className="text-center py-12 bg-surface-card rounded-2xl shadow-sm">
             <p className="text-4xl mb-3">🎴</p>
             <h3 className="text-lg font-bold mb-2">No moments yet</h3>
-            <p className="text-gray-600 mb-4 text-sm">Start collecting awe moments today!</p>
-            <button onClick={() => router.push('/cards')} className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700 font-medium text-sm">
+            <p className="text-text-secondary mb-4 text-sm">Start collecting awe moments today!</p>
+            <button onClick={() => router.push('/cards')} className="bg-primary text-white px-5 py-2 rounded-xl hover:bg-primary-hover font-medium text-sm">
               View Today's Moments
             </button>
           </div>
@@ -919,7 +919,7 @@ export default function JourneyPage() {
               <select
                 value={sortMode}
                 onChange={(e) => setSortMode(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 rounded-lg border border-border bg-surface-card text-xs font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
@@ -931,7 +931,7 @@ export default function JourneyPage() {
               <button
                 onClick={() => setActiveFilter('all')}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                  activeFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 shadow-sm'
+                  activeFilter === 'all' ? 'bg-primary text-white' : 'bg-surface-card text-text-secondary shadow-sm'
                 }`}
               >
                 All ({cards.length})
@@ -941,7 +941,7 @@ export default function JourneyPage() {
                   key={cat}
                   onClick={() => setActiveFilter(cat)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
-                    activeFilter === cat ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 shadow-sm'
+                    activeFilter === cat ? 'bg-primary text-white' : 'bg-surface-card text-text-secondary shadow-sm'
                   }`}
                 >
                   {categoryLabels[cat] || cat}

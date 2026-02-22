@@ -6,15 +6,15 @@ function getRadius(totalCards) {
   return Math.min(15 + Math.sqrt(totalCards) * 4.5, 85)
 }
 
-// Stage colors drawn from the 8 category palettes
+// Stage colors — warm organic tones matching the new palette
 const STAGE_COLORS = [
-  { stroke: '#94a3b8', glow: '#cbd5e1' },  // Seed      — slate    (life & death)
-  { stroke: '#4ade80', glow: '#86efac' },  // Sprout    — green    (nature)
-  { stroke: '#fb7185', glow: '#fda4af' },  // Root      — rose     (moral beauty)
-  { stroke: '#c084fc', glow: '#d8b4fe' },  // Branch    — purple   (music)
-  { stroke: '#38bdf8', glow: '#7dd3fc' },  // Canopy    — cyan     (visual design)
-  { stroke: '#fbbf24', glow: '#fde68a' },  // Forest    — amber    (spirituality)
-  { stroke: '#818cf8', glow: '#a5b4fc' },  // Sky       — indigo   (epiphany)
+  { stroke: '#8A8278', glow: '#B8B0A8' },  // Seed      — warm stone
+  { stroke: '#6B9B6B', glow: '#A8C5A0' },  // Sprout    — sage
+  { stroke: '#C97B84', glow: '#E8B4B8' },  // Root      — dusty rose
+  { stroke: '#957BA8', glow: '#C4A8D4' },  // Branch    — lavender
+  { stroke: '#6B8FA8', glow: '#A0B8C8' },  // Canopy    — dusty blue
+  { stroke: '#B8A86B', glow: '#D4C8A0' },  // Forest    — golden wheat
+  { stroke: '#6B78A8', glow: '#A0A8C8' },  // Sky       — twilight blue
 ]
 
 function getStage(totalCards) {
@@ -164,7 +164,7 @@ export default function AweraCircle({ totalCards = 0, totalWalks = 0, size = 'lg
         ))}
 
         {/* Lotus/meditation silhouette — fixed size, always centered */}
-        <g transform="translate(100, 104)" fill="#1e293b" opacity="0.6">
+        <g transform="translate(100, 104)" fill="#292524" opacity="0.5">
           {/* Head */}
           <circle cx="0" cy="-26" r="8" />
           {/* Body / torso cone */}
@@ -179,10 +179,10 @@ export default function AweraCircle({ totalCards = 0, totalWalks = 0, size = 'lg
       </svg>
 
       <div className="text-center mt-1">
-        <p className={`font-semibold text-gray-700 ${size === 'lg' ? 'text-sm' : 'text-xs'}`}>
+        <p className={`font-semibold text-text-primary ${size === 'lg' ? 'text-sm' : 'text-xs'}`}>
           {stage.name}
         </p>
-        <p className={`text-gray-400 mt-0.5 ${size === 'lg' ? 'text-xs' : 'text-[10px]'}`}>
+        <p className={`text-text-muted mt-0.5 ${size === 'lg' ? 'text-xs' : 'text-[10px]'}`}>
           {stage.description}
         </p>
       </div>

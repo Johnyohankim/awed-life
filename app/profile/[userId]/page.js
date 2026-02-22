@@ -7,7 +7,7 @@ import AweraCircle from '../../components/AweraCircle'
 function AvatarCircle({ name }) {
   const initial = name ? name.charAt(0).toUpperCase() : '?'
   return (
-    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg flex-shrink-0">
+    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#C97B84] to-[#957BA8] flex items-center justify-center text-white font-bold text-2xl shadow-lg flex-shrink-0">
       {initial}
     </div>
   )
@@ -43,18 +43,18 @@ export default function PublicProfilePage({ params }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading profile...</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <p className="text-text-secondary">Loading profile...</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button onClick={() => router.push('/')} className="text-blue-600">Go home</button>
+          <p className="text-text-secondary mb-4">{error}</p>
+          <button onClick={() => router.push('/')} className="text-primary">Go home</button>
         </div>
       </div>
     )
@@ -63,15 +63,15 @@ export default function PublicProfilePage({ params }) {
   if (!profile) return null
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
-      <nav className="bg-white border-b border-gray-100 px-4 py-4">
+    <div className="min-h-screen bg-surface pb-8">
+      <nav className="bg-surface-card border-b border-border px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-3xl">
           <button onClick={() => router.push('/')} className="text-2xl font-bold">
             Awed
           </button>
           <button
             onClick={() => router.push('/login')}
-            className="text-sm text-blue-600 font-medium"
+            className="text-sm text-primary font-medium"
           >
             Sign in
           </button>
@@ -80,10 +80,10 @@ export default function PublicProfilePage({ params }) {
 
       <div className="container mx-auto px-4 py-6 max-w-3xl">
         {/* Profile + Awera */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 flex flex-col items-center">
+        <div className="bg-surface-card rounded-2xl shadow-sm p-6 mb-4 flex flex-col items-center">
           <AvatarCircle name={profile.name} />
           <h1 className="text-xl font-bold mt-3">{profile.name || 'Anonymous'}</h1>
-          <p className="text-gray-400 text-xs mt-1">
+          <p className="text-text-muted text-xs mt-1">
             Since {new Date(profile.createdAt).toLocaleDateString('en-US', {
               year: 'numeric', month: 'long'
             })}
@@ -95,25 +95,25 @@ export default function PublicProfilePage({ params }) {
         </div>
 
         {/* Stats */}
-        <div className="bg-white rounded-2xl shadow-sm p-3 mb-4">
+        <div className="bg-surface-card rounded-2xl shadow-sm p-3 mb-4">
           <div className="grid grid-cols-2 gap-2 text-center">
-            <div className="bg-gray-50 rounded-lg p-3">
+            <div className="bg-surface rounded-lg p-3">
               <p className="text-2xl font-bold">{profile.totalCards}</p>
-              <p className="text-xs text-gray-500">Moments</p>
+              <p className="text-xs text-text-muted">Moments</p>
             </div>
-            <div className="bg-blue-50 rounded-lg p-3">
+            <div className="bg-primary-light rounded-lg p-3">
               <p className="text-2xl font-bold">{profile.totalWalks}</p>
-              <p className="text-xs text-gray-500">Walks</p>
+              <p className="text-xs text-text-muted">Walks</p>
             </div>
           </div>
         </div>
 
         {/* CTA */}
         <div className="mt-6 text-center">
-          <p className="text-gray-500 text-sm mb-3">Start your own awe journey</p>
+          <p className="text-text-muted text-sm mb-3">Start your own awe journey</p>
           <button
             onClick={() => router.push('/signup')}
-            className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 font-medium"
+            className="bg-primary text-white px-8 py-3 rounded-xl hover:bg-primary-hover font-medium"
           >
             Join Awed for free
           </button>

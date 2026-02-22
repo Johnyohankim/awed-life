@@ -20,21 +20,21 @@ function AuthErrorContent() {
   const message = errorMessages[error] || errorMessages['Default']
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-sm max-w-md w-full text-center">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">Sign In Error</h1>
-        <p className="text-gray-700 mb-6">{message}</p>
-        <p className="text-sm text-gray-500 mb-6">Error code: {error}</p>
+    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
+      <div className="bg-surface-card p-8 rounded-2xl shadow-sm max-w-md w-full text-center border border-border">
+        <h1 className="font-bold text-2xl text-error mb-4">Sign In Error</h1>
+        <p className="text-text-secondary mb-6">{message}</p>
+        <p className="text-sm text-text-muted mb-6">Error code: {error}</p>
         <div className="space-y-3">
           <Link
             href="/login"
-            className="block w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+            className="block w-full bg-primary text-white py-2.5 px-4 rounded-xl hover:bg-primary-hover transition-colors font-medium"
           >
             Back to Login
           </Link>
           <Link
             href="/signup"
-            className="block w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50"
+            className="block w-full bg-surface-card border border-border text-text-primary py-2.5 px-4 rounded-xl hover:bg-primary-light transition-colors font-medium"
           >
             Create Account
           </Link>
@@ -47,8 +47,8 @@ function AuthErrorContent() {
 export default function AuthError() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <p className="text-text-secondary">Loading...</p>
       </div>
     }>
       <AuthErrorContent />

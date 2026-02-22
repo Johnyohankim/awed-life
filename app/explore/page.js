@@ -106,7 +106,7 @@ function ExploreCard({ card, onSave, keptToday, queueFull, isFlipped, onFlip }) 
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full py-2 rounded-lg bg-white/90 text-gray-900 text-xs font-semibold active:scale-95 transition-all hover:bg-white"
+                  className="w-full py-2 rounded-lg bg-white/90 text-text-primary text-xs font-semibold active:scale-95 transition-all hover:bg-white"
                 >
                   {saving ? '\u2026' : 'Save ✨'}
                 </button>
@@ -220,7 +220,7 @@ function FeaturedExploreCard({ card, onSave, keptToday, queueFull, isFlipped, on
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-8 py-3 rounded-xl bg-white/90 text-gray-900 font-semibold text-sm active:scale-95 transition-all hover:bg-white shadow-lg"
+                  className="px-8 py-3 rounded-xl bg-white/90 text-text-primary font-semibold text-sm active:scale-95 transition-all hover:bg-white shadow-lg"
                 >
                   {saving ? 'Saving\u2026' : 'Save This Walk ✨'}
                 </button>
@@ -372,14 +372,14 @@ function WalkReflectionModal({ walk, onClose, onComplete }) {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 bg-white flex flex-col overflow-hidden">
+      <div className="flex-1 bg-surface-card flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {chatMessages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-br-sm'
-                  : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                  ? 'bg-primary text-white rounded-br-sm'
+                  : 'bg-primary-light text-text-primary rounded-bl-sm'
               }`}>
                 {msg.content}
               </div>
@@ -387,8 +387,8 @@ function WalkReflectionModal({ walk, onClose, onComplete }) {
           ))}
           {chatLoading && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 px-4 py-2 rounded-2xl rounded-bl-sm">
-                <span className="text-gray-400 text-sm tracking-widest">···</span>
+              <div className="bg-primary-light px-4 py-2 rounded-2xl rounded-bl-sm">
+                <span className="text-text-muted text-sm tracking-widest">···</span>
               </div>
             </div>
           )}
@@ -396,7 +396,7 @@ function WalkReflectionModal({ walk, onClose, onComplete }) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-border">
           {!chatDone && (
             <div className="flex gap-2 mb-2">
               <input
@@ -406,14 +406,14 @@ function WalkReflectionModal({ walk, onClose, onComplete }) {
                 name="reflection"
                 autoComplete="off"
                 placeholder="How did the walk go\u2026"
-                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
                 disabled={chatLoading}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!chatInput.trim() || chatLoading}
                 aria-label="Send message"
-                className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
+                className="px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
               >
                 →
               </button>
@@ -424,7 +424,7 @@ function WalkReflectionModal({ walk, onClose, onComplete }) {
             <button
               onClick={handleComplete}
               disabled={completing}
-              className="w-full py-3 rounded-xl font-medium text-sm transition-all active:scale-95 bg-blue-600 text-white hover:bg-blue-700"
+              className="w-full py-3 rounded-xl font-medium text-sm transition-all active:scale-95 bg-primary text-white hover:bg-primary-hover"
             >
               {completing ? 'Completing...' : 'Complete Walk ✨'}
             </button>
@@ -531,8 +531,8 @@ export default function ExplorePage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading\u2026</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <p className="text-text-secondary">Loading\u2026</p>
       </div>
     )
   }
@@ -544,35 +544,35 @@ export default function ExplorePage() {
   const queueFull = plannedCount >= 3
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <nav className="bg-white border-b border-gray-100 px-4 py-4">
+    <div className="min-h-screen bg-surface pb-20 md:pb-0">
+      <nav className="bg-surface-card border-b border-border px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
-          <Link href="/cards" className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</Link>
+          <Link href="/cards" className="font-bold text-2xl hover:text-text-primary transition-colors">Awed</Link>
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/explore" className="text-sm text-blue-600 font-medium">Explore</Link>
-            <Link href="/cards" className="text-sm text-gray-600 hover:text-gray-900">Today</Link>
-            <Link href="/journey" className="text-sm text-gray-600 hover:text-gray-900">My Journey</Link>
-            <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
+            <Link href="/explore" className="text-sm text-primary font-medium">Explore</Link>
+            <Link href="/cards" className="text-sm text-text-secondary hover:text-text-primary">Today</Link>
+            <Link href="/journey" className="text-sm text-text-secondary hover:text-text-primary">My Journey</Link>
+            <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-text-secondary hover:text-text-primary">Sign Out</button>
           </div>
-          <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-text-muted">Sign Out</button>
         </div>
       </nav>
 
       <div className="container mx-auto px-4 py-6 max-w-5xl">
         <div className="text-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold mb-2">Explore Awe</h2>
-          <p className="text-gray-500 text-sm md:text-base mb-2">
+          <p className="text-text-muted text-sm md:text-base mb-2">
             {keptToday
               ? 'You\'ve saved a walk today. Come back tomorrow for more! ✨'
               : 'Flip a card. Save a walk you want to try. Reflect after you\'ve done it.'
             }
           </p>
-          <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 rounded-full">
-            <span className="text-blue-700 text-sm font-medium">
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary-light rounded-full">
+            <span className="text-primary text-sm font-medium">
               {totalKept} completed
             </span>
             {plannedCount > 0 && (
-              <span className="text-cyan-700 text-sm font-medium">
+              <span className="text-primary text-sm font-medium">
                 {plannedCount} planned
               </span>
             )}
@@ -584,7 +584,7 @@ export default function ExplorePage() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-bold">My Walks</h3>
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{plannedCount}/3</span>
+              <span className="text-xs text-text-muted bg-primary-light px-2 py-1 rounded-full">{plannedCount}/3</span>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
               {plannedWalks.map(walk => {
@@ -613,7 +613,7 @@ export default function ExplorePage() {
                         <p className="text-white/60 text-xs mb-3">{walkLabel}</p>
                         <button
                           onClick={() => setReflectingWalk(walk)}
-                          className="w-full py-2 rounded-lg bg-white/90 text-gray-900 text-xs font-semibold active:scale-95 transition-all hover:bg-white"
+                          className="w-full py-2 rounded-lg bg-white/90 text-text-primary text-xs font-semibold active:scale-95 transition-all hover:bg-white"
                         >
                           Done it? Reflect 💬
                         </button>

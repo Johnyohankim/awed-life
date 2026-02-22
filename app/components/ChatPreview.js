@@ -2,22 +2,17 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { CATEGORY_COLORS, CATEGORY_LABELS } from '../lib/constants'
 
 const PREVIEW_CARD = {
   category: 'moral-beauty',
-  label: 'Moral Beauty',
+  label: CATEGORY_LABELS['moral-beauty'],
   videoId: '7ckfH6Sj9xk',
-  color: 'from-rose-400 to-pink-600',
 }
 
-const OTHER_CARDS = [
-  { label: 'Nature', color: 'from-green-400 to-emerald-600' },
-  { label: 'Music', color: 'from-purple-400 to-violet-600' },
-  { label: 'Collective Effervescence', color: 'from-orange-400 to-red-600' },
-  { label: 'Visual Design', color: 'from-blue-400 to-cyan-600' },
-  { label: 'Spirituality & Religion', color: 'from-amber-400 to-yellow-600' },
-  { label: 'Life & Death', color: 'from-slate-400 to-gray-600' },
-  { label: 'Epiphany', color: 'from-indigo-400 to-blue-600' },
+const OTHER_CATEGORIES = [
+  'nature', 'music', 'collective-effervescence',
+  'visual-design', 'spirituality', 'life-death', 'epiphany',
 ]
 
 export default function ChatPreview() {
@@ -86,31 +81,31 @@ export default function ChatPreview() {
     <>
       {/* Card row: 7 dimmed + 1 active */}
       <div className="flex items-end justify-center gap-2 overflow-x-auto pb-2 px-2">
-        {OTHER_CARDS.slice(0, 3).map(card => (
+        {OTHER_CATEGORIES.slice(0, 3).map(cat => (
           <div
-            key={card.label}
-            className={`flex-shrink-0 w-20 md:w-24 aspect-[3/4] rounded-xl bg-gradient-to-br ${card.color} opacity-30 flex items-end justify-center p-2`}
+            key={cat}
+            className={`flex-shrink-0 w-20 md:w-24 aspect-[3/4] rounded-xl bg-gradient-to-br ${CATEGORY_COLORS[cat]} opacity-30 flex items-end justify-center p-2`}
           >
-            <p className="text-white text-[10px] font-semibold text-center leading-tight drop-shadow">{card.label}</p>
+            <p className="text-white text-[10px] font-semibold text-center leading-tight drop-shadow">{CATEGORY_LABELS[cat]}</p>
           </div>
         ))}
 
         <button
           onClick={openPreview}
-          className={`flex-shrink-0 w-36 md:w-44 aspect-[3/4] cursor-pointer transform transition-transform hover:scale-105 rounded-2xl shadow-xl bg-gradient-to-br ${PREVIEW_CARD.color} flex items-center justify-center p-4 ring-2 ring-white/60`}
+          className={`flex-shrink-0 w-36 md:w-44 aspect-[3/4] cursor-pointer transform transition-transform hover:scale-[1.03] rounded-2xl shadow-xl bg-gradient-to-br ${CATEGORY_COLORS[PREVIEW_CARD.category]} flex items-center justify-center p-4 ring-2 ring-white/40`}
         >
           <div className="text-center">
-            <p className="text-white font-bold text-base drop-shadow-lg mb-1">{PREVIEW_CARD.label}</p>
-            <p className="text-white text-xs opacity-80">Tap to experience</p>
+            <p className="text-white font-medium text-base drop-shadow-lg mb-1">{PREVIEW_CARD.label}</p>
+            <p className="text-white/75 text-xs">Tap to experience</p>
           </div>
         </button>
 
-        {OTHER_CARDS.slice(3).map(card => (
+        {OTHER_CATEGORIES.slice(3).map(cat => (
           <div
-            key={card.label}
-            className={`flex-shrink-0 w-20 md:w-24 aspect-[3/4] rounded-xl bg-gradient-to-br ${card.color} opacity-30 flex items-end justify-center p-2`}
+            key={cat}
+            className={`flex-shrink-0 w-20 md:w-24 aspect-[3/4] rounded-xl bg-gradient-to-br ${CATEGORY_COLORS[cat]} opacity-30 flex items-end justify-center p-2`}
           >
-            <p className="text-white text-[10px] font-semibold text-center leading-tight drop-shadow">{card.label}</p>
+            <p className="text-white text-[10px] font-semibold text-center leading-tight drop-shadow">{CATEGORY_LABELS[cat]}</p>
           </div>
         ))}
       </div>
@@ -138,26 +133,26 @@ export default function ChatPreview() {
             </div>
           </div>
 
-          <div className="bg-white rounded-t-3xl flex flex-col" style={{ maxHeight: '55vh' }}>
+          <div className="bg-surface-card rounded-t-3xl flex flex-col" style={{ maxHeight: '55vh' }}>
             <div className="p-5 flex flex-col h-full">
               <div className="flex justify-center mb-3 flex-shrink-0">
-                <div className="w-10 h-1 bg-gray-300 rounded-full" />
+                <div className="w-10 h-1 bg-border-strong rounded-full" />
               </div>
 
               {chatDone ? (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                <div className="bg-accent-light border border-border rounded-xl p-6 text-center">
                   <p className="text-2xl mb-1">✨</p>
-                  <p className="text-green-800 font-bold text-lg mb-2">You felt it</p>
-                  <p className="text-gray-600 text-sm mb-4">
+                  <p className="text-text-primary font-bold text-xl mb-2">You felt it</p>
+                  <p className="text-text-secondary text-sm mb-4">
                     Sign up to collect a new awe moment every day and keep your wonder journal.
                   </p>
                   <button
                     onClick={() => router.push('/signup')}
-                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 mb-2"
+                    className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary-hover mb-2"
                   >
                     Start Collecting →
                   </button>
-                  <button onClick={() => setOpen(false)} className="text-gray-400 text-sm">
+                  <button onClick={() => setOpen(false)} className="text-text-muted text-sm">
                     Maybe later
                   </button>
                 </div>
@@ -168,8 +163,8 @@ export default function ChatPreview() {
                       <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
                           msg.role === 'user'
-                            ? 'bg-blue-600 text-white rounded-br-sm'
-                            : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                            ? 'bg-primary text-white rounded-br-sm'
+                            : 'bg-primary-light text-text-primary rounded-bl-sm'
                         }`}>
                           {msg.content}
                         </div>
@@ -177,8 +172,8 @@ export default function ChatPreview() {
                     ))}
                     {chatLoading && (
                       <div className="flex justify-start">
-                        <div className="bg-gray-100 px-4 py-2 rounded-2xl rounded-bl-sm">
-                          <span className="text-gray-400 text-sm tracking-widest">···</span>
+                        <div className="bg-primary-light px-4 py-2 rounded-2xl rounded-bl-sm">
+                          <span className="text-text-muted text-sm tracking-widest">···</span>
                         </div>
                       </div>
                     )}
@@ -193,15 +188,15 @@ export default function ChatPreview() {
                         value={chatInput}
                         onChange={e => setChatInput(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                        placeholder="Type your reflection\u2026"
-                        className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Type your reflection…"
+                        className="flex-1 px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
                         disabled={chatLoading}
                       />
                       <button
                         onClick={handleSend}
                         disabled={!chatInput.trim() || chatLoading}
                         aria-label="Send message"
-                        className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
+                        className="px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
                       >
                         →
                       </button>
@@ -211,7 +206,7 @@ export default function ChatPreview() {
                   {canComplete && !chatDone && (
                     <button
                       onClick={() => router.push('/signup')}
-                      className="mt-2 w-full py-3 rounded-xl font-medium text-sm bg-blue-600 text-white hover:bg-blue-700 flex-shrink-0"
+                      className="mt-2 w-full py-3 rounded-xl font-medium text-sm bg-primary text-white hover:bg-primary-hover flex-shrink-0"
                     >
                       Sign up to keep this card ✨
                     </button>

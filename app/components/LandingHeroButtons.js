@@ -10,7 +10,7 @@ export function HeroButtons() {
     return (
       <Link
         href="/cards"
-        className="bg-white text-gray-900 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition-all shadow-lg"
+        className="bg-white text-text-primary px-8 py-4 rounded-2xl font-medium text-lg hover:bg-white/90 transition-all shadow-lg"
       >
         Open Your Cards →
       </Link>
@@ -21,13 +21,13 @@ export function HeroButtons() {
     <>
       <Link
         href="/signup"
-        className="bg-white text-gray-900 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-opacity-90 transition-all shadow-lg"
+        className="bg-white text-text-primary px-8 py-4 rounded-2xl font-medium text-lg hover:bg-white/90 transition-all shadow-lg"
       >
         Get Started — Free
       </Link>
       <Link
         href="/login"
-        className="border-2 border-white text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white hover:bg-opacity-10 transition-all"
+        className="border-2 border-white/60 text-white px-8 py-4 rounded-2xl font-medium text-lg hover:bg-white/10 transition-all"
       >
         Sign In
       </Link>
@@ -41,7 +41,7 @@ export function HowItWorksCTA() {
   return (
     <Link
       href={session ? '/cards' : '/signup'}
-      className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-colors inline-block"
+      className="bg-primary text-white px-8 py-4 rounded-2xl font-medium text-lg hover:bg-primary-hover transition-colors inline-block"
     >
       {session ? 'Open Your Cards →' : 'Start for Free →'}
     </Link>
@@ -54,11 +54,11 @@ export function SubmitCTA() {
   return (
     <>
       {session && (
-        <p className="text-purple-600 font-medium mb-8">Earn ⭐ submission points when approved!</p>
+        <p className="text-accent font-medium mb-8">Earn ⭐ submission points when approved!</p>
       )}
       <Link
         href={session ? '/submit' : '/signup'}
-        className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-colors inline-block"
+        className="bg-primary text-white px-8 py-4 rounded-2xl font-medium text-lg hover:bg-primary-hover transition-colors inline-block"
       >
         {session ? 'Submit a Moment ✨' : 'Sign Up to Submit →'}
       </Link>
@@ -70,7 +70,7 @@ export function FooterLinks() {
   const { data: session } = useSession()
 
   return (
-    <div className="flex justify-center gap-6 text-sm text-gray-400 mb-8">
+    <div className="flex justify-center gap-6 text-sm text-text-muted mb-8">
       {session ? (
         <Link href="/cards" className="hover:text-white transition-colors">My Cards</Link>
       ) : (

@@ -15,11 +15,11 @@ export default function LandingNavbar() {
   }, [])
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,box-shadow] duration-300 ${
-      scrolled ? 'bg-white shadow-sm' : 'bg-transparent'
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,box-shadow] duration-500 ${
+      scrolled ? 'bg-surface-card/95 backdrop-blur-sm border-b border-border' : 'bg-transparent'
     }`}>
       <div className="container mx-auto px-4 py-4 flex justify-between items-center max-w-6xl">
-        <span className={`text-2xl font-bold ${scrolled ? 'text-gray-900' : 'text-white'}`}>
+        <span className={`font-bold text-2xl ${scrolled ? 'text-text-primary' : 'text-white'}`}>
           Awed
         </span>
         <div className="flex items-center gap-4">
@@ -28,7 +28,7 @@ export default function LandingNavbar() {
             target="_blank"
             rel="noopener noreferrer"
             className={`text-sm font-medium transition-colors hidden md:block ${
-              scrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white opacity-90 hover:opacity-100'
+              scrolled ? 'text-text-secondary hover:text-text-primary' : 'text-white/80 hover:text-white'
             }`}
           >
             Blog
@@ -36,7 +36,7 @@ export default function LandingNavbar() {
           {session ? (
             <Link
               href="/cards"
-              className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+              className="bg-primary text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-primary-hover transition-colors"
             >
               Open App →
             </Link>
@@ -45,14 +45,14 @@ export default function LandingNavbar() {
               <Link
                 href="/login"
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                  scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white hover:bg-opacity-20'
+                  scrolled ? 'text-text-secondary hover:bg-primary-light' : 'text-white hover:bg-white/15'
                 }`}
               >
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+                className="bg-primary text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-primary-hover transition-colors"
               >
                 Get Started
               </Link>

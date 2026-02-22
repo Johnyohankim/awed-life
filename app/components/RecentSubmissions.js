@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { CATEGORY_LABELS } from '../lib/constants'
 
 const getYouTubeId = (url) => {
   if (!url) return null
@@ -22,21 +23,21 @@ export default function RecentSubmissions() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <p className="text-center text-gray-500">Loading...</p>
-  if (submissions.length === 0) return <p className="text-center text-gray-500">No submissions yet. Be the first!</p>
+  if (loading) return <p className="text-center text-text-muted">Loading...</p>
+  if (submissions.length === 0) return <p className="text-center text-text-muted">No submissions yet. Be the first!</p>
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
       {submissions.slice(0, 3).map((submission) => {
         const videoId = getYouTubeId(submission.videoLink)
         const isInstagram = isInstagramUrl(submission.videoLink)
         return (
-          <div key={submission.id} className="bg-gray-50 rounded-xl overflow-hidden shadow-sm">
+          <div key={submission.id} className="bg-surface rounded-xl overflow-hidden shadow-sm border border-border">
             <div className="aspect-video">
               {isInstagram ? (
                 <a href={submission.videoLink} target="_blank" rel="noopener noreferrer"
-                  className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center">
-                  <p className="text-white font-bold">Watch on Instagram ↗</p>
+                  className="w-full h-full bg-gradient-to-br from-[#C4A8D4] via-[#E8B4B8] to-[#E8C4A0] flex items-center justify-center">
+                  <p className="text-white font-medium">Watch on Instagram ↗</p>
                 </a>
               ) : videoId ? (
                 <iframe width="100%" height="100%"
@@ -45,14 +46,14 @@ export default function RecentSubmissions() {
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen />
               ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <p className="text-gray-500">Video unavailable</p>
+                <div className="w-full h-full bg-primary-light flex items-center justify-center">
+                  <p className="text-text-muted">Video unavailable</p>
                 </div>
               )}
             </div>
             <div className="p-3">
-              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                {submission.category}
+              <span className="inline-block px-3 py-1 bg-primary-light text-primary rounded-full text-xs font-medium">
+                {CATEGORY_LABELS[submission.category] || submission.category}
               </span>
             </div>
           </div>

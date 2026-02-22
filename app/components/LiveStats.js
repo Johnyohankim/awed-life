@@ -34,28 +34,28 @@ export default function LiveStats() {
   return (
     <div className="flex flex-wrap justify-center gap-6 md:gap-12 py-6">
       <div className="text-center">
-        <div className="text-3xl md:text-4xl font-bold text-white mb-1">
+        <div className="font-bold text-3xl md:text-4xl text-white mb-1">
           {stats.totalUsers.toLocaleString()}
         </div>
-        <div className="text-sm md:text-base text-white/80">
+        <div className="text-sm md:text-base text-white/70 font-light">
           {stats.totalUsers === 1 ? 'Person' : 'People'} Collecting Awe
         </div>
       </div>
 
       <div className="text-center">
-        <div className="text-3xl md:text-4xl font-bold text-white mb-1">
+        <div className="font-bold text-3xl md:text-4xl text-white mb-1">
           {stats.totalMoments.toLocaleString()}
         </div>
-        <div className="text-sm md:text-base text-white/80">
+        <div className="text-sm md:text-base text-white/70 font-light">
           Moments Collected
         </div>
       </div>
 
       <div className="text-center">
-        <div className="text-3xl md:text-4xl font-bold text-white mb-1">
+        <div className="font-bold text-3xl md:text-4xl text-white mb-1">
           {stats.totalSubmissions.toLocaleString()}
         </div>
-        <div className="text-sm md:text-base text-white/80">
+        <div className="text-sm md:text-base text-white/70 font-light">
           Moments Shared
         </div>
       </div>

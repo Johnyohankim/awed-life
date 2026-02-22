@@ -22,14 +22,14 @@ export default function AchievementToast({ newCardCount, onDismiss }) {
   useEffect(() => {
     if (milestone) {
       setShow(true)
-      
-      // Generate confetti
+
+      // Generate confetti with warm organic colors
       const confettiPieces = Array.from({ length: 30 }, (_, i) => ({
         id: i,
         left: Math.random() * 100,
         delay: Math.random() * 0.3,
         duration: 1 + Math.random() * 0.5,
-        color: ['#fbbf24', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'][Math.floor(Math.random() * 5)]
+        color: ['#B8860B', '#C97B84', '#6B9B6B', '#957BA8', '#C4956A'][Math.floor(Math.random() * 5)]
       }))
       setConfetti(confettiPieces)
 
@@ -69,17 +69,17 @@ export default function AchievementToast({ newCardCount, onDismiss }) {
           show ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
         }`}
       >
-        <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm mx-4 border-2 border-yellow-300">
+        <div className="bg-surface-card rounded-2xl shadow-2xl p-6 max-w-sm mx-4 border-2 border-accent">
           <div className="text-center">
             <div className="text-5xl mb-3 animate-bounce">{milestone.emoji}</div>
-            <h3 className="text-xl font-bold text-gray-900 mb-1">
+            <h3 className="font-bold text-xl text-text-primary mb-1">
               Achievement Unlocked!
             </h3>
-            <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <p className="font-bold text-2xl text-accent mb-2">
               {milestone.label}
             </p>
-            <p className="text-gray-600 text-sm">
-              {newCardCount} cards collected
+            <p className="text-text-secondary text-sm">
+              {newCardCount} moments collected
             </p>
           </div>
         </div>

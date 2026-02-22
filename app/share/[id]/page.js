@@ -1,27 +1,6 @@
 import { sql } from '@vercel/postgres'
 import ShareCard from './ShareCard'
-
-const categoryColors = {
-  'moral-beauty': 'from-rose-400 to-pink-600',
-  'collective-effervescence': 'from-orange-400 to-red-600',
-  'nature': 'from-green-400 to-emerald-600',
-  'music': 'from-purple-400 to-violet-600',
-  'visual-design': 'from-blue-400 to-cyan-600',
-  'spirituality': 'from-amber-400 to-yellow-600',
-  'life-death': 'from-slate-400 to-gray-600',
-  'epiphany': 'from-indigo-400 to-blue-600'
-}
-
-const categoryLabels = {
-  'moral-beauty': 'Moral Beauty',
-  'collective-effervescence': 'Collective Effervescence',
-  'nature': 'Nature',
-  'music': 'Music',
-  'visual-design': 'Visual Design',
-  'spirituality': 'Spirituality & Religion',
-  'life-death': 'Life & Death',
-  'epiphany': 'Epiphany'
-}
+import { CATEGORY_COLORS, CATEGORY_LABELS } from '../../lib/constants'
 
 function getYouTubeId(url) {
   if (!url) return null
@@ -66,7 +45,7 @@ export async function generateMetadata({ params }) {
   const { card } = await getCardData(id)
   if (!card) return { title: 'Awed - Awe Moment' }
 
-  const label = categoryLabels[card.category] || card.category
+  const label = CATEGORY_LABELS[card.category] || card.category
   const journal = card.journal_text.slice(0, 100) + (card.journal_text.length > 100 ? '...' : '')
 
   return {
@@ -93,12 +72,12 @@ export default async function SharePage({ params }) {
 
   if (result.error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-surface flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-5xl mb-4">🔍</p>
           <h1 className="text-2xl font-bold mb-2">Card not found</h1>
-          <p className="text-gray-500 text-sm mb-4">This card may have been removed or made private.</p>
-          <a href="/" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium">Visit Awed</a>
+          <p className="text-text-muted text-sm mb-4">This card may have been removed or made private.</p>
+          <a href="/" className="bg-primary text-white px-6 py-3 rounded-xl font-medium">Visit Awed</a>
         </div>
       </div>
     )
@@ -108,19 +87,19 @@ export default async function SharePage({ params }) {
 
   if (!card.is_public) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-surface flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-5xl mb-4">🔒</p>
           <h1 className="text-2xl font-bold mb-2">Private card</h1>
-          <p className="text-gray-600 mb-6">This reflection is private.</p>
-          <a href="/" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-medium">Visit Awed</a>
+          <p className="text-text-secondary mb-6">This reflection is private.</p>
+          <a href="/" className="bg-primary text-white px-6 py-3 rounded-xl font-medium">Visit Awed</a>
         </div>
       </div>
     )
   }
 
-  const color = categoryColors[card.category] || 'from-gray-400 to-gray-600'
-  const label = categoryLabels[card.category] || card.category
+  const color = CATEGORY_COLORS[card.category] || 'from-gray-400 to-gray-600'
+  const label = CATEGORY_LABELS[card.category] || card.category
   const date = new Date(card.kept_at).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric'
   })
@@ -130,13 +109,13 @@ export default async function SharePage({ params }) {
   const isInstagram = isInstagramUrl(card.video_link)
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 py-12">
+    <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
 
         {/* Branding */}
         <div className="text-center mb-6">
-          <a href="/" className="text-2xl font-bold text-gray-800">Awed</a>
-          <p className="text-gray-500 text-sm mt-1">A daily moment of awe</p>
+          <a href="/" className="text-2xl font-bold text-text-primary">Awed</a>
+          <p className="text-text-muted text-sm mt-1">A daily moment of awe</p>
         </div>
 
         {/* Card header */}
@@ -181,14 +160,14 @@ export default async function SharePage({ params }) {
         </div>
 
         {/* Journal reflection */}
-        <div className="bg-white rounded-b-3xl shadow-xl px-6 py-5 mb-6">
-          <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-2">
+        <div className="bg-surface-card rounded-b-3xl shadow-xl px-6 py-5 mb-6">
+          <p className="text-text-muted text-xs font-semibold uppercase tracking-wide mb-2">
             Reflection
           </p>
-          <p className="text-gray-800 text-base leading-relaxed mb-4">
+          <p className="text-text-primary text-base leading-relaxed mb-4">
             "{card.journal_text}"
           </p>
-          <div className="flex justify-between items-center text-sm text-gray-400">
+          <div className="flex justify-between items-center text-sm text-text-muted">
             <span>— {card.user_name || 'Anonymous'}</span>
             <span>{date}</span>
           </div>
@@ -199,10 +178,10 @@ export default async function SharePage({ params }) {
 
         {/* CTA */}
         <div className="mt-8 text-center">
-          <p className="text-gray-500 text-sm mb-3">Experience your own awe moments</p>
+          <p className="text-text-muted text-sm mb-3">Experience your own awe moments</p>
           <a
             href="/signup"
-            className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 font-medium inline-block"
+            className="bg-primary text-white px-8 py-3 rounded-xl hover:bg-primary-hover font-medium inline-block"
           >
             Join Awed for free →
           </a>

@@ -13,6 +13,7 @@ import { trackEvent, EVENTS } from '../lib/analytics'
 const categoryColors = CATEGORY_COLORS
 const categoryLabels = CATEGORY_LABELS
 const categoryQuotes = CATEGORY_QUOTES
+const categoryFallback = 'from-[#B8B0A8] to-[#8A8278]'
 
 // Smart rotation: cycle through categories to ensure variety
 function getSmartRotatedCards(cards) {
@@ -157,7 +158,7 @@ function ReactionBar({ submissionId, onReact }) {
         onClick={() => handleReaction('nawed')}
         className={`flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md border transition-[background-color,border-color,transform] active:scale-95 ${
           reaction === 'nawed'
-            ? 'border-blue-400 bg-blue-400/30'
+            ? 'border-[#6B8FA8] bg-[#6B8FA8]/30'
             : 'border-white/30 bg-white/10 hover:bg-white/20'
         }`}
       >
@@ -191,17 +192,17 @@ function OnboardingModal({ onClose }) {
   ]
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" onClick={onClose} style={{ overscrollBehavior: 'contain' }}>
-      <div className="bg-white rounded-3xl max-w-md w-full p-8" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose} style={{ overscrollBehavior: 'contain' }}>
+      <div className="bg-surface-card rounded-3xl max-w-md w-full p-8" onClick={e => e.stopPropagation()}>
         <div className="text-center mb-8">
           <p className="text-6xl mb-4">{steps[step].emoji}</p>
-          <h2 className="text-2xl font-bold mb-2">{steps[step].title}</h2>
-          <p className="text-gray-600 leading-relaxed">{steps[step].description}</p>
+          <h2 className="font-bold text-2xl mb-2 text-text-primary">{steps[step].title}</h2>
+          <p className="text-text-secondary leading-relaxed">{steps[step].description}</p>
         </div>
 
         <div className="flex justify-center gap-2 mb-6">
           {steps.map((_, i) => (
-            <div key={i} className={`h-2 rounded-full transition-[width,background-color] ${i === step ? 'w-8 bg-blue-600' : 'w-2 bg-gray-200'}`} />
+            <div key={i} className={`h-2 rounded-full transition-[width,background-color] ${i === step ? 'w-8 bg-primary' : 'w-2 bg-border'}`} />
           ))}
         </div>
 
@@ -209,21 +210,21 @@ function OnboardingModal({ onClose }) {
           {step > 0 && (
             <button
               onClick={() => setStep(step - 1)}
-              className="flex-1 py-3 px-6 border-2 border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
+              className="flex-1 py-3 px-6 border-2 border-border text-text-secondary rounded-xl font-medium hover:bg-surface"
             >
               Back
             </button>
           )}
           <button
             onClick={() => step < steps.length - 1 ? setStep(step + 1) : onClose()}
-            className="flex-1 py-3 px-6 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700"
+            className="flex-1 py-3 px-6 bg-primary text-white rounded-xl font-medium hover:bg-primary-hover"
           >
             {step < steps.length - 1 ? 'Next' : 'Start Collecting ✨'}
           </button>
         </div>
 
         {step === 0 && (
-          <button onClick={onClose} className="w-full mt-3 text-sm text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="w-full mt-3 text-sm text-text-muted hover:text-text-secondary">
             Skip tutorial
           </button>
         )}
@@ -380,7 +381,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
             allowFullScreen
           />
         ) : (
-          <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+          <div className="w-full h-full bg-surface-dark flex items-center justify-center">
             <p className="text-white">Video unavailable</p>
           </div>
         )}
@@ -421,7 +422,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
               ) : (
                 <button
                   onClick={() => setShowJournal(true)}
-                  className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-md text-gray-900 font-medium text-sm hover:bg-white transition-[background-color,transform] active:scale-95 shadow-lg"
+                  className="px-6 py-3 rounded-full bg-white/90 backdrop-blur-md text-text-primary font-medium text-sm hover:bg-white transition-[background-color,transform] active:scale-95 shadow-lg"
                 >
                   💬 Talk it through
                 </button>
@@ -433,30 +434,30 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
 
       {/* Bottom sheet - chat journal */}
       <div
-        className={`bg-white rounded-t-3xl transition-[max-height] duration-300 ${
+        className={`bg-surface-card rounded-t-3xl transition-[max-height] duration-300 ${
           showJournal || kept || isSubmissionCard ? 'max-h-[65vh]' : 'max-h-0'
         } overflow-hidden flex flex-col`}
       >
         <div className="p-5 flex flex-col" style={{ height: showJournal || kept || isSubmissionCard ? '65vh' : 0 }}>
           {/* Drag handle */}
           <div className="flex justify-center mb-3 flex-shrink-0">
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            <div className="w-10 h-1 bg-border-strong rounded-full" />
           </div>
 
           {isSubmissionCard ? (
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 text-center">
+            <div className="bg-accent-light border border-border rounded-xl p-6 text-center">
               <p className="text-2xl mb-2">⭐</p>
-              <p className="text-purple-800 font-bold text-lg mb-1">Your Submission!</p>
-              <p className="text-gray-600 text-sm">This moment is already in your collection.</p>
+              <p className="text-text-primary font-bold text-lg mb-1">Your Submission!</p>
+              <p className="text-text-secondary text-sm">This moment is already in your collection.</p>
             </div>
           ) : kept ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+            <div className="bg-accent-light border border-border rounded-xl p-6 text-center">
               <p className="text-2xl mb-1">✨</p>
-              <p className="text-green-800 font-bold text-lg mb-3">Moment Kept!</p>
+              <p className="text-text-primary font-bold text-lg mb-3">Moment Kept!</p>
               <div className="flex justify-center">
                 <AweraCircle totalCards={(totalCards || 0) + 1} size="sm" />
               </div>
-              <button onClick={onClose} className="mt-3 text-blue-600 hover:text-blue-700 font-medium text-sm">
+              <button onClick={onClose} className="mt-3 text-primary hover:text-primary-hover font-medium text-sm">
                 Explore more moments →
               </button>
             </div>
@@ -468,8 +469,8 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
                       msg.role === 'user'
-                        ? 'bg-blue-600 text-white rounded-br-sm'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                        ? 'bg-primary text-white rounded-br-sm'
+                        : 'bg-primary-light text-text-primary rounded-bl-sm'
                     }`}>
                       {msg.content}
                     </div>
@@ -477,8 +478,8 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
                 ))}
                 {chatLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 px-4 py-2 rounded-2xl rounded-bl-sm">
-                      <span className="text-gray-400 text-sm tracking-widest">···</span>
+                    <div className="bg-primary-light px-4 py-2 rounded-2xl rounded-bl-sm">
+                      <span className="text-text-muted text-sm tracking-widest">···</span>
                     </div>
                   </div>
                 )}
@@ -495,14 +496,14 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
                     onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                     placeholder="Type your reflection\u2026"
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-4 py-2.5 border border-border rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
                     disabled={chatLoading}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={!chatInput.trim() || chatLoading}
                     aria-label="Send message"
-                    className="px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
+                    className="px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
                   >
                     →
                   </button>
@@ -515,7 +516,7 @@ function FullscreenVideoModal({ card, onClose, onKeep, alreadyKeptToday, isSubmi
                   onClick={handleKeep}
                   disabled={keeping || alreadyKeptToday}
                   className={`mt-2 w-full py-3 rounded-xl font-medium text-sm transition-[background-color,transform] active:scale-95 flex-shrink-0 ${
-                    alreadyKeptToday ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                    alreadyKeptToday ? 'bg-primary-light text-text-muted cursor-not-allowed' : 'bg-primary text-white hover:bg-primary-hover'
                   }`}
                 >
                   {keeping ? 'Keeping\u2026' : alreadyKeptToday ? "You've kept a moment today" : 'Keep This Moment ✨'}
@@ -642,28 +643,8 @@ function SmallCard({ card, onClick, isClosed }) {
 }
 
 function SubmissionCard({ card, onClick }) {
-  const categoryColors = {
-    'moral-beauty': 'from-rose-400 to-pink-600',
-    'collective-effervescence': 'from-orange-400 to-red-600',
-    'nature': 'from-green-400 to-emerald-600',
-    'music': 'from-purple-400 to-violet-600',
-    'visual-design': 'from-blue-400 to-cyan-600',
-    'spirituality': 'from-amber-400 to-yellow-600',
-    'life-death': 'from-slate-400 to-gray-600',
-    'epiphany': 'from-indigo-400 to-blue-600'
-  }
-  const categoryLabels = {
-    'moral-beauty': 'Moral Beauty',
-    'collective-effervescence': 'Collective Effervescence',
-    'nature': 'Nature',
-    'music': 'Music',
-    'visual-design': 'Visual Design',
-    'spirituality': 'Spirituality & Religion',
-    'life-death': 'Life & Death',
-    'epiphany': 'Epiphany'
-  }
-  const color = categoryColors[card.category] || 'from-gray-400 to-gray-600'
-  const label = categoryLabels[card.category] || card.category
+  const color = CATEGORY_COLORS[card.category] || categoryFallback
+  const label = CATEGORY_LABELS[card.category] || card.category
 
   return (
     <button
@@ -689,9 +670,9 @@ function TodaysAwedMoment({ moment, source, onClick }) {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Today's Most Awed</h3>
+        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-widest">Today's Most Awed</h3>
         {source === 'awed' && moment.awed_count > 0 && (
-          <span className="flex items-center gap-1 text-xs text-gray-400">
+          <span className="flex items-center gap-1 text-xs text-text-muted">
             <img src="/awed-emoji.png" alt="awed" width={14} height={14} />
             {moment.awed_count}
           </span>
@@ -860,8 +841,8 @@ export default function CardsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading your cards\u2026</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <p className="text-text-secondary">Loading your cards\u2026</p>
       </div>
     )
   }
@@ -873,35 +854,35 @@ export default function CardsPage() {
   const remainingCards = cards.slice(1)
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <nav className="bg-white border-b border-gray-100 px-4 py-4">
+    <div className="min-h-screen bg-surface pb-20 md:pb-0">
+      <nav className="bg-surface-card border-b border-border px-4 py-4">
         <div className="container mx-auto flex justify-between items-center max-w-5xl">
-          <Link href="/cards" className="text-2xl font-bold hover:text-gray-700 transition-colors">Awed</Link>
+          <Link href="/cards" className="font-bold text-2xl hover:text-text-secondary transition-colors">Awed</Link>
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/explore" className="text-sm text-gray-600 hover:text-gray-900">Explore</Link>
-            <Link href="/journey" className="text-sm text-gray-600 hover:text-gray-900">My Journey</Link>
-            <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-gray-600 hover:text-gray-900">Sign Out</button>
+            <Link href="/explore" className="text-sm text-text-secondary hover:text-text-primary">Explore</Link>
+            <Link href="/journey" className="text-sm text-text-secondary hover:text-text-primary">My Journey</Link>
+            <button onClick={() => signOut({ callbackUrl: '/' })} className="text-sm text-text-secondary hover:text-text-primary">Sign Out</button>
           </div>
-          <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-gray-400">Sign Out</button>
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="md:hidden text-sm text-text-muted">Sign Out</button>
         </div>
       </nav>
 
       <div className="container mx-auto px-4 py-6 max-w-5xl">
         <div className="text-center mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">Today's Awe Moments</h2>
-          <p className="text-gray-600 text-sm md:text-base mb-2">
+          <h2 className="font-bold text-2xl md:text-3xl mb-2">Today's Awe Moments</h2>
+          <p className="text-text-secondary text-sm md:text-base mb-2">
             {keptToday >= allowedKeeps 
               ? `You've kept ${keptToday} moment${keptToday > 1 ? 's' : ''} today. Come back tomorrow! ✨`
               : "Choose a card to reveal your awe moment"
             }
           </p>
           {keptToday < allowedKeeps && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-full">
-              <span className="text-purple-700 text-sm font-medium">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-light rounded-full">
+              <span className="text-primary text-sm font-medium">
                 {keptToday} of {allowedKeeps} moment{allowedKeeps !== 1 ? 's' : ''} kept today
               </span>
               {submissionPoints > 0 && (
-                <span className="text-purple-500 text-xs">⭐ {submissionPoints} bonus slots</span>
+                <span className="text-accent text-xs">⭐ {submissionPoints} bonus slots</span>
               )}
             </div>
           )}
@@ -943,12 +924,12 @@ export default function CardsPage() {
         {submissionSlots.length > 0 && (
           <div className="mt-8">
             <div className="flex items-center gap-3 mb-4">
-              <h3 className="text-lg font-bold">Your Moments</h3>
-              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+              <h3 className="font-bold text-lg">Your Moments</h3>
+              <span className="px-3 py-1 bg-accent-light text-accent rounded-full text-sm font-medium">
                 ⭐ {submissionPoints} point{submissionPoints !== 1 ? 's' : ''}
               </span>
             </div>
-            <p className="text-gray-500 text-sm mb-4">
+            <p className="text-text-muted text-sm mb-4">
               These moments are permanently yours — one per approved submission.
             </p>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
@@ -963,7 +944,7 @@ export default function CardsPage() {
       {/* Floating submit button */}
       <button
         onClick={() => router.push('/submit')}
-        className="fixed bottom-24 md:bottom-8 right-4 md:right-8 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-[background-color,box-shadow,transform] active:scale-90 z-30"
+        className="fixed bottom-24 md:bottom-8 right-4 md:right-8 w-14 h-14 bg-primary hover:bg-primary-hover text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-[background-color,box-shadow,transform] active:scale-90 z-30"
         aria-label="Submit an awe moment"
       >
         <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white">

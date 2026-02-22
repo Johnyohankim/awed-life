@@ -47,10 +47,10 @@ function LoginForm() {
 }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-sm max-w-md w-full">
-        <h1 className="text-3xl font-bold text-center mb-2">Welcome Back</h1>
-        <p className="text-center text-gray-600 mb-8">Sign in to Awed</p>
+    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
+      <div className="bg-surface-card p-8 rounded-lg shadow-sm max-w-md w-full">
+        <h1 className="font-bold text-3xl text-center text-text-primary mb-2">Welcome Back</h1>
+        <p className="text-center text-text-secondary mb-8">Sign in to Awed</p>
 
         {registered && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
@@ -66,7 +66,7 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-text-primary mb-2">
               Email
             </label>
             <input
@@ -76,13 +76,13 @@ function LoginForm() {
               spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-text-primary mb-2">
               Password
             </label>
             <input
@@ -91,7 +91,7 @@ function LoginForm() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-border-strong rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
           </div>
@@ -99,7 +99,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-medium"
+            className="w-full bg-primary text-white py-3 px-4 rounded-lg hover:bg-primary-hover disabled:bg-text-muted font-medium"
           >
             {loading ? 'Signing in\u2026' : 'Sign In'}
           </button>
@@ -108,16 +108,16 @@ function LoginForm() {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-border-strong"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-surface-card text-text-muted">Or continue with</span>
             </div>
           </div>
 
           <button
             onClick={handleGoogleSignIn}
-            className="mt-4 w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 font-medium"
+            className="mt-4 w-full flex items-center justify-center gap-3 bg-surface-card border border-border-strong text-text-primary py-3 px-4 rounded-lg hover:bg-surface font-medium"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -129,18 +129,18 @@ function LoginForm() {
           </button>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-text-secondary">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link href="/signup" className="text-primary hover:text-primary-hover font-medium">
             Sign up
           </Link>
         </p>
 
-        <p className="mt-4 text-center text-xs text-gray-400">
+        <p className="mt-4 text-center text-xs text-text-muted">
           By signing in you agree to our{' '}
-          <Link href="/terms" className="underline hover:text-gray-600">Terms</Link>
+          <Link href="/terms" className="underline hover:text-text-secondary">Terms</Link>
           {' '}and{' '}
-          <Link href="/privacy" className="underline hover:text-gray-600">Privacy Policy</Link>
+          <Link href="/privacy" className="underline hover:text-text-secondary">Privacy Policy</Link>
         </p>
       </div>
     </div>
@@ -150,8 +150,8 @@ function LoginForm() {
 export default function Login() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading\u2026</p>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <p className="text-text-secondary">Loading\u2026</p>
       </div>
     }>
       <LoginForm />

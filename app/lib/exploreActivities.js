@@ -5,7 +5,7 @@ export const EXPLORE_ACTIVITIES = {
   'moral-beauty': {
     label: 'Moral Beauty',
     subtitle: 'Human Goodness',
-    color: 'from-rose-400 to-pink-600',
+    color: 'from-[#E8B4B8] to-[#C97B84]',
     today: [
       { id: 'mb-t-1', text: 'Write a sincere thank-you message' },
       { id: 'mb-t-2', text: 'Pay for someone anonymously' },
@@ -35,7 +35,7 @@ export const EXPLORE_ACTIVITIES = {
   'collective-effervescence': {
     label: 'Collective Effervescence',
     subtitle: 'Shared Energy',
-    color: 'from-orange-400 to-red-600',
+    color: 'from-[#E8C4A0] to-[#C4956A]',
     today: [
       { id: 'ce-t-1', text: 'Attend a sports game' },
       { id: 'ce-t-2', text: 'Join a group fitness class' },
@@ -65,7 +65,7 @@ export const EXPLORE_ACTIVITIES = {
   nature: {
     label: 'Nature',
     subtitle: 'The Natural World',
-    color: 'from-green-400 to-emerald-600',
+    color: 'from-[#A8C5A0] to-[#6B9B6B]',
     today: [
       { id: 'na-t-1', text: 'Watch sunrise' },
       { id: 'na-t-2', text: 'Watch sunset' },
@@ -95,7 +95,7 @@ export const EXPLORE_ACTIVITIES = {
   'visual-design': {
     label: 'Visual Design',
     subtitle: 'Art & Beauty',
-    color: 'from-blue-400 to-cyan-600',
+    color: 'from-[#A0B8C8] to-[#6B8FA8]',
     today: [
       { id: 'vd-t-1', text: 'Visit a gallery' },
       { id: 'vd-t-2', text: 'Sketch for 20 minutes' },
@@ -125,7 +125,7 @@ export const EXPLORE_ACTIVITIES = {
   epiphany: {
     label: 'Epiphany',
     subtitle: 'Big Ideas & Insight',
-    color: 'from-indigo-400 to-blue-600',
+    color: 'from-[#A0A8C8] to-[#6B78A8]',
     today: [
       { id: 'ep-t-1', text: 'Watch a TED talk' },
       { id: 'ep-t-2', text: 'Read a philosophy essay' },
@@ -155,7 +155,7 @@ export const EXPLORE_ACTIVITIES = {
   'life-death': {
     label: 'Life & Death',
     subtitle: 'Preciousness of Life',
-    color: 'from-slate-400 to-gray-600',
+    color: 'from-[#B8B0A8] to-[#8A8278]',
     today: [
       { id: 'ld-t-1', text: 'Visit a cemetery quietly' },
       { id: 'ld-t-2', text: 'Reflect on your ancestry' },
@@ -185,7 +185,7 @@ export const EXPLORE_ACTIVITIES = {
   spirituality: {
     label: 'Spirituality',
     subtitle: 'The Sacred & Transcendent',
-    color: 'from-amber-400 to-yellow-600',
+    color: 'from-[#D4C8A0] to-[#B8A86B]',
     today: [
       { id: 'sp-t-1', text: 'Meditate for 15 minutes' },
       { id: 'sp-t-2', text: 'Sit in silence' },
@@ -215,7 +215,7 @@ export const EXPLORE_ACTIVITIES = {
   music: {
     label: 'Music',
     subtitle: 'Sound & Emotion',
-    color: 'from-purple-400 to-violet-600',
+    color: 'from-[#C4A8D4] to-[#957BA8]',
     today: [
       { id: 'mu-t-1', text: 'Listen to a symphony fully' },
       { id: 'mu-t-2', text: 'Attend a local live performance' },
