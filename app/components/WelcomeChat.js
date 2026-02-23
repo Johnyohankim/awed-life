@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 const NEWCOMER_FLOW = [
@@ -33,11 +34,11 @@ const NEWCOMER_FLOW = [
 ]
 
 const RETURNING_GREETINGS = [
-  (name) => `Welcome back${name ? `, ${name}` : ''}. Ready for today\u2019s moment of wonder?`,
-  (name) => `Good to see you${name ? `, ${name}` : ''}. Your cards are waiting.`,
-  (name) => `${name ? `${name}, a` : 'A'}nother day, another chance to feel awe.`,
-  (name) => `A new set of moments is here${name ? `, ${name}` : ''}. What will move you today?`,
-  (name) => `${name ? `Hi ${name}. ` : ''}Take a breath. Your awe moments are ready.`,
+  (name) => `Welcome back${name ? `, ${name}` : ''}. What are you in the mood for?`,
+  (name) => `Good to see you${name ? `, ${name}` : ''}. How would you like to feel awe today?`,
+  (name) => `${name ? `${name}, a` : 'A'}nother day, another chance to feel awe. What calls to you?`,
+  (name) => `${name ? `Hi ${name}. ` : ''}Take a breath. What would you like to do today?`,
+  (name) => `A new day awaits${name ? `, ${name}` : ''}. How would you like to begin?`,
 ]
 
 function getWelcomeMode() {
@@ -68,6 +69,7 @@ function markWelcomeComplete() {
 }
 
 export default function WelcomeChat({ userName, onComplete }) {
+  const router = useRouter()
   const [mode] = useState(() => getWelcomeMode())
   const [step, setStep] = useState(0)
   const [messages, setMessages] = useState([])
@@ -103,19 +105,22 @@ export default function WelcomeChat({ userName, onComplete }) {
   useEffect(() => {
     if (mode === null) return
     window.history.pushState({ welcomeChat: true }, '')
-    const handlePopState = () => handleDismiss()
+    const handlePopState = () => handleDismiss(null)
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [mode])
 
   const getFlow = () => {
     if (mode === 'newcomer') return NEWCOMER_FLOW
-    // Returning: single step with rotating greeting
+    // Returning: single step with rotating greeting + two choices
     const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000)
     const greeting = RETURNING_GREETINGS[dayOfYear % RETURNING_GREETINGS.length](userName)
     return [{
       guide: greeting,
-      options: [{ label: "Show me today\u2019s cards" }]
+      options: [
+        { label: 'Feel the awe', route: null },
+        { label: 'Walk the awe', route: '/explore' },
+      ]
     }]
   }
 
@@ -144,17 +149,22 @@ export default function WelcomeChat({ userName, onComplete }) {
       setStep(nextStep)
       setTimeout(() => showGuideMessage(nextStep), prefersReducedMotion.current ? 0 : 300)
     } else {
-      // Done
-      handleDismiss()
+      // Done — navigate if route specified, otherwise dismiss to cards
+      handleDismiss(option.route)
     }
   }
 
-  const handleDismiss = () => {
+  const handleDismiss = (route) => {
     if (fading) return
     setFading(true)
     markWelcomeComplete()
     const delay = prefersReducedMotion.current ? 0 : 300
-    setTimeout(() => onComplete(), delay)
+    setTimeout(() => {
+      if (route) {
+        router.push(route)
+      }
+      onComplete()
+    }, delay)
   }
 
   if (mode === null) return null
