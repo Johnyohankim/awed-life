@@ -230,6 +230,8 @@ export default function AdminPage() {
   const [cleanResult, setCleanResult] = useState(null)
   const [cleaningCards, setCleaningCards] = useState(false)
   const [finalizingBatch, setFinalizingBatch] = useState(false)
+  const [filterCategory, setFilterCategory] = useState('')
+  const [filterDate, setFilterDate] = useState('')
   const [finalizeResult, setFinalizeResult] = useState(null)
   const [finalizeDate, setFinalizeDate] = useState(new Date().toISOString().split('T')[0])
   const router = useRouter()
@@ -475,12 +477,35 @@ export default function AdminPage() {
         {activeTab === 'users' && <UsersTab onUsersCountChange={setUsersCount} />}
 
         {/* Submissions tab */}
-        {activeTab === 'submissions' && (
-          submissions.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center"><p className="text-gray-500">No submissions yet</p></div>
+        {activeTab === 'submissions' && (() => {
+          const filtered = submissions.filter(s => {
+            if (filterCategory && s.category !== filterCategory) return false
+            if (filterDate && s.submittedAt?.slice(0, 10) !== filterDate) return false
+            return true
+          })
+          return (
+          <>
+          {/* Filters */}
+          <div className="bg-white rounded-lg shadow-sm p-4 mb-4 flex flex-wrap items-center gap-3">
+            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="">All categories</option>
+              {CATEGORIES.map(cat => <option key={cat} value={cat}>{categoryLabel(cat)}</option>)}
+            </select>
+            <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+            {(filterCategory || filterDate) && (
+              <button onClick={() => { setFilterCategory(''); setFilterDate('') }}
+                className="text-sm text-gray-500 hover:text-gray-700 underline">Clear filters</button>
+            )}
+            <span className="text-sm text-gray-400 ml-auto">{filtered.length} of {submissions.length}</span>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="bg-white rounded-lg shadow-sm p-8 text-center"><p className="text-gray-500">No submissions match filters</p></div>
           ) : (
             <div className="space-y-4">
-              {submissions.map(submission => (
+              {filtered.map(submission => (
                 <div key={submission.id} className="bg-white rounded-lg shadow-sm p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -529,8 +554,10 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+          )}
+          </>
           )
-        )}
+        })()}
       </div>
     </div>
   )

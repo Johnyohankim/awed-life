@@ -41,8 +41,12 @@ export async function POST(request) {
 
     } else if (action === 'unapprove') {
       await sql`UPDATE submissions SET approved = false WHERE id = ${id}`
+      // Remove from today's daily cards so users don't see it
+      await sql`DELETE FROM daily_cards WHERE submission_id = ${id}`
 
     } else if (action === 'reject') {
+      // Remove from daily cards first (FK reference)
+      await sql`DELETE FROM daily_cards WHERE submission_id = ${id}`
       await sql`DELETE FROM submissions WHERE id = ${id}`
 
     } else if (action === 'update-category') {
