@@ -132,8 +132,24 @@ export async function GET() {
     `
 
     await sql`
-      ALTER TABLE user_cards 
+      ALTER TABLE user_cards
       ADD COLUMN IF NOT EXISTS is_submission BOOLEAN DEFAULT false
+    `
+
+    await sql`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false
+    `
+
+    await sql`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMP
+    `
+
+    // Backfill: mark all existing users as verified
+    await sql`
+      UPDATE users SET email_verified = true
+      WHERE email_verified IS NULL OR email_verified = false
     `
 
     return Response.json({

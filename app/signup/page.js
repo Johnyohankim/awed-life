@@ -36,17 +36,22 @@ export default function SignUp() {
       const data = await response.json()
 
       if (data.success) {
-        // Auto sign in after signup
-        const result = await signIn('credentials', {
-          email,
-          password,
-          redirect: false,
-        })
-
-        if (result?.ok) {
-          router.push('/cards')
+        if (data.requiresVerification) {
+          // Production: redirect to check-your-email page
+          router.push('/verify-email?email=' + encodeURIComponent(email))
         } else {
-          router.push('/login?registered=true')
+          // Dev mode: auto sign in (current behavior)
+          const result = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+          })
+
+          if (result?.ok) {
+            router.push('/cards')
+          } else {
+            router.push('/login?registered=true')
+          }
         }
       } else {
         setError(data.message || 'Signup failed')

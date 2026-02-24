@@ -14,10 +14,13 @@ function LoginForm() {
   const searchParams = useSearchParams()
 
   const registered = searchParams.get('registered')
+  const verified = searchParams.get('verified')
+  const [unverifiedEmail, setUnverifiedEmail] = useState(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setUnverifiedEmail(null)
     setLoading(true)
 
     try {
@@ -28,6 +31,20 @@ function LoginForm() {
       })
 
       if (result?.error) {
+        // Check if the issue is unverified email
+        try {
+          const checkRes = await fetch('/api/auth/check-verification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          })
+          const checkData = await checkRes.json()
+          if (checkData.unverified) {
+            setUnverifiedEmail(email)
+            setError('Please verify your email before signing in.')
+            return
+          }
+        } catch { /* fallback to generic error */ }
         setError('Invalid email or password')
       } else {
         router.push('/cards')
@@ -52,6 +69,18 @@ function LoginForm() {
         <h1 className="font-bold text-3xl text-center text-text-primary mb-2">Welcome Back</h1>
         <p className="text-center text-text-secondary mb-8">Sign in to Awed</p>
 
+        {verified === 'true' && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+            Email verified! You can now sign in.
+          </div>
+        )}
+
+        {verified === 'already' && (
+          <div className="mb-4 p-3 bg-primary-light border border-border rounded-lg text-text-secondary text-sm">
+            Email already verified. Sign in below.
+          </div>
+        )}
+
         {registered && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
             Account created! Please sign in.
@@ -61,6 +90,14 @@ function LoginForm() {
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
+            {unverifiedEmail && (
+              <button
+                onClick={() => router.push('/verify-email?email=' + encodeURIComponent(unverifiedEmail))}
+                className="block mt-2 text-primary hover:text-primary-hover font-medium underline"
+              >
+                Resend verification email
+              </button>
+            )}
           </div>
         )}
 

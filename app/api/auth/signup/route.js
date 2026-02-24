@@ -1,5 +1,7 @@
 import { sql } from '@vercel/postgres'
 import bcrypt from 'bcryptjs'
+import { createVerificationToken } from '@/lib/email-token'
+import { sendVerificationEmail } from '@/lib/email'
 
 export async function POST(request) {
   try {
@@ -20,13 +22,27 @@ export async function POST(request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    // Dev mode: auto-verify, preserve current behavior
+    const isDev = process.env.NODE_ENV === 'development'
+
     // Create user
-    await sql`
-      INSERT INTO users (email, password_hash, name)
-      VALUES (${email}, ${hashedPassword}, ${name})
+    const result = await sql`
+      INSERT INTO users (email, password_hash, name, email_verified)
+      VALUES (${email}, ${hashedPassword}, ${name}, ${isDev})
+      RETURNING id
     `
 
-    return Response.json({ success: true })
+    if (!isDev) {
+      const token = createVerificationToken(email, result.rows[0].id)
+      await sendVerificationEmail(email, name, token)
+      return Response.json({
+        success: true,
+        requiresVerification: true,
+      })
+    }
+
+    // Dev mode: return as before, client will auto-sign-in
+    return Response.json({ success: true, requiresVerification: false })
 
   } catch (error) {
     console.error('Signup error:', error)
