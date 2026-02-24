@@ -78,6 +78,7 @@ export default function WelcomeChat({ userName, onComplete }) {
   const [fading, setFading] = useState(false)
   const chatEndRef = useRef(null)
   const prefersReducedMotion = useRef(false)
+  const hasStarted = useRef(false)
 
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -90,9 +91,10 @@ export default function WelcomeChat({ userName, onComplete }) {
     }
   }, [mode, onComplete])
 
-  // Show first guide message on mount
+  // Show first guide message on mount (guard against Strict Mode double-fire)
   useEffect(() => {
-    if (mode === null) return
+    if (mode === null || hasStarted.current) return
+    hasStarted.current = true
     showGuideMessage(0)
   }, [mode])
 
