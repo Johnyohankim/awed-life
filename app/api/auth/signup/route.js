@@ -33,8 +33,14 @@ export async function POST(request) {
     `
 
     if (!isDev) {
-      const token = createVerificationToken(email, result.rows[0].id)
-      await sendVerificationEmail(email, name, token)
+      // Send verification email — don't fail signup if email fails
+      try {
+        const token = createVerificationToken(email, result.rows[0].id)
+        await sendVerificationEmail(email, name, token)
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError)
+        // User is created, they can use resend later
+      }
       return Response.json({
         success: true,
         requiresVerification: true,
