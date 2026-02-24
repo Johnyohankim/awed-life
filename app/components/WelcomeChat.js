@@ -26,9 +26,17 @@ const NEWCOMER_FLOW = [
     ]
   },
   {
-    guide: "Exactly. Over time, your collection grows into something meaningful. Ready to pick your first card?",
+    guide: "There\u2019s also something called an Awe Walk \u2014 a small real-world activity to bring wonder into your day. Like watching a sunrise, visiting a gallery, or sitting in silence.",
     options: [
-      { label: "Let\u2019s go" },
+      { label: 'I\u2019d try that' },
+      { label: 'Interesting' },
+    ]
+  },
+  {
+    guide: "So you have two ways to feel awe: watch a moment here, or go walk one out there. Ready to start?",
+    options: [
+      { label: 'Show me today\u2019s moments', route: null },
+      { label: 'Take me to a walk', route: '/explore' },
     ]
   },
 ]
