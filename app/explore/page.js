@@ -37,7 +37,7 @@ function ExploreCard({ card, onSave, keptToday, queueFull, isFlipped, onFlip }) 
 
   return (
     <div
-      onClick={() => !isFlipped && onFlip()}
+      onClick={onFlip}
       className="relative aspect-[3/4] cursor-pointer"
       style={{ perspective: '1000px' }}
     >
@@ -148,7 +148,7 @@ function FeaturedExploreCard({ card, onSave, keptToday, queueFull, isFlipped, on
 
   return (
     <div
-      onClick={() => !isFlipped && onFlip()}
+      onClick={onFlip}
       className="relative aspect-[16/9] md:aspect-[21/9] cursor-pointer"
       style={{ perspective: '1000px' }}
     >
