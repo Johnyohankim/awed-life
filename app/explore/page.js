@@ -477,7 +477,8 @@ export default function ExplorePage() {
   const handleFlip = (category) => {
     setFlippedCards(prev => {
       const next = new Set(prev)
-      next.add(category)
+      if (next.has(category)) next.delete(category)
+      else next.add(category)
       return next
     })
   }
